@@ -1,9 +1,27 @@
 <?php
 
+use App\Models\AdminUser;
+use App\Models\ApiRequestLog;
+use App\Models\Device;
+use App\Models\Family;
+use App\Models\License;
+use App\Models\Location;
+use App\Models\Product;
+use App\Models\Shift;
+use App\Models\Subfamily;
+use App\Models\SyncLog;
+use App\Models\SyncState;
+use App\Models\Transaction;
+use App\Models\TransactionItem;
+use App\Models\TransactionPayment;
+use App\Models\User;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+
 return [
     'dashboard' => ['label' => 'Dashboard', 'icon' => 'chart-bar'],
     'locations' => [
-        'model' => App\Models\Location::class,
+        'model' => Location::class,
         'label' => 'Localidades',
         'icon' => 'map-pin',
         'fields' => ['name', 'address', 'latitude', 'longitude', 'is_active', 'last_sync_at'],
@@ -21,7 +39,7 @@ return [
         ],
     ],
     'devices' => [
-        'model' => App\Models\Device::class,
+        'model' => Device::class,
         'label' => 'Dispositivos',
         'icon' => 'device-phone-mobile',
         'disable_create' => true,
@@ -37,7 +55,7 @@ return [
                 'location_id' => [
                     'label' => 'Localidad',
                     'type' => 'select',
-                    'model' => App\Models\Location::class,
+                    'model' => Location::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'apply' => ['type' => 'column', 'column' => 'location_id'],
@@ -48,7 +66,7 @@ return [
         ],
     ],
     'licenses' => [
-        'model' => App\Models\License::class,
+        'model' => License::class,
         'label' => 'Licencias',
         'icon' => 'key',
         'labels' => [
@@ -71,7 +89,7 @@ return [
                 'location_id' => [
                     'label' => 'Localidad',
                     'type' => 'select',
-                    'model' => App\Models\Location::class,
+                    'model' => Location::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'apply' => ['type' => 'whereHas', 'relation' => 'device', 'column' => 'location_id'],
@@ -79,7 +97,7 @@ return [
                 'device_id' => [
                     'label' => 'Dispositivo',
                     'type' => 'select',
-                    'model' => App\Models\Device::class,
+                    'model' => Device::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'fallback_column' => 'device_fingerprint',
@@ -97,7 +115,7 @@ return [
         ],
     ],
     'android-users' => [
-        'model' => App\Models\User::class,
+        'model' => User::class,
         'label' => 'Usuarios Android',
         'icon' => 'users',
         'labels' => [
@@ -140,7 +158,7 @@ return [
                 'location_id' => [
                     'label' => 'Localidad',
                     'type' => 'select',
-                    'model' => App\Models\Location::class,
+                    'model' => Location::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'apply' => ['type' => 'column', 'column' => 'location_id'],
@@ -151,7 +169,7 @@ return [
         ],
     ],
     'families' => [
-        'model' => App\Models\Family::class,
+        'model' => Family::class,
         'label' => 'Familias',
         'icon' => 'squares-2x2',
         'labels' => [
@@ -169,7 +187,7 @@ return [
         ],
     ],
     'subfamilies' => [
-        'model' => App\Models\Subfamily::class,
+        'model' => Subfamily::class,
         'label' => 'Subfamilias',
         'icon' => 'queue-list',
         'fields' => ['family_id', 'name'],
@@ -181,7 +199,7 @@ return [
                 'family_id' => [
                     'label' => 'Familia',
                     'type' => 'select',
-                    'model' => App\Models\Family::class,
+                    'model' => Family::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'apply' => ['type' => 'column', 'column' => 'family_id'],
@@ -192,7 +210,7 @@ return [
         ],
     ],
     'products' => [
-        'model' => App\Models\Product::class,
+        'model' => Product::class,
         'label' => 'Productos',
         'icon' => 'cube',
         'labels' => [
@@ -208,7 +226,7 @@ return [
                 'subfamily_id' => [
                     'label' => 'Subfamilia',
                     'type' => 'select',
-                    'model' => App\Models\Subfamily::class,
+                    'model' => Subfamily::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'apply' => ['type' => 'column', 'column' => 'subfamily_id'],
@@ -231,7 +249,7 @@ return [
         ],
     ],
     'shifts' => [
-        'model' => App\Models\Shift::class,
+        'model' => Shift::class,
         'label' => 'Turnos',
         'icon' => 'clock',
         'fields' => ['location_id', 'device_id', 'user_id', 'shift_number', 'start_time', 'end_time', 'opening_balance', 'closing_balance'],
@@ -245,7 +263,7 @@ return [
                 'location_id' => [
                     'label' => 'Localidad',
                     'type' => 'select',
-                    'model' => App\Models\Location::class,
+                    'model' => Location::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'apply' => ['type' => 'column', 'column' => 'location_id'],
@@ -253,7 +271,7 @@ return [
                 'device_id' => [
                     'label' => 'Dispositivo',
                     'type' => 'select',
-                    'model' => App\Models\Device::class,
+                    'model' => Device::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'fallback_column' => 'device_fingerprint',
@@ -262,7 +280,7 @@ return [
                 'user_id' => [
                     'label' => 'Usuario',
                     'type' => 'select',
-                    'model' => App\Models\User::class,
+                    'model' => User::class,
                     'order_by' => 'full_name',
                     'label_column' => 'full_name',
                     'fallback_column' => 'username',
@@ -274,7 +292,7 @@ return [
         ],
     ],
     'transactions' => [
-        'model' => App\Models\Transaction::class,
+        'model' => Transaction::class,
         'label' => 'Transacciones',
         'icon' => 'banknotes',
         'labels' => [
@@ -295,7 +313,7 @@ return [
                 'location_id' => [
                     'label' => 'Localidad',
                     'type' => 'select',
-                    'model' => App\Models\Location::class,
+                    'model' => Location::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'apply' => ['type' => 'column', 'column' => 'location_id'],
@@ -303,7 +321,7 @@ return [
                 'device_id' => [
                     'label' => 'Dispositivo',
                     'type' => 'select',
-                    'model' => App\Models\Device::class,
+                    'model' => Device::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'fallback_column' => 'device_fingerprint',
@@ -321,7 +339,8 @@ return [
         ],
     ],
     'transaction-items' => [
-        'model' => App\Models\TransactionItem::class,
+        'exclude_from_nav' => true,
+        'model' => TransactionItem::class,
         'label' => 'Items Transacción',
         'icon' => 'queue-list',
         'fields' => ['transaction_id', 'product_id', 'product_name', 'product_sku', 'qty', 'unit_price', 'discount', 'tax', 'line_total'],
@@ -334,7 +353,7 @@ return [
                 'transaction_id' => [
                     'label' => 'Transacción',
                     'type' => 'select',
-                    'model' => App\Models\Transaction::class,
+                    'model' => Transaction::class,
                     'order_by' => 'occurred_at',
                     'label_column' => 'external_id',
                     'apply' => ['type' => 'column', 'column' => 'transaction_id'],
@@ -342,7 +361,7 @@ return [
                 'product_id' => [
                     'label' => 'Producto',
                     'type' => 'select',
-                    'model' => App\Models\Product::class,
+                    'model' => Product::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'fallback_column' => 'sku',
@@ -354,7 +373,8 @@ return [
         ],
     ],
     'transaction-payments' => [
-        'model' => App\Models\TransactionPayment::class,
+        'exclude_from_nav' => true,
+        'model' => TransactionPayment::class,
         'label' => 'Pagos Transacción',
         'icon' => 'credit-card',
         'fields' => ['transaction_id', 'payment_method', 'amount', 'reference'],
@@ -366,7 +386,7 @@ return [
                 'transaction_id' => [
                     'label' => 'Transacción',
                     'type' => 'select',
-                    'model' => App\Models\Transaction::class,
+                    'model' => Transaction::class,
                     'order_by' => 'occurred_at',
                     'label_column' => 'external_id',
                     'apply' => ['type' => 'column', 'column' => 'transaction_id'],
@@ -383,7 +403,7 @@ return [
         ],
     ],
     'sync-states' => [
-        'model' => App\Models\SyncState::class,
+        'model' => SyncState::class,
         'label' => 'Estados Sync',
         'icon' => 'arrow-path',
         'fields' => ['location_id', 'device_id', 'last_pull_at', 'last_push_at', 'last_success_at', 'last_error_at', 'last_error_message'],
@@ -396,7 +416,7 @@ return [
                 'location_id' => [
                     'label' => 'Localidad',
                     'type' => 'select',
-                    'model' => App\Models\Location::class,
+                    'model' => Location::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'apply' => ['type' => 'column', 'column' => 'location_id'],
@@ -404,7 +424,7 @@ return [
                 'device_id' => [
                     'label' => 'Dispositivo',
                     'type' => 'select',
-                    'model' => App\Models\Device::class,
+                    'model' => Device::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'fallback_column' => 'device_fingerprint',
@@ -416,7 +436,7 @@ return [
         ],
     ],
     'sync-logs' => [
-        'model' => App\Models\SyncLog::class,
+        'model' => SyncLog::class,
         'label' => 'Logs Sync',
         'icon' => 'clipboard-document-list',
         'fields' => ['location_id', 'device_id', 'operation', 'entity', 'records_count', 'status', 'started_at', 'finished_at', 'error_message'],
@@ -429,7 +449,7 @@ return [
                 'location_id' => [
                     'label' => 'Localidad',
                     'type' => 'select',
-                    'model' => App\Models\Location::class,
+                    'model' => Location::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'apply' => ['type' => 'column', 'column' => 'location_id'],
@@ -437,7 +457,7 @@ return [
                 'device_id' => [
                     'label' => 'Dispositivo',
                     'type' => 'select',
-                    'model' => App\Models\Device::class,
+                    'model' => Device::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'fallback_column' => 'device_fingerprint',
@@ -461,7 +481,7 @@ return [
         ],
     ],
     'api-request-logs' => [
-        'model' => App\Models\ApiRequestLog::class,
+        'model' => ApiRequestLog::class,
         'label' => 'Llamadas API',
         'icon' => 'arrow-path',
         'readonly' => true,
@@ -490,7 +510,7 @@ return [
                 'location_id' => [
                     'label' => 'Localidad',
                     'type' => 'select',
-                    'model' => App\Models\Location::class,
+                    'model' => Location::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'apply' => ['type' => 'column', 'column' => 'location_id'],
@@ -498,7 +518,7 @@ return [
                 'device_id' => [
                     'label' => 'Dispositivo',
                     'type' => 'select',
-                    'model' => App\Models\Device::class,
+                    'model' => Device::class,
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'fallback_column' => 'device_fingerprint',
@@ -531,7 +551,7 @@ return [
         ],
     ],
     'admin-users' => [
-        'model' => App\Models\AdminUser::class,
+        'model' => AdminUser::class,
         'label' => 'Usuarios Backend',
         'icon' => 'shield-check',
         'fields' => ['name', 'email', 'is_active', 'password'],
@@ -549,7 +569,7 @@ return [
         ],
     ],
     'roles' => [
-        'model' => Spatie\Permission\Models\Role::class,
+        'model' => Role::class,
         'label' => 'Roles',
         'icon' => 'user-group',
         'fields' => ['name'],
@@ -560,7 +580,7 @@ return [
         ],
     ],
     'permissions' => [
-        'model' => Spatie\Permission\Models\Permission::class,
+        'model' => Permission::class,
         'label' => 'Permisos',
         'icon' => 'lock-closed',
         'fields' => ['name'],

@@ -11,6 +11,7 @@
 @if($admin)
     @foreach(config('admin_screens') as $key => $screen)
         @continue($key === 'dashboard')
+        @continue(! empty($screen['exclude_from_nav']))
         @if(\App\Support\AdminRbac::canAccessScreen($admin, $key))
             @php
                 $active = $currentScreen === $key;

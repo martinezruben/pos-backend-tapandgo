@@ -2,6 +2,10 @@
 
 /**
  * Grupos del sidebar (estilo Snow: secciones colapsables con ítems indentados).
+ *
+ * Cada pantalla con CRUD en routes/web.php (`admin.screens.*`) debe aparecer aquí,
+ * salvo vistas solo-detalle (p. ej. líneas/pagos de transacción): esas llevan
+ * `exclude_from_nav` en config/admin_screens.php y no se listan.
  */
 return [
     [
@@ -10,9 +14,14 @@ return [
         'screens' => ['locations', 'devices', 'licenses'],
     ],
     [
+        'key' => 'catalog',
+        'label' => 'Catálogo',
+        'screens' => ['families', 'subfamilies', 'products'],
+    ],
+    [
         'key' => 'ops',
         'label' => 'Operación',
-        'screens' => ['android-users', 'families', 'subfamilies', 'products', 'shifts', 'transactions'],
+        'screens' => ['android-users', 'shifts', 'transactions'],
     ],
     [
         'key' => 'sync',

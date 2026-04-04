@@ -21,7 +21,7 @@
             <div x-show="groups['{{ $group['key'] }}']" class="mt-0.5 space-y-0.5 pl-0">
                 @foreach($group['screens'] as $key)
                     @php($screen = config("admin_screens.$key"))
-                    @continue(!$screen || $key === 'dashboard')
+                    @continue(!$screen || $key === 'dashboard' || ! empty($screen['exclude_from_nav']))
                     @if(\App\Support\AdminRbac::canAccessScreen($admin, $key))
                         @php($active = $currentScreen === $key)
                         <a
