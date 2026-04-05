@@ -3,6 +3,7 @@
     $currentScreen = request()->route('screen');
     $rbacMatrixActive = request()->routeIs('admin.rbac.*');
     $systemSettingsActive = request()->routeIs('admin.system-settings.*');
+    $pulseActive = request()->routeIs('pulse');
 @endphp
 
 @if($admin)
@@ -63,6 +64,19 @@
                     >
                         <x-admin.snow.icon name="cube" class="h-4 w-4 shrink-0 {{ $systemSettingsActive ? 'text-white' : 'text-slate-400 group-hover:text-primary-600' }}" />
                         <span class="min-w-0 flex-1 truncate leading-tight">Parámetros del sistema</span>
+                    </a>
+                @endif
+                @if(($group['key'] ?? '') === 'system' && \Illuminate\Support\Facades\Gate::forUser($admin)->allows('viewPulse'))
+                    <a
+                        href="{{ route('pulse') }}"
+                        class="group flex items-center gap-2 rounded-lg py-1.5 pl-2 pr-1.5 text-[11px] font-medium transition-all
+                            {{ $pulseActive
+                                ? 'bg-primary-600 text-white shadow-sm shadow-primary-600/20'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}"
+                        @if($pulseActive) aria-current="page" @endif
+                    >
+                        <x-admin.snow.icon name="chart-bar" class="h-4 w-4 shrink-0 {{ $pulseActive ? 'text-white' : 'text-slate-400 group-hover:text-primary-600' }}" />
+                        <span class="min-w-0 flex-1 truncate leading-tight">Pulse (métricas)</span>
                     </a>
                 @endif
             </div>

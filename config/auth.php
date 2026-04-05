@@ -5,7 +5,8 @@ use App\Models\User;
 
 return [
     'defaults' => [
-        'guard' => env('AUTH_GUARD', 'web'),
+        /** Web admin usa guard `admin`; Pulse y métricas usan el usuario autenticado por defecto. */
+        'guard' => env('AUTH_GUARD', 'admin'),
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
     ],
 
