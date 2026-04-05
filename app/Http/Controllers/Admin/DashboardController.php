@@ -247,7 +247,7 @@ class DashboardController extends Controller
             return [];
         }
 
-        $max = (float) $totals->max('total');
+        $sumTop = (float) $totals->sum('total');
         $locationIds = $totals->pluck('location_id')->all();
         $names = Location::query()->whereIn('id', $locationIds)->pluck('name', 'id');
 
@@ -257,7 +257,7 @@ class DashboardController extends Controller
             $out[] = [
                 'name' => (string) ($names[$row->location_id] ?? '—'),
                 'total' => $t,
-                'pct' => $max > 0 ? round(100 * $t / $max) : 0.0,
+                'pct' => $sumTop > 0 ? round(100 * $t / $sumTop, 1) : 0.0,
             ];
         }
 

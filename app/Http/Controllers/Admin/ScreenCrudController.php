@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Support\AdminGridCell;
 use App\Support\AdminGridQuery;
 use App\Support\AdminRbac;
+use App\Support\LocationMapSyncPins;
 use App\Support\PasswordPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -101,22 +102,11 @@ class ScreenCrudController extends Controller
             $mapQuery->withCount([
                 'devices as active_devices_count' => fn ($q) => $q->where('is_enabled', true),
             ]);
-            $locationsMapPins = $mapQuery->get(['id', 'name', 'latitude', 'longitude', 'is_active'])
-                ->map(static function (Location $loc) use ($user, $p): array {
-                    $canEdit = $user->can($p['edit']);
-
-                    return [
-                        'id' => (string) $loc->getKey(),
-                        'name' => $loc->name,
-                        'lat' => $loc->latitude !== null ? (float) $loc->latitude : null,
-                        'lng' => $loc->longitude !== null ? (float) $loc->longitude : null,
-                        'activeDevices' => (int) ($loc->active_devices_count ?? 0),
-                        'isActive' => (bool) $loc->is_active,
-                        'editUrl' => $canEdit ? route('admin.screens.edit', ['locations', $loc->getKey()]) : '',
-                    ];
-                })
-                ->values()
-                ->all();
+            $mapLocations = $mapQuery->get(['id', 'name', 'latitude', 'longitude', 'is_active']);
+            $locationsMapPins = LocationMapSyncPins::build(
+                $mapLocations,
+                $user->can($p['edit']),
+            );
         }
 
         return view('admin.crud.index', [

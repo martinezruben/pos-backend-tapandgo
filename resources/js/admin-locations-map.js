@@ -2,6 +2,9 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import '../css/admin-locations-map.css';
 
+const FILL_SYNC = '#22c55e';
+const FILL_NONE = '#94a3b8';
+
 function escapeHtml(s) {
     const d = document.createElement('div');
     d.textContent = s;
@@ -16,9 +19,33 @@ function pinSvg(fill) {
 </svg>`;
 }
 
+function fillForPeriod(pin, periodKey) {
+    const sp = pin.syncInPeriod;
+    if (sp == null || typeof sp !== 'object') {
+        return FILL_NONE;
+    }
+
+    return sp[periodKey] === true ? FILL_SYNC : FILL_NONE;
+}
+
+function makeMarkerIcon(p, periodKey) {
+    const fill = fillForPeriod(p, periodKey);
+    const n = Math.max(0, Math.min(999, parseInt(p.activeDevices, 10) || 0));
+    const label = n > 99 ? '99+' : String(n);
+
+    return L.divIcon({
+        className: 'admin-loc-marker',
+        html: `<div class="admin-loc-marker__pin" title="${escapeHtml(p.name ?? '')}">${pinSvg(fill)}<span class="admin-loc-marker__count">${label}</span></div>`,
+        iconSize: [40, 44],
+        iconAnchor: [20, 44],
+        popupAnchor: [0, -42],
+    });
+}
+
 function initLocationsMap() {
     const mount = document.getElementById('admin-locations-map');
     const dataEl = document.getElementById('admin-locations-map-data');
+    const periodSelect = document.getElementById('admin-locations-map-period');
     if (!mount || !dataEl?.textContent) {
         return;
     }
@@ -56,25 +83,24 @@ function initLocationsMap() {
     );
 
     const latlngs = [];
+    /** @type {{ marker: L.Marker; pin: object }[]} */
+    const markerEntries = [];
+
+    const applyPeriod = (periodKey) => {
+        markerEntries.forEach(({ marker, pin }) => {
+            marker.setIcon(makeMarkerIcon(pin, periodKey));
+        });
+    };
 
     valid.forEach((p) => {
         const lat = Number(p.lat);
         const lng = Number(p.lng);
         const n = Math.max(0, Math.min(999, parseInt(p.activeDevices, 10) || 0));
-        const active = p.isActive !== false;
-        const fill = active ? '#2563eb' : '#64748b';
-        const label = n > 99 ? '99+' : String(n);
-
-        const icon = L.divIcon({
-            className: 'admin-loc-marker',
-            html: `<div class="admin-loc-marker__pin" title="${escapeHtml(p.name ?? '')}">${pinSvg(fill)}<span class="admin-loc-marker__count">${label}</span></div>`,
-            iconSize: [40, 44],
-            iconAnchor: [20, 44],
-            popupAnchor: [0, -42],
-        });
-
+        const periodKey = periodSelect?.value || 'today';
+        const icon = makeMarkerIcon(p, periodKey);
         const marker = L.marker([lat, lng], { icon }).addTo(map);
         latlngs.push([lat, lng]);
+        markerEntries.push({ marker, pin: p });
 
         const name = escapeHtml(p.name ?? '—');
         const edit =
@@ -86,6 +112,12 @@ function initLocationsMap() {
             `<div class="text-[11px] text-slate-800"><p class="font-semibold">${name}</p><p class="mt-0.5 text-slate-500">Dispositivos activos: <span class="font-semibold text-slate-700">${n}</span></p>${edit}</div>`,
         );
     });
+
+    if (periodSelect) {
+        periodSelect.addEventListener('change', () => {
+            applyPeriod(periodSelect.value);
+        });
+    }
 
     if (latlngs.length > 0) {
         map.fitBounds(latlngs, { padding: [36, 36], maxZoom: 14 });

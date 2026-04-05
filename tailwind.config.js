@@ -52,6 +52,15 @@ export default {
                     cyan: '#06b6d4',
                 },
             },
+            keyframes: {
+                actIn: {
+                    '0%': { opacity: '0', transform: 'translateY(6px)' },
+                    '100%': { opacity: '1', transform: 'translateY(0)' },
+                },
+            },
+            animation: {
+                'act-in': 'actIn 0.38s ease-out both',
+            },
             boxShadow: {
                 snow: '0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06)',
                 'snow-md': '0 4px 6px -1px rgb(15 23 42 / 0.06), 0 2px 4px -2px rgb(15 23 42 / 0.05)',

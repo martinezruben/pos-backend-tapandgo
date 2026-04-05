@@ -184,10 +184,10 @@ function mountFamilyDonut(ApexCharts, el, familyMix) {
     const measureHeight = () => {
         const h = el.clientHeight;
         if (h > 0) {
-            return Math.max(200, Math.min(340, Math.floor(h)));
+            return Math.max(160, Math.min(270, Math.floor(h)));
         }
 
-        return 320;
+        return 250;
     };
 
     let chart = new ApexCharts(el, baseOptions(measureHeight()));

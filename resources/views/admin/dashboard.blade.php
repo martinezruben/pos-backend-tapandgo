@@ -58,13 +58,12 @@
                     </div>
                 </div>
 
-                {{-- Misma altura visual que el card «Ventas y transacciones» (p-4 + cabecera + gráfico ~320px) --}}
-                <div class="snow-card flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white p-4 shadow-hope-card xl:h-[412px]">
-                    <div class="mb-3 shrink-0">
+                <div class="snow-card flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white p-4 shadow-hope-card xl:h-[330px]">
+                    <div class="mb-2 shrink-0">
                         <h3 class="text-sm font-semibold text-slate-900">Ventas por familia</h3>
                         <p class="text-[10px] text-slate-500">Últimos 30 días · líneas de ticket</p>
                     </div>
-                    <div data-chart="family-donut" class="w-full min-h-[260px] flex-1 xl:min-h-0"></div>
+                    <div data-chart="family-donut" class="w-full min-h-[190px] flex-1 xl:min-h-0"></div>
                 </div>
             </div>
         </div>
@@ -75,50 +74,104 @@
                     <h3 class="text-sm font-semibold text-slate-900">Actividad reciente</h3>
                     <p class="text-[10px] text-slate-500">Sync y API</p>
                 </div>
-                <ul class="mt-2 min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain pr-0.5">
+                <ul class="mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-gutter:stable]">
                     @forelse ($activity as $row)
                         @php
-                            $ring = match ($row['tone']) {
-                                'emerald' => 'border-emerald-200 bg-emerald-50',
-                                'rose' => 'border-rose-200 bg-rose-50',
-                                'sky' => 'border-sky-200 bg-sky-50',
-                                default => 'border-amber-200 bg-amber-50',
+                            $strip = match ($row['tone']) {
+                                'emerald' => 'border-l-emerald-500',
+                                'rose' => 'border-l-rose-500',
+                                'sky' => 'border-l-sky-500',
+                                default => 'border-l-amber-500',
                             };
-                            $dot = match ($row['tone']) {
-                                'emerald' => 'bg-emerald-500',
-                                'rose' => 'bg-rose-500',
-                                'sky' => 'bg-sky-500',
-                                default => 'bg-amber-500',
+                            $wash = match ($row['tone']) {
+                                'emerald' => 'from-emerald-50/70',
+                                'rose' => 'from-rose-50/70',
+                                'sky' => 'from-sky-50/70',
+                                default => 'from-amber-50/70',
+                            };
+                            $iconGrad = match ($row['tone']) {
+                                'emerald' => 'from-emerald-500 to-teal-600 shadow-emerald-500/25',
+                                'rose' => 'from-rose-500 to-rose-700 shadow-rose-500/25',
+                                'sky' => 'from-sky-500 to-blue-600 shadow-sky-500/25',
+                                default => 'from-amber-500 to-orange-600 shadow-amber-500/25',
+                            };
+                            $pulse = match ($row['tone']) {
+                                'emerald' => 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]',
+                                'rose' => 'bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.7)]',
+                                'sky' => 'bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.7)]',
+                                default => 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.7)]',
+                            };
+                            $dirBadge = match ($row['direction']) {
+                                'Pull' => 'border-sky-200/90 bg-sky-50/90 text-sky-900 ring-sky-100',
+                                'Push' => 'border-violet-200/90 bg-violet-50/90 text-violet-900 ring-violet-100',
+                                default => 'border-slate-200/90 bg-slate-100/90 text-slate-800 ring-slate-100',
+                            };
+                            $statusLabel = match ($row['tone']) {
+                                'emerald' => 'Correcto',
+                                'rose' => 'Fallo',
+                                'sky' => 'OK',
+                                default => 'Aviso',
                             };
                         @endphp
-                        <li class="flex items-stretch gap-1.5">
-                            <span class="mt-1.5 flex h-1.5 w-1.5 shrink-0 self-start rounded-full ring-1 ring-white {{ $dot }}"></span>
-                            <div class="flex min-w-0 flex-1 items-start justify-between gap-2 rounded-md border {{ $ring }} px-1.5 py-1 leading-snug">
-                                <div class="min-w-0 flex-1">
-                                    <p class="truncate text-[9px] text-slate-500">
-                                        <span class="font-semibold text-slate-600">Localidad</span>
-                                        <span class="text-slate-800">{{ $row['location'] }}</span>
-                                    </p>
-                                    <p class="truncate text-[9px] text-slate-500">
-                                        <span class="font-semibold text-slate-600">Dispositivo</span>
-                                        <span class="text-slate-800">{{ $row['device'] }}</span>
-                                    </p>
+                        <li
+                            class="animate-act-in"
+                            style="animation-delay: {{ min($loop->index * 45, 360) }}ms"
+                        >
+                            <div
+                                class="group relative flex gap-2 overflow-hidden rounded-xl border border-slate-200/70 bg-gradient-to-r {{ $wash }} to-white pl-2 shadow-sm ring-1 ring-slate-100/80 transition duration-200 hover:border-slate-300/70 hover:shadow-md hover:ring-slate-200/90 {{ $strip }} border-l-[3px]"
+                            >
+                                <span
+                                    class="pointer-events-none absolute -right-6 top-1/2 h-16 w-16 -translate-y-1/2 rounded-full bg-gradient-to-br from-white/0 to-white/40 opacity-0 blur-2xl transition duration-300 group-hover:opacity-100"
+                                    aria-hidden="true"
+                                ></span>
+                                <div
+                                    class="relative mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br {{ $iconGrad }} text-white shadow-lg ring-2 ring-white/90"
+                                >
+                                    @if ($row['direction'] === 'Pull')
+                                        <span class="text-base font-bold leading-none drop-shadow-sm">↓</span>
+                                    @elseif ($row['direction'] === 'Push')
+                                        <span class="text-base font-bold leading-none drop-shadow-sm">↑</span>
+                                    @else
+                                        <span class="px-0.5 text-[8px] font-bold uppercase tracking-wider drop-shadow-sm">API</span>
+                                    @endif
                                 </div>
-                                @php
-                                    $dirBadge = match ($row['direction']) {
-                                        'Pull' => 'border-sky-300/80 bg-sky-100 text-sky-900 shadow-sm',
-                                        'Push' => 'border-violet-300/80 bg-violet-50 text-violet-900 shadow-sm',
-                                        default => 'border-slate-300/80 bg-slate-100 text-slate-700 shadow-sm',
-                                    };
-                                @endphp
-                                <div class="flex shrink-0 flex-col items-end gap-0.5 text-right">
-                                    <p class="max-w-[8rem] text-[8px] leading-tight text-slate-400">{{ $row['time_human'] }}</p>
-                                    <span class="inline-flex rounded-full border px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide {{ $dirBadge }}">{{ $row['direction'] }}</span>
+                                <div class="relative min-w-0 flex-1 py-1.5 pr-2">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <p class="truncate text-[11px] font-semibold leading-tight tracking-tight text-slate-900">
+                                            {{ $row['location'] }}
+                                        </p>
+                                        <span class="inline-flex shrink-0 items-center gap-0.5 text-[9px] font-medium tabular-nums text-slate-400">
+                                            <x-admin.snow.icon name="clock" class="h-3 w-3 text-slate-300" />
+                                            {{ $row['time_human'] }}
+                                        </span>
+                                    </div>
+                                    <div class="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                                        <span class="inline-flex min-w-0 max-w-full items-center gap-1 text-[10px] text-slate-600">
+                                            <x-admin.snow.icon name="device-phone-mobile" class="h-3 w-3 shrink-0 text-slate-400" />
+                                            <span class="truncate">{{ $row['device'] }}</span>
+                                        </span>
+                                        <span
+                                            class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide ring-1 {{ $dirBadge }}"
+                                        >
+                                            {{ $row['direction'] }}
+                                        </span>
+                                        <span class="inline-flex items-center gap-1">
+                                            <span class="h-1.5 w-1.5 rounded-full {{ $pulse }}"></span>
+                                            <span class="text-[9px] font-medium text-slate-400">{{ $statusLabel }}</span>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </li>
                     @empty
-                        <li class="text-[10px] text-slate-400">Sin actividad reciente.</li>
+                        <li class="flex list-none flex-col items-center justify-center gap-2 py-10 text-center">
+                            <div
+                                class="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 text-slate-300 shadow-inner ring-1 ring-slate-200/80"
+                            >
+                                <x-admin.snow.icon name="arrow-path" class="h-5 w-5" />
+                            </div>
+                            <p class="max-w-[12rem] text-[11px] leading-snug text-slate-500">Sin actividad reciente en sync ni API.</p>
+                        </li>
                     @endforelse
                 </ul>
             </div>
@@ -157,7 +210,7 @@
                                                 style="width: {{ $loc['pct'] }}%"
                                             ></div>
                                         </div>
-                                        <span class="w-8 text-right text-[10px] tabular-nums text-slate-500">{{ (int) $loc['pct'] }}%</span>
+                                        <span class="w-10 shrink-0 text-right text-[10px] tabular-nums text-slate-500">{{ number_format($loc['pct'], 1, ',', '') }}%</span>
                                     </div>
                                 </td>
                             </tr>

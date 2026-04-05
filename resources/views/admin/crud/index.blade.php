@@ -107,7 +107,16 @@
                 <div class="mb-1.5 flex flex-wrap items-end justify-between gap-2">
                     <div>
                         <h3 class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Mapa de localidades</h3>
-                        <p class="text-[9px] text-slate-500">Mismos filtros que la tabla · número = dispositivos activos</p>
+                        <p class="text-[9px] text-slate-500">Mismos filtros que la tabla · número = dispositivos activos · verde = al menos una sincronización exitosa en el periodo</p>
+                    </div>
+                    <div class="flex min-w-0 flex-col gap-0.5 sm:items-end">
+                        <label for="admin-locations-map-period" class="text-[8px] font-bold uppercase tracking-widest text-slate-400">Sincronizaciones</label>
+                        <select id="admin-locations-map-period" class="hope-filter-select max-w-full py-1 text-[10px] sm:min-w-[12rem]">
+                            <option value="today" selected>Hoy</option>
+                            <option value="yesterday">Ayer</option>
+                            <option value="last_week">Última semana</option>
+                            <option value="last_month">Último mes</option>
+                        </select>
                     </div>
                 </div>
                 <div
