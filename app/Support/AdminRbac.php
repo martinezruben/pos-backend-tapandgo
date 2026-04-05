@@ -54,6 +54,67 @@ class AdminRbac
         return array_values(array_unique($names));
     }
 
+    /**
+     * Pantallas con modelo (excl. dashboard), ordenadas por etiqueta, para la matriz RBAC.
+     *
+     * @return list<array{key: string, label: string, readonly: bool}>
+     */
+    public static function managedScreens(): array
+    {
+        $out = [];
+        foreach (array_keys(config('admin_screens', [])) as $screen) {
+            if ($screen === 'dashboard') {
+                continue;
+            }
+            $cfg = config("admin_screens.$screen");
+            if (! is_array($cfg) || empty($cfg['model'])) {
+                continue;
+            }
+            $out[] = [
+                'key' => $screen,
+                'label' => $cfg['label'] ?? $screen,
+                'readonly' => ! empty($cfg['readonly']),
+            ];
+        }
+        usort($out, static fn (array $a, array $b): int => strcmp($a['label'], $b['label']));
+
+        return $out;
+    }
+
+    /**
+     * Permisos asignables en la matriz por pantalla (solo view si la pantalla es solo lectura).
+     *
+     * @return list<string>
+     */
+    public static function managedPermissionNamesForScreen(string $screen): array
+    {
+        $cfg = config("admin_screens.$screen");
+        if (! is_array($cfg) || empty($cfg['model'])) {
+            return [];
+        }
+        $p = self::permissionsForScreen($screen);
+        if (! empty($cfg['readonly'])) {
+            return [$p['view']];
+        }
+
+        return [$p['view'], $p['edit'], $p['delete']];
+    }
+
+    /**
+     * Todos los permisos que la matriz RBAC puede activar o quitar en un rol.
+     *
+     * @return list<string>
+     */
+    public static function allManagedPermissionNames(): array
+    {
+        $names = [];
+        foreach (self::managedScreens() as $s) {
+            $names = array_merge($names, self::managedPermissionNamesForScreen($s['key']));
+        }
+
+        return array_values(array_unique($names));
+    }
+
     public static function canAccessScreen(?Authenticatable $user, string $screen): bool
     {
         if (! $user) {

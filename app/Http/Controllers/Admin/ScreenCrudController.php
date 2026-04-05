@@ -6,11 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminUser;
 use App\Models\Device;
 use App\Models\Family;
+use App\Models\Location;
 use App\Models\User;
 use App\Support\AdminGridCell;
 use App\Support\AdminGridQuery;
 use App\Support\AdminRbac;
+use App\Support\PasswordPolicy;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -76,6 +79,46 @@ class ScreenCrudController extends Controller
         $p = AdminRbac::permissionsForScreen($screen);
         $user = auth('admin')->user();
 
+        $transactionExportLocations = [];
+        if ($screen === 'transactions') {
+            $transactionExportLocations = Location::query()
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(static function (Location $loc): array {
+                    return [
+                        'id' => (string) $loc->getKey(),
+                        'name' => $loc->name,
+                    ];
+                })
+                ->values()
+                ->all();
+        }
+
+        $locationsMapPins = [];
+        if ($screen === 'locations') {
+            $mapQuery = Location::query();
+            AdminGridQuery::apply($mapQuery, $request, $screen, $cfg);
+            $mapQuery->withCount([
+                'devices as active_devices_count' => fn ($q) => $q->where('is_enabled', true),
+            ]);
+            $locationsMapPins = $mapQuery->get(['id', 'name', 'latitude', 'longitude', 'is_active'])
+                ->map(static function (Location $loc) use ($user, $p): array {
+                    $canEdit = $user->can($p['edit']);
+
+                    return [
+                        'id' => (string) $loc->getKey(),
+                        'name' => $loc->name,
+                        'lat' => $loc->latitude !== null ? (float) $loc->latitude : null,
+                        'lng' => $loc->longitude !== null ? (float) $loc->longitude : null,
+                        'activeDevices' => (int) ($loc->active_devices_count ?? 0),
+                        'isActive' => (bool) $loc->is_active,
+                        'editUrl' => $canEdit ? route('admin.screens.edit', ['locations', $loc->getKey()]) : '',
+                    ];
+                })
+                ->values()
+                ->all();
+        }
+
         return view('admin.crud.index', [
             'items' => $items,
             'screen' => $screen,
@@ -83,6 +126,9 @@ class ScreenCrudController extends Controller
             'gridFilterOptions' => AdminGridQuery::filterOptions($cfg),
             'canEdit' => $user->can($p['edit']) && empty($cfg['readonly']),
             'canDelete' => $user->can($p['delete']) && empty($cfg['readonly']),
+            'locationsMapPins' => $locationsMapPins,
+            'showTransactionExcelExport' => $screen === 'transactions' && $user->can($p['view']),
+            'transactionExportLocations' => $transactionExportLocations,
         ]);
     }
 
@@ -194,7 +240,7 @@ class ScreenCrudController extends Controller
     }
 
     /**
-     * @return array<string, \Illuminate\Support\Collection<int, array{id: string, label: string}>>
+     * @return array<string, Collection<int, array{id: string, label: string}>>
      */
     private function foreignSelectOptionsForForm(array $cfg): array
     {
@@ -278,7 +324,19 @@ class ScreenCrudController extends Controller
                 continue;
             }
             if ($field === 'password') {
-                $rules[$field] = [$updating ? 'nullable' : 'required', 'string', 'min:8'];
+                if ($screen === 'android-users') {
+                    $rules[$field] = array_merge(
+                        [$updating ? 'nullable' : 'required'],
+                        PasswordPolicy::baseRules('pos')
+                    );
+                } elseif ($screen === 'admin-users') {
+                    $rules[$field] = array_merge(
+                        [$updating ? 'nullable' : 'required'],
+                        PasswordPolicy::baseRules('admin')
+                    );
+                } else {
+                    $rules[$field] = [$updating ? 'nullable' : 'required', 'string', 'min:8'];
+                }
             } elseif (str_ends_with($field, '_at') || in_array($field, ['valid_from', 'valid_to', 'start_time', 'end_time', 'occurred_at', 'synced_at'], true)) {
                 $rules[$field] = ['nullable', 'date'];
             } elseif (str_starts_with($field, 'is_')) {
@@ -324,6 +382,14 @@ class ScreenCrudController extends Controller
         }
 
         $data = $request->validate($rules);
+
+        if (isset($data['password']) && $data['password'] !== '') {
+            if ($screen === 'admin-users') {
+                PasswordPolicy::assertComplexity($data['password'], 'admin');
+            } elseif ($screen === 'android-users') {
+                PasswordPolicy::assertComplexity($data['password'], 'pos');
+            }
+        }
 
         foreach ($cfg['fields'] as $field) {
             if (str_starts_with($field, 'is_')) {

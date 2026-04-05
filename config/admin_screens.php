@@ -11,6 +11,7 @@ use App\Models\Shift;
 use App\Models\Subfamily;
 use App\Models\SyncLog;
 use App\Models\SyncState;
+use App\Models\SystemParameter;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\TransactionPayment;
@@ -116,7 +117,7 @@ return [
     ],
     'android-users' => [
         'model' => User::class,
-        'label' => 'Usuarios Android',
+        'label' => 'Usuarios POS (TapGo)',
         'icon' => 'users',
         'labels' => [
             'username' => 'Usuario',
@@ -404,7 +405,7 @@ return [
     ],
     'sync-states' => [
         'model' => SyncState::class,
-        'label' => 'Estados Sync',
+        'label' => 'Estado de Sincronización',
         'icon' => 'arrow-path',
         'fields' => ['location_id', 'device_id', 'last_pull_at', 'last_push_at', 'last_success_at', 'last_error_at', 'last_error_message'],
         'foreign_labels' => [
@@ -437,7 +438,7 @@ return [
     ],
     'sync-logs' => [
         'model' => SyncLog::class,
-        'label' => 'Logs Sync',
+        'label' => 'Logs de Sincronización',
         'icon' => 'clipboard-document-list',
         'fields' => ['location_id', 'device_id', 'operation', 'entity', 'records_count', 'status', 'started_at', 'finished_at', 'error_message'],
         'foreign_labels' => [
@@ -548,6 +549,20 @@ return [
             'sortable' => ['created_at', 'method', 'path', 'response_status', 'duration_ms', 'location_id', 'device_id'],
             'search_columns' => ['method', 'path', 'parameters', 'response_summary', 'device_fingerprint', 'ip_address'],
             'default_sort' => ['key' => 'created_at', 'direction' => 'desc'],
+        ],
+    ],
+    'system-settings' => [
+        'model' => SystemParameter::class,
+        'label' => 'Parámetros del sistema',
+        'icon' => 'cube',
+        'exclude_from_nav' => true,
+        'fields' => ['id'],
+        'readonly' => true,
+        'disable_create' => true,
+        'grid' => [
+            'filters' => [],
+            'sortable' => [],
+            'default_sort' => ['key' => 'id', 'direction' => 'asc'],
         ],
     ],
     'admin-users' => [

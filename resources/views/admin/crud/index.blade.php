@@ -25,6 +25,20 @@
         <form method="GET" action="{{ route('admin.screens.index', $screen) }}" class="border-b border-slate-100">
             <div class="flex flex-col gap-1.5 bg-white px-2 py-1.5 sm:flex-row sm:items-center sm:justify-between sm:px-3">
                 <div class="flex flex-wrap items-center gap-0.5">
+                    @if(($showTransactionExcelExport ?? false))
+                        <div x-data="transactionExcelModal(@js($transactionExportLocations ?? []))" class="inline-flex items-center gap-0.5">
+                            <button
+                                type="button"
+                                class="inline-flex h-7 items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 text-[10px] font-semibold text-slate-600 shadow-sm transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+                                title="Exportar transacciones a Excel"
+                                @click="open = true"
+                            >
+                                <svg class="h-3 w-3 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                                Excel
+                            </button>
+                            @include('admin.crud.partials.transaction-excel-export-modal')
+                        </div>
+                    @endif
                     @if(($canEdit ?? false) && empty($cfg['disable_create'] ?? false))
                         <a
                             href="{{ route('admin.screens.create', $screen) }}"
@@ -86,6 +100,37 @@
                 </div>
             @endif
         </form>
+
+        @if(($screen ?? null) === 'locations')
+            <script type="application/json" id="admin-locations-map-data">@json($locationsMapPins ?? [])</script>
+            <div class="border-b border-slate-100 bg-gradient-to-b from-slate-50/90 to-white px-2 py-2 sm:px-3">
+                <div class="mb-1.5 flex flex-wrap items-end justify-between gap-2">
+                    <div>
+                        <h3 class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Mapa de localidades</h3>
+                        <p class="text-[9px] text-slate-500">Mismos filtros que la tabla · número = dispositivos activos</p>
+                    </div>
+                </div>
+                <div
+                    id="admin-locations-map"
+                    class="z-0 h-[min(420px,52vh)] w-full overflow-hidden rounded-lg border border-slate-200/90 shadow-sm ring-1 ring-slate-200/40"
+                    role="region"
+                    aria-label="Mapa de localidades"
+                ></div>
+                @php
+                    $hasCoords = collect($locationsMapPins ?? [])->contains(
+                        fn (array $p) => ($p['lat'] ?? null) !== null && ($p['lng'] ?? null) !== null,
+                    );
+                @endphp
+                @if (! $hasCoords && count($locationsMapPins ?? []) > 0)
+                    <p class="mt-1.5 text-center text-[10px] text-amber-800/90">
+                        Indica latitud y longitud en cada localidad para mostrarla en el mapa.
+                    </p>
+                @endif
+            </div>
+            @push('scripts')
+                @vite(['resources/js/admin-locations-map.js'])
+            @endpush
+        @endif
 
         @error('file')
             <p class="border-b border-red-100 bg-red-50/80 px-3 py-2 text-xs text-red-700">{{ $message }}</p>

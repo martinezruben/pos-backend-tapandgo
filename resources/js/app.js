@@ -237,6 +237,94 @@ document.addEventListener('alpine:init', () => {
             this.error = '';
         },
     }));
+
+    Alpine.data('transactionExcelModal', (locations = []) => {
+        const localYmd = (d) => {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+
+            return `${y}-${m}-${day}`;
+        };
+
+        return {
+            open: false,
+            dateFrom: '',
+            dateTo: '',
+            locationId: '',
+            error: '',
+            loading: false,
+            locations: Array.isArray(locations) ? locations : [],
+
+            init() {
+                const t = new Date();
+                this.dateTo = localYmd(t);
+                const f = new Date(t);
+                f.setDate(f.getDate() - 7);
+                this.dateFrom = localYmd(f);
+            },
+
+            csrfToken() {
+                return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+            },
+
+            async submit() {
+                this.error = '';
+                this.loading = true;
+                try {
+                    const res = await fetch('/admin/transactions/excel/export', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': this.csrfToken(),
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            date_from: this.dateFrom,
+                            date_to: this.dateTo,
+                            location_id: this.locationId || null,
+                        }),
+                    });
+
+                    if (res.status === 422) {
+                        const data = await res.json();
+                        const fromErrors = data.errors ? Object.values(data.errors).flat() : [];
+                        this.error =
+                            (typeof data.message === 'string' && data.message && data.message !== 'The given data was invalid.')
+                                ? data.message
+                                : fromErrors[0] ?? 'Datos no válidos.';
+
+                        return;
+                    }
+
+                    if (!res.ok) {
+                        this.error = 'No se pudo generar el archivo.';
+
+                        return;
+                    }
+
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    const cd = res.headers.get('Content-Disposition');
+                    const m = cd && /filename="?([^";\n]+)"?/i.exec(cd);
+                    a.download = m ? m[1].trim() : 'transacciones.xlsx';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                    this.open = false;
+                } catch {
+                    this.error = 'Error de red.';
+                } finally {
+                    this.loading = false;
+                }
+            },
+        };
+    });
 });
 
 Alpine.start();

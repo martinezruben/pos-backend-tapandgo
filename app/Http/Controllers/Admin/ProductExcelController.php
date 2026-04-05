@@ -9,8 +9,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -39,27 +41,30 @@ class ProductExcelController extends Controller
         return response()->streamDownload(function (): void {
             $spreadsheet = new Spreadsheet;
             $sheet = $spreadsheet->getActiveSheet();
+            $cell = static function (Worksheet $sheet, int $col, int $row, mixed $value): void {
+                $sheet->setCellValue(Coordinate::stringFromColumnIndex($col).$row, $value);
+            };
             foreach (self::HEADERS as $col => $header) {
-                $sheet->setCellValueByColumnAndRow($col + 1, 1, $header);
+                $cell($sheet, $col + 1, 1, $header);
             }
 
             $row = 2;
             Product::query()
                 ->withTrashed()
                 ->orderBy('id')
-                ->chunk(500, function ($products) use ($sheet, &$row): void {
+                ->chunk(500, function ($products) use ($sheet, &$row, $cell): void {
                     foreach ($products as $p) {
-                        $sheet->setCellValueByColumnAndRow(1, $row, $p->id);
-                        $sheet->setCellValueByColumnAndRow(2, $row, $p->sku);
-                        $sheet->setCellValueByColumnAndRow(3, $row, $p->barcode);
-                        $sheet->setCellValueByColumnAndRow(4, $row, $p->name);
-                        $sheet->setCellValueByColumnAndRow(5, $row, $p->description);
-                        $sheet->setCellValueByColumnAndRow(6, $row, $p->image_url);
-                        $sheet->setCellValueByColumnAndRow(7, $row, $p->subfamily_id);
-                        $sheet->setCellValueByColumnAndRow(8, $row, $p->price);
-                        $sheet->setCellValueByColumnAndRow(9, $row, $p->tax_rate);
-                        $sheet->setCellValueByColumnAndRow(10, $row, $p->is_active ? 1 : 0);
-                        $sheet->setCellValueByColumnAndRow(11, $row, $p->is_favorite ? 1 : 0);
+                        $cell($sheet, 1, $row, $p->id);
+                        $cell($sheet, 2, $row, $p->sku);
+                        $cell($sheet, 3, $row, $p->barcode);
+                        $cell($sheet, 4, $row, $p->name);
+                        $cell($sheet, 5, $row, $p->description);
+                        $cell($sheet, 6, $row, $p->image_url);
+                        $cell($sheet, 7, $row, $p->subfamily_id);
+                        $cell($sheet, 8, $row, $p->price);
+                        $cell($sheet, 9, $row, $p->tax_rate);
+                        $cell($sheet, 10, $row, $p->is_active ? 1 : 0);
+                        $cell($sheet, 11, $row, $p->is_favorite ? 1 : 0);
                         $row++;
                     }
                 });

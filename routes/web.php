@@ -1,13 +1,16 @@
 <?php
 
 use App\Http\Controllers\Admin\ApiRequestLogDetailController;
-use App\Http\Controllers\Admin\TransactionLineItemsController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DeviceLastSyncController;
 use App\Http\Controllers\Admin\LocationPairingTokenController;
 use App\Http\Controllers\Admin\ProductExcelController;
+use App\Http\Controllers\Admin\RoleRbacMatrixController;
 use App\Http\Controllers\Admin\ScreenCrudController;
+use App\Http\Controllers\Admin\SystemSettingsController;
+use App\Http\Controllers\Admin\TransactionExcelExportController;
+use App\Http\Controllers\Admin\TransactionLineItemsController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/admin');
@@ -30,9 +33,17 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::get('/api-request-logs/{id}', [ApiRequestLogDetailController::class, 'show'])->name('api-request-logs.show');
 
         Route::get('/transactions/{transaction}/line-items', [TransactionLineItemsController::class, 'show'])->name('transactions.line-items');
+        Route::post('/transactions/excel/export', [TransactionExcelExportController::class, 'export'])->name('transactions.excel.export');
 
         Route::get('/products/excel/export', [ProductExcelController::class, 'export'])->name('products.excel.export');
         Route::post('/products/excel/import', [ProductExcelController::class, 'import'])->name('products.excel.import');
+
+        Route::get('/rbac', [RoleRbacMatrixController::class, 'index'])->name('rbac.matrix.index');
+        Route::get('/rbac/roles/{role}', [RoleRbacMatrixController::class, 'edit'])->name('rbac.matrix.edit');
+        Route::post('/rbac/roles/{role}', [RoleRbacMatrixController::class, 'update'])->name('rbac.matrix.update');
+
+        Route::get('/system-settings', [SystemSettingsController::class, 'edit'])->name('system-settings.edit');
+        Route::put('/system-settings', [SystemSettingsController::class, 'update'])->name('system-settings.update');
 
         Route::get('/screens/{screen}', [ScreenCrudController::class, 'index'])->name('screens.index');
         Route::get('/screens/{screen}/create', [ScreenCrudController::class, 'create'])->name('screens.create');

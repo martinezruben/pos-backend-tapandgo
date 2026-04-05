@@ -1,6 +1,8 @@
 @php
     $admin = auth('admin')->user();
     $currentScreen = request()->route('screen');
+    $rbacMatrixActive = request()->routeIs('admin.rbac.*');
+    $systemSettingsActive = request()->routeIs('admin.system-settings.*');
 @endphp
 
 @if($admin)
@@ -37,6 +39,32 @@
                         </a>
                     @endif
                 @endforeach
+                @if(($group['key'] ?? '') === 'system' && $admin->can('roles.edit'))
+                    <a
+                        href="{{ route('admin.rbac.matrix.index') }}"
+                        class="group flex items-center gap-2 rounded-lg py-1.5 pl-2 pr-1.5 text-[11px] font-medium transition-all
+                            {{ $rbacMatrixActive
+                                ? 'bg-primary-600 text-white shadow-sm shadow-primary-600/20'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}"
+                        @if($rbacMatrixActive) aria-current="page" @endif
+                    >
+                        <x-admin.snow.icon name="lock-closed" class="h-4 w-4 shrink-0 {{ $rbacMatrixActive ? 'text-white' : 'text-slate-400 group-hover:text-primary-600' }}" />
+                        <span class="min-w-0 flex-1 truncate leading-tight">Permisos por rol</span>
+                    </a>
+                @endif
+                @if(($group['key'] ?? '') === 'system' && $admin->can('system_settings.view'))
+                    <a
+                        href="{{ route('admin.system-settings.edit') }}"
+                        class="group flex items-center gap-2 rounded-lg py-1.5 pl-2 pr-1.5 text-[11px] font-medium transition-all
+                            {{ $systemSettingsActive
+                                ? 'bg-primary-600 text-white shadow-sm shadow-primary-600/20'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}"
+                        @if($systemSettingsActive) aria-current="page" @endif
+                    >
+                        <x-admin.snow.icon name="cube" class="h-4 w-4 shrink-0 {{ $systemSettingsActive ? 'text-white' : 'text-slate-400 group-hover:text-primary-600' }}" />
+                        <span class="min-w-0 flex-1 truncate leading-tight">Parámetros del sistema</span>
+                    </a>
+                @endif
             </div>
         </div>
     @endforeach

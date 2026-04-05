@@ -19,6 +19,7 @@
         "vite": "^8.0.0"
     },
     "dependencies": {
-        "apexcharts": "^5.10.4"
+        "apexcharts": "^5.10.4",
+        "leaflet": "^1.9.4"
     }
 }
