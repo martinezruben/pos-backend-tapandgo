@@ -21,7 +21,7 @@ return [
     [
         'key' => 'ops',
         'label' => 'Operación',
-        'screens' => ['android-users', 'shifts', 'transactions'],
+        'screens' => ['android-users', 'shifts', 'transactions', 'ncf-sequences'],
     ],
     [
         'key' => 'sync',
