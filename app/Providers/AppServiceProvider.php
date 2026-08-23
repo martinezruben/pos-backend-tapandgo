@@ -2,9 +2,13 @@
 
 namespace App\Providers;
 
+use App\Events\NcfRangeLow;
+use App\Listeners\SendNcfRangeLowNotification;
 use App\Models\AdminUser;
+use App\Services\NcfService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -19,7 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(NcfService::class, function ($app) {
+            return new NcfService();
+        });
     }
 
     /**
@@ -54,6 +60,9 @@ class AppServiceProvider extends ServiceProvider
             return Route::post(EndpointResolver::updatePath(), $handle)
                 ->middleware(['web', 'auth:admin']);
         });
+
+        // NCF: notificar admin cuando rango esté bajo
+        Event::listen(NcfRangeLow::class, SendNcfRangeLowNotification::class);
 
         Gate::before(function ($user, ?string $ability = null) {
             if (! $user instanceof AdminUser || $ability === null) {

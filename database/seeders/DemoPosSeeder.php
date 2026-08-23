@@ -7,6 +7,7 @@ use App\Models\Device;
 use App\Models\Family;
 use App\Models\License;
 use App\Models\Location;
+use App\Models\NcfSequence;
 use App\Models\Product;
 use App\Models\Shift;
 use App\Models\Subfamily;
@@ -45,6 +46,7 @@ class DemoPosSeeder extends Seeder
             SyncLog::query()->delete();
             SyncState::query()->delete();
             License::query()->delete();
+            NcfSequence::query()->delete();
             Device::withTrashed()->forceDelete();
             Product::withTrashed()->forceDelete();
             Subfamily::query()->delete();
@@ -71,6 +73,43 @@ class DemoPosSeeder extends Seeder
                 'is_active' => true,
                 'last_sync_at' => now()->subMinutes(8),
             ]);
+
+            # =========================================================
+            # NCF SEQUENCE SEEDER
+            # Configuración editable en config/admin_screens.php:
+            #   ncf.enabled  (bool) — gate global del módulo NCF
+            #   ncf.country  (EC|DO) — define tipos y prefijos SRI
+            #   ncf.mode     (global|by_location) — cómo se asignan
+            #   ncf.start / ncf.end / ncf.low_threshold
+            # =========================================================
+            $ncfEnabled = config('pos.ncf.enabled', true);
+            $ncfCountry = config('pos.ncf.country', 'EC');
+            $ncfMode    = config('pos.ncf.mode', 'by_location');
+            $ncfStart   = (int) config('pos.ncf.start', 1);
+            $ncfEnd     = (int) config('pos.ncf.end', 999999999);
+
+            if ($ncfEnabled) {
+                $types = $ncfCountry === 'DO'
+                    ? ['E31' => 'Bienes', 'E32' => 'Servicios', 'E33' => 'Combustible', 'E34' => 'Importación']
+                    : ['01'   => 'Venta',   '04' => 'Nota crédito', '05' => 'Nota débito', '07' => 'Guía remisión'];
+
+                $locationIds = ($ncfMode === 'global')
+                    ? [null]
+                    : [$mainLocation->id, $northLocation->id];
+
+                foreach ($types as $tType => $tLabel) {
+                    foreach ($locationIds as $locId) {
+                        NcfSequence::create([
+                            'type'          => $tType,
+                            'location_id'   => $locId,
+                            'establishment' => '001',
+                            'start'         => $ncfStart,
+                            'end'           => $ncfEnd,
+                            'current'       => $ncfStart,
+                        ]);
+                    }
+                }
+            }
 
             $deviceMain01 = Device::create([
                 'location_id' => $mainLocation->id,

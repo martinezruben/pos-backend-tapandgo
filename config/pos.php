@@ -23,4 +23,24 @@ return [
     */
     'new_license_validity_days' => (int) env('POS_NEW_LICENSE_VALIDITY_DAYS', 365),
 
+    /*
+    |--------------------------------------------------------------------------
+    | NCF (Número de Comprobante Fiscal) - Configuración RD/EC
+    |--------------------------------------------------------------------------
+    | ncf.enabled   → toggle global del módulo NCF (true/false)
+    | ncf.country   → EC (01/04/05/07) | DO (E31/E32/E33/E34)
+    | ncf.mode      → global | by_location
+    | ncf.start     → contador inicio rango
+    | ncf.end       → contador fin rango
+    | ncf.low_threshold → notificar cuando quedan N números
+    */
+    'ncf' => [
+        'enabled'          => (bool) env('POS_NCF_ENABLED', true),
+        'country'          => env('POS_NCF_COUNTRY', 'EC'),
+        'mode'             => env('POS_NCF_MODE', 'by_location'),
+        'start'            => (int) env('POS_NCF_START', 1),
+        'end'              => (int) env('POS_NCF_END', 999999999),
+        'low_threshold'    => (int) env('POS_NCF_LOW_THRESHOLD', 100),
+    ],
+
 ];
