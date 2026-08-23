@@ -1,0 +1,56 @@
+name: kopagpos-backend
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kopagpos-app:latest
+    container_name: kopagpos-app
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    env_file:
+      - .env
+    ports:
+      - "8082:80"
+    networks:
+      - kopagnet
+
+  mysql:
+    image: mysql:8.4
+    container_name: kopagpos-mysql
+    restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-secret}
+      MYSQL_DATABASE: ${DB_DATABASE:-kopagpos}
+      MYSQL_USER: ${DB_USERNAME:-kopagpos}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - kopagnet
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: kopagpos-pma
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: ${DB_USERNAME:-kopagpos}
+      PMA_PASSWORD: ${DB_PASSWORD:-secret}
+    ports:
+      - "8081:80"
+    networks:
+      - kopagnet
+
+networks:
+  kopagnet:
+    driver: bridge
+
+volumes:
+  db_data:
