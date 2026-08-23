@@ -74,8 +74,17 @@ return [
             'id' => 'ID licencia (clave)',
             'valid_from' => 'Válida desde',
             'valid_to' => 'Caducidad (válida hasta)',
+            'status' => 'Estado',
         ],
         'fields' => ['id', 'device_id', 'location_name', 'valid_from', 'valid_to', 'status'],
+        'select_options' => [
+            'status' => [
+                'ACTIVE' => 'ACTIVE (Activa)',
+                'INACTIVE' => 'INACTIVE (Inactiva)',
+                'EXPIRED' => 'EXPIRED (Caducada)',
+                'REVOKED' => 'REVOKED (Revocada)',
+            ],
+        ],
         'foreign_labels' => [
             'device_id' => ['relation' => 'device', 'attribute' => 'name', 'fallback_attribute' => 'device_fingerprint', 'header' => 'Dispositivo'],
             'location_name' => [

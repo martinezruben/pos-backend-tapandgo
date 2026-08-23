@@ -212,6 +212,17 @@
                                         <x-admin.snow.icon name="key" class="h-3.5 w-3.5" />
                                     </button>
                                 @endif
+                                @if(($canEdit ?? false) && in_array($screen, ['licenses'], true))
+                                    <form method="POST" action="{{ route('admin.screens.toggle-status', [$screen, $item->getKey()]) }}" class="inline" onsubmit="return confirm('¿Cambiar estado de esta licencia?');">
+                                        @csrf
+                                        <button type="submit"
+                                            class="inline-flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-primary-50 hover:text-primary-600"
+                                            title="Alternar estado (ACTIVE ↔ INACTIVE)">
+                                            <x-admin.snow.badge :field="'status'" :value="$item->status" />
+                                            <span class="sr-only">Alternar estado</span>
+                                        </button>
+                                    </form>
+                                @endif
                                 @if($canEdit ?? false)
                                     <a
                                         href="{{ route('admin.screens.edit', [$screen, $item->getKey()]) }}"

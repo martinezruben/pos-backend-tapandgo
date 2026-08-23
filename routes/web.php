@@ -51,5 +51,7 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::get('/screens/{screen}/{id}/edit', [ScreenCrudController::class, 'edit'])->name('screens.edit');
         Route::put('/screens/{screen}/{id}', [ScreenCrudController::class, 'update'])->name('screens.update');
         Route::delete('/screens/{screen}/{id}', [ScreenCrudController::class, 'destroy'])->name('screens.destroy');
+        // Toggle de status (licenses/transactions/sync-logs)
+        Route::post('/screens/{screen}/{id}/toggle-status', [ScreenCrudController::class, 'toggleStatus'])->name('screens.toggle-status');
     });
 });

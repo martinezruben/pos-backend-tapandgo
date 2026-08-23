@@ -218,6 +218,36 @@ class ScreenCrudController extends Controller
         return redirect()->route('admin.screens.index', $screen)->with('status', 'Actualizado correctamente.');
     }
 
+    /**
+     * Toggle rápido de `status` desde el grid.
+     * - licenses: ACTIVE ↔ INACTIVE (EXPIRED / REVOKED son inmutables)
+     * - transactions: PAID ↔ VOIDED
+     */
+    public function toggleStatus(Request $request, string $screen, string $id)
+    {
+        $this->authorize($screen, 'edit');
+        $cfg = $this->getScreen($screen);
+        $model = $cfg['model'];
+
+        $item = $model::findOrFail($id);
+
+        if ($screen === 'licenses') {
+            $current = $item->status;
+            $next = match ($current) {
+                'ACTIVE'   => 'INACTIVE',
+                'INACTIVE' => 'ACTIVE',
+                default    => $current, // EXPIRED / REVOKED: inmutables vía toggle
+            };
+            $item->forceFill(['status' => $next])->save();
+        } elseif ($screen === 'transactions') {
+            $current = $item->status;
+            $next = $current === 'PAID' ? 'VOIDED' : 'PAID';
+            $item->forceFill(['status' => $next])->save();
+        }
+
+        return back()->with('status', 'Estado actualizado.');
+    }
+
     public function destroy(string $screen, string $id)
     {
         $this->authorize($screen, 'delete');
