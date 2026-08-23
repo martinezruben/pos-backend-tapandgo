@@ -2,18 +2,18 @@
 set -e
 cd /var/www/html
 
-# El APP_KEY debe venir del .env (definido en build). Verificar:
-if grep -q '^APP_KEY=$' .env || ! grep -q '^APP_KEY=' .env; then
-    echo "WARN: APP_KEY vacío en .env -> generando"
+# Asegurar APP_KEY (definido en build, pero verifica)
+if ! grep -q '^APP_KEY=base64:' .env; then
+    echo "WARN: APP_KEY no encontrado -> generando"
     php artisan key:generate --force --show 2>&1 || true
 fi
 
-# Si la BD está disponible, migrar (no falla el contenedor si la BD tarda)
+# Limpiar cualquier config cache (los tests dependen de APP_ENV=testing del .env/phpunit)
 php artisan config:clear --no-interaction 2>/dev/null || true
-php artisan package:discover --ansi 2>&1 || echo "WARN: package:discover omitido"
+php artisan optimize:clear --no-interaction 2>/dev/null || true
 
-# Cacheo de producción (solo si config OK)
-php artisan optimize --no-interaction 2>&1 || echo "WARN: optimize omitido"
+# Descubrir paquetes (necesario tras composer install --no-scripts)
+php artisan package:discover --ansi 2>&1 || echo "WARN: package:discover falló"
 
 echo "Laravel listo."
 exec "$@"

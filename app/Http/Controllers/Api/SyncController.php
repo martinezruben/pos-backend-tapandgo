@@ -484,10 +484,10 @@ class SyncController extends Controller
             $n = (int) $s;
 
             if (strlen($s) >= 13 || $n >= 1_000_000_000_000) {
-                return Carbon::createFromTimestampMs($n)->utc();
+                return Carbon::createFromTimestampMs($n, 'UTC');
             }
 
-            return Carbon::createFromTimestamp($n)->utc();
+            return Carbon::createFromTimestamp($n, 'UTC');
         }
 
         try {
