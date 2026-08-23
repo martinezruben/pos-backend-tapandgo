@@ -12,7 +12,10 @@ class AuthController extends Controller
 {
     public function create()
     {
-        return view('admin.auth.login');
+        $adminUserCount = \App\Models\AdminUser::query()->where('is_active', true)->count();
+        $dbStatus = $adminUserCount > 0 ? 'OK' : 'EMPTY';
+
+        return view('admin.auth.login', compact('dbStatus'));
     }
 
     public function store(Request $request)
