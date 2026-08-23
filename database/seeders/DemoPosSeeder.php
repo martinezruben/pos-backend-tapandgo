@@ -456,42 +456,6 @@ class DemoPosSeeder extends Seeder
             ]);
             $backendAdmin->assignRole($superAdminRole);
 
-            // ==========================================
-            // NCF SEQUENCE SEEDER — Ecuador 🇪🇨 + RD 🇩🇴
-            // 4 tipos de comprobante × {global + 2 localidades}
-            // EC: 01 (venta), 04 (nota crédito), 05 (nota débito), 07 (guía)
-            // RD: E31 (bienes), E32 (servicios), E33 (combustible), E34 (importación)
-            // ==========================================
-            $ncfEnabled  = (bool) config('pos.ncf.enabled', true);
-            $ncfCountry  = (string) config('pos.ncf.country', 'EC');
-            $ncfMode     = (string) config('pos.ncf.mode', 'by_location');
-            $ncfStart    = (int) config('pos.ncf.start', 1);
-            $ncfEnd      = (int) config('pos.ncf.end', 999999999);
-            $ncfThreshold= (int) config('pos.ncf.low_threshold', 100);
-
-            if ($ncfEnabled) {
-                $countryTypes = $ncfCountry === 'DO'
-                    ? ['E31', 'E32', 'E33', 'E34']   // RD 🇩🇴
-                    : ['01', '04', '05', '07'];      // EC 🇪🇨
-
-                $locationIds = ($ncfMode === 'global')
-                    ? [null]
-                    : [$mainLocation->id, $northLocation->id];
-
-                foreach ($countryTypes as $ncfType) {
-                    foreach ($locationIds as $locId) {
-                        NcfSequence::create([
-                            'type'          => $ncfType,
-                            'location_id'   => $locId,
-                            'establishment' => '001',
-                            'start'         => $ncfStart,
-                            'end'           => $ncfEnd,
-                            'current'       => $ncfStart,
-                        ]);
-                    }
-                }
-            }
-
             // Parámetros NCF: configuración vive en config/pos.php + .env.
             // El toggle global `ncf.enabled` se controla vía POS_NCF_ENABLED=.env
             // y el Dashboard muestra el estado via NcfService (no se persiste en tabla).
