@@ -8,9 +8,13 @@ if ! grep -q '^APP_KEY=base64:' .env; then
     php artisan key:generate --force --show 2>&1 || true
 fi
 
-# Limpiar cualquier config cache (los tests dependen de APP_ENV=testing del .env/phpunit)
+# Limpiar config cache (tests dependen de APP_ENV=testing del .env/phpunit)
 php artisan config:clear --no-interaction 2>/dev/null || true
 php artisan optimize:clear --no-interaction 2>/dev/null || true
+# Symlink storage:link (imágenes/familias/productos visibles en grid)
+if [ ! -L public/storage ]; then
+    php artisan storage:link 2>/dev/null || true
+fi
 
 # Descubrir paquetes (necesario tras composer install --no-scripts)
 php artisan package:discover --ansi 2>&1 || echo "WARN: package:discover falló"

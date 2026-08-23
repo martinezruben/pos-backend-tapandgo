@@ -59,7 +59,7 @@
                 </div>
             </div>
         @else
-        <form method="POST" action="{{ $item ? route('admin.screens.update', [$screen, $item->getKey()]) : route('admin.screens.store', $screen) }}" class="grid grid-cols-1 gap-3 px-4 py-4 md:grid-cols-2 md:gap-x-4 md:gap-y-3" @if(($screen ?? null) === 'families') enctype="multipart/form-data" @endif>
+        <form method="POST" action="{{ $item ? route('admin.screens.update', [$screen, $item->getKey()]) : route('admin.screens.store', $screen) }}" class="grid grid-cols-1 gap-3 px-4 py-4 md:grid-cols-2 md:gap-x-4 md:gap-y-3" @if(in_array($screen, ['families', 'products'])) enctype="multipart/form-data" @endif>
             @csrf
             @if($item)
                 @method('PUT')
@@ -146,6 +146,26 @@
                     <input id="family_image" type="file" name="family_image" accept="image/jpeg,image/png,image/webp,image/gif" class="snow-input block w-full max-w-md text-[11px] file:mr-2 file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1 file:text-[10px] file:font-medium file:text-slate-700">
                     <p class="mt-1 text-[10px] text-slate-500">JPEG, PNG, WebP o GIF. Máximo 2 MB.</p>
                     @error('family_image')
+                        <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+            @endif
+
+            @if(($screen ?? null) === 'products')
+                <div class="md:col-span-2">
+                    <label class="snow-label" for="product_image">Imagen del producto</label>
+                    @if($item?->image_url)
+                        <div class="mb-2 flex flex-wrap items-center gap-3">
+                            <img src="{{ $item->image_url }}" alt="" class="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-slate-200" width="64" height="64">
+                            <label class="inline-flex cursor-pointer items-center gap-1.5 text-[11px] text-slate-600">
+                                <input type="checkbox" name="remove_image" value="1" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500">
+                                Quitar imagen actual
+                            </label>
+                        </div>
+                    @endif
+                    <input id="product_image" type="file" name="product_image" accept="image/jpeg,image/png,image/webp,image/gif" class="snow-input block w-full max-w-md text-[11px] file:mr-2 file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1 file:text-[10px] file:font-medium file:text-slate-700">
+                    <p class="mt-1 text-[10px] text-slate-500">JPEG, PNG, WebP o GIF. Máximo 2 MB.</p>
+                    @error('product_image')
                         <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

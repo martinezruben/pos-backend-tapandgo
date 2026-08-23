@@ -145,9 +145,13 @@ class ScreenCrudController extends Controller
         $this->assertScreenWritable($cfg);
         abort_if(! empty($cfg['disable_create']), 404);
         $data = $this->validatedData($request, $cfg, false, $screen);
+
         if ($screen === 'families') {
-            $this->applyFamilyImageUpload($request, $data, null);
+            $this->applyImageUpload($request, $data, null, 'families');
+        } elseif ($screen === 'products') {
+            $this->applyImageUpload($request, $data, null, 'products');
         }
+
         $model = $cfg['model'];
         $created = $model::create($data);
         if ($model === AdminUser::class && $request->filled('role_names')) {
@@ -204,9 +208,13 @@ class ScreenCrudController extends Controller
         }
 
         $data = $this->validatedData($request, $cfg, true, $screen);
+
         if ($screen === 'families' && $item instanceof Family) {
-            $this->applyFamilyImageUpload($request, $data, $item);
+            $this->applyImageUpload($request, $data, $item, 'families');
+        } elseif ($screen === 'products') {
+            $this->applyImageUpload($request, $data, $item, 'products');
         }
+
         $item->update($data);
         if ($model === AdminUser::class) {
             $item->syncRoles($request->input('role_names', []));
@@ -282,20 +290,26 @@ class ScreenCrudController extends Controller
     }
 
     /**
-     * @param  array<string, mixed>  $data
+     * Subida de imagen genérica para familias y productos.
+     * Usa el disco «public» y guarda la URL relativa en `image_url`.
+     *
+     * @param  array<string,mixed>  $data  Datos validados (se muta para set image_url)
      */
-    private function applyFamilyImageUpload(Request $request, array &$data, ?Family $existing): void
+    private function applyImageUpload(Request $request, array &$data, ?Model $existing, string $folder): void
     {
         $request->validate([
-            'family_image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp,gif', 'max:2048'],
-            'remove_image' => ['nullable', 'boolean'],
+            ($folder === 'families' ? 'family_image' : 'product_image') => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:2048'],
+        ], [
+            ($folder === 'families' ? 'family_image' : 'product_image').'.image' => 'El archivo debe ser una imagen.',
         ]);
 
-        if ($request->hasFile('family_image')) {
+        $fieldName = $folder === 'families' ? 'family_image' : 'product_image';
+
+        if ($request->hasFile($fieldName)) {
             if ($existing?->image_url) {
                 $this->deleteStoredPublicFile($existing->image_url);
             }
-            $path = $request->file('family_image')->store('families', 'public');
+            $path = $request->file($fieldName)->store($folder, 'public');
             $data['image_url'] = Storage::disk('public')->url($path);
 
             return;

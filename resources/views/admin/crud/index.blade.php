@@ -172,7 +172,13 @@
                         @foreach($visibleFields as $f)
                             <td class="max-w-[12rem] px-2 py-0.5 align-middle text-slate-800">
                                 @if(($screen ?? null) === 'families' && $f === 'image_url' && ! empty($item->image_url))
-                                    <img src="{{ $item->image_url }}" alt="" class="h-7 w-7 shrink-0 rounded object-cover ring-1 ring-slate-200" width="28" height="28">
+                                                                <img src="{{ $item->image_url }}" alt="" class="h-7 w-7 shrink-0 rounded object-cover ring-1 ring-slate-200" width="28" height="28">
+                                                            @elseif(($screen ?? null) === 'products' && $f === 'image_url' && ! empty($item->image_url))
+                                                                <img src="{{ $item->image_url }}" alt="" class="h-7 w-7 shrink-0 rounded object-cover ring-1 ring-slate-200" width="28" height="28">
+                                                            @elseif(($screen ?? null) === 'families' && $f === 'image_url')
+                                                                <span class="text-slate-400">—</span>
+                                                            @elseif(($screen ?? null) === 'products' && $f === 'image_url')
+                                                                <span class="text-slate-400">—</span>
                                 @elseif(in_array($f, $badgeFields, true) && empty($cfg['foreign_labels'][$f]))
                                     <x-admin.snow.badge :field="$f" :value="$item->{$f}" />
                                 @else
@@ -218,7 +224,9 @@
                                         <button type="submit"
                                             class="inline-flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-primary-50 hover:text-primary-600"
                                             title="Alternar estado (ACTIVE ↔ INACTIVE)">
-                                            <x-admin.snow.badge :field="'status'" :value="$item->status" />
+                                            <svg class="h-3.5 w-3.5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M7 6h10M7 12h10M7 18h10" />
+                                            </svg>
                                             <span class="sr-only">Alternar estado</span>
                                         </button>
                                     </form>

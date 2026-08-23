@@ -224,10 +224,16 @@ return [
         'label' => 'Productos',
         'icon' => 'cube',
         'labels' => [
+            'sku' => 'SKU',
             'barcode' => 'Código de barras',
+            'name' => 'Nombre',
+            'price' => 'Precio',
+            'tax_rate' => 'IVA (%)',
+            'is_active' => 'Activo',
             'is_favorite' => 'Favorito',
+            'image_url' => 'Imagen',
         ],
-        'fields' => ['sku', 'barcode', 'name', 'subfamily_id', 'price', 'tax_rate', 'is_active', 'is_favorite'],
+        'fields' => ['sku', 'barcode', 'name', 'subfamily_id', 'price', 'tax_rate', 'is_active', 'is_favorite', 'image_url'],
         'foreign_labels' => [
             'subfamily_id' => ['relation' => 'subfamily', 'attribute' => 'admin_label', 'header' => 'Subfamilia'],
         ],
