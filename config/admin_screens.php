@@ -6,6 +6,7 @@ use App\Models\Device;
 use App\Models\Family;
 use App\Models\License;
 use App\Models\Location;
+use App\Models\NcfSequence;
 use App\Models\Product;
 use App\Models\Shift;
 use App\Models\Subfamily;
@@ -578,6 +579,48 @@ return [
             'filters' => [],
             'sortable' => [],
             'default_sort' => ['key' => 'id', 'direction' => 'asc'],
+        ],
+    ],
+    'ncf-sequences' => [
+        'model' => NcfSequence::class,
+        'label' => 'NCF (Series de consecutivos)',
+        'icon' => 'identifier',
+        'labels' => [
+            'type'           => 'Tipo',
+            'establishment'  => 'Establecimiento',
+            'start'          => 'Inicio',
+            'end'            => 'Fin',
+            'current'        => 'Contador actual',
+            'location_id'    => 'Localidad',
+        ],
+        'enable_toggle_check' => true,
+        'fields' => ['type', 'establishment', 'location_id', 'start', 'end', 'current'],
+        'foreign_labels' => [
+            'location_id' => ['relation' => 'location', 'attribute' => 'name', 'header' => 'Localidad', 'fallback_attribute' => 'code'],
+        ],
+        'grid' => [
+            'filters' => [
+                'type'        => ['label' => 'Tipo', 'type' => 'select', 'options' => ['01' => 'Venta 01', '04' => 'NC 04', '05' => 'ND 05', '07' => 'Guía 07', 'E31' => 'RD Bienes', 'E32' => 'RD Servicios', 'E33' => 'RD Comb.', 'E34' => 'RD Imp.'], 'apply' => ['type' => 'column', 'column' => 'type']],
+                'location_id' => ['label' => 'Localidad', 'type' => 'select', 'model' => Location::class, 'order_by' => 'name', 'label_column' => 'name', 'apply' => ['type' => 'column', 'column' => 'location_id']],
+            ],
+            'sortable' => ['type', 'establishment', 'location_id', 'start', 'end', 'current'],
+            'default_sort' => ['key' => 'type', 'direction' => 'asc'],
+        ],
+    ],
+    'settings' => [
+        'model' => \App\Models\SystemParameter::class,
+        'label' => 'Configuración del Sistema',
+        'icon' => 'cog-6-tooth',
+        'single' => true,
+        'enable_toggle_check' => false,
+        'labels' => [
+            'admin_password_min_length' => 'Min. caracteres password admin',
+            'admin_max_failed_login_attempts' => 'Máx. intentos fallidos login',
+            'admin_lockout_minutes' => 'Minutos de bloqueo login',
+        ],
+        'fields' => ['admin_password_min_length', 'admin_max_failed_login_attempts', 'admin_lockout_minutes'],
+        'grid' => [
+            'visible_limit' => 3,
         ],
     ],
     'admin-users' => [
