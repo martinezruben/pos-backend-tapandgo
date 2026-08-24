@@ -607,6 +607,82 @@ return [
             'default_sort' => ['key' => 'type', 'direction' => 'asc'],
         ],
     ],
+    'ncf-report' => [
+        'model' => NcfSequence::class,
+        'label' => 'Reporte NCF',
+        'icon' => 'identifier',
+        'readonly' => true,
+        'fields' => ['type', 'location_id', 'establishment', 'start', 'end', 'current'],
+        'labels' => [
+            'type' => 'Tipo',
+            'location_id' => 'Localidad',
+            'establishment' => 'Establecimiento',
+            'start' => 'Desde',
+            'end' => 'Hasta',
+            'current' => 'Actual',
+        ],
+        'foreign_labels' => [
+            'location_id' => ['relation' => 'location', 'attribute' => 'name'],
+        ],
+        'grid' => [
+            'filters' => [
+                'type' => [
+                    'label' => 'Tipo',
+                    'type' => 'select',
+                    'options' => ['01' => 'Venta 01', '04' => 'NC 04', '05' => 'ND 05', '07' => 'Guía 07', 'E31' => 'RD Bienes', 'E32' => 'RD Servicios', 'E33' => 'RD Comb.', 'E34' => 'RD Imp.'],
+                    'apply' => ['type' => 'column', 'column' => 'type'],
+                ],
+                'location_id' => [
+                    'label' => 'Localidad',
+                    'type' => 'select',
+                    'model' => Location::class,
+                    'order_by' => 'name',
+                    'label_column' => 'name',
+                    'apply' => ['type' => 'column', 'column' => 'location_id'],
+                ],
+            ],
+            'columns' => [
+                ['field' => 'location_id', 'label' => 'Localidad', 'sortable' => true, 'width' => '150px'],
+                ['field' => 'type', 'label' => 'Tipo NCF', 'sortable' => true, 'width' => '100px'],
+                ['field' => 'establishment', 'label' => 'Establecimiento', 'sortable' => true, 'width' => '100px'],
+                ['field' => 'start', 'label' => 'Desde', 'sortable' => true, 'width' => '100px'],
+                ['field' => 'current', 'label' => 'Actual', 'sortable' => true, 'width' => '100px'],
+                ['field' => 'end', 'label' => 'Hasta', 'sortable' => true, 'width' => '100px'],
+                [
+                    'field' => 'remaining',
+                    'label' => 'Restantes',
+                    'sortable' => false,
+                    'render' => fn ($row) => \App\Models\NcfSequence::where('type', $row->type)
+                        ->where(function($q) use ($row) {
+                            if ($row->location_id) {
+                                $q->where('location_id', $row->location_id);
+                            } else {
+                                $q->whereNull('location_id');
+                            }
+                        })
+                        ->sum(function($seq) {
+                            return max(0, $seq->end - $seq->current + 1);
+                        }),
+                ],
+            ],
+            'default_sort' => ['key' => 'type', 'direction' => 'asc'],
+        ],
+        'footer' => true,
+        'summary' => [
+            'ncf-count' => [
+                'label' => 'Total NCF configurados',
+                'value' => 'COUNT(*)',
+                'model' => NcfSequence::class,
+                'query' => fn($q) => $q,
+            ],
+            'ncf-active' => [
+                'label' => 'NCF con disponibilidad',
+                'value' => 'COUNT(*)',
+                'model' => NcfSequence::class,
+                'query' => fn($q) => $q->whereRaw('end > current'),
+            ],
+        ],
+    ],
     'settings' => [
         'model' => \App\Models\SystemParameter::class,
         'label' => 'Configuración del Sistema',

@@ -33,4 +33,9 @@ return [
         'label' => 'Sistema',
         'screens' => ['admin-users', 'roles', 'permissions'],
     ],
+    [
+        'key' => 'reports',
+        'label' => 'Reportes',
+        'screens' => ['ncf-report'],
+    ],
 ];
