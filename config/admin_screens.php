@@ -192,6 +192,10 @@ return [
         ],
         'grid' => [
             'filters' => [],
+            'columns' => [
+                ['field' => 'image_url', 'label' => 'Img', 'width' => '60px', 'render' => fn($value, $row) => $value ? "<img src='{$value}' alt='Familia' class='w-8 h-8 object-cover rounded cursor-pointer hover:shadow-xl transition-shadow' title='Click para ver imagen ampliada'>" : ''],
+                ['field' => 'name', 'label' => 'Nombre', 'sortable' => true],
+            ],
             'sortable' => ['name'],
             'default_sort' => ['key' => 'name', 'direction' => 'asc'],
             'visible_limit' => 8,
@@ -262,7 +266,7 @@ return [
                 ],
             ],
             'columns' => [
-                ['field' => 'image_url', 'label' => 'Img', 'width' => '60px', 'render' => fn($value, $row) => $value ? "<img src='{$value}' alt='Producto' class='w-8 h-8 object-cover rounded'>" : ''],
+                ['field' => 'image_url', 'label' => 'Img', 'width' => '60px', 'render' => fn($value, $row) => $value ? "<img src='{$value}' alt='Producto' class='w-8 h-8 object-cover rounded cursor-pointer hover:shadow-lg transition-shadow' title='Click para ver imagen ampliada' style='cursor:pointer;'>" : ''],
                 ['field' => 'name', 'label' => 'Nombre', 'sortable' => true],
                 ['field' => 'sku', 'label' => 'SKU', 'sortable' => true],
                 ['field' => 'subfamily_id', 'label' => 'Subfamilia', 'sortable' => true],
