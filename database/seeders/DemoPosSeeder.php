@@ -211,12 +211,12 @@ class DemoPosSeeder extends Seeder
         $subPostres = Subfamily::create(['family_id' => $famComida->id, 'name' => 'Postres']);
 
         $products = collect([
-            ['sku' => 'P-CAFE-001', 'name' => 'Cafe Americano', 'subfamily_id' => $subCafe->id, 'price' => 2.50, 'tax_rate' => 12.00, 'is_active' => true],
-            ['sku' => 'P-SAND-001', 'name' => 'Sandwich Mixto', 'subfamily_id' => $subSand->id, 'price' => 4.80, 'tax_rate' => 12.00, 'is_active' => true],
-            ['sku' => 'P-AGUA-001', 'name' => 'Agua 500ml', 'subfamily_id' => $subJugos->id, 'price' => 1.00, 'tax_rate' => 0.00, 'is_active' => true],
-            ['sku' => 'P-TORTA-001', 'name' => 'Torta Chocolate', 'subfamily_id' => $subPostres->id, 'price' => 3.20, 'tax_rate' => 12.00, 'is_active' => true],
-            ['sku' => 'P-JUGO-001', 'name' => 'Jugo Naranja', 'subfamily_id' => $subJugos->id, 'price' => 2.20, 'tax_rate' => 12.00, 'is_active' => true],
-        ])->map(fn (array $p) => Product::create($p));
+            ['sku' => 'P-CAFE-001', 'name' => 'Cafe Americano', 'subfamily_id' => $subCafe->id, 'price' => 2.50, 'tax_rate' => 12.00, 'is_active' => true, 'image_url' => 'https://source.unsplash.com/100x100/?coffee'],
+            ['sku' => 'P-SAND-001', 'name' => 'Sandwich Mixto', 'subfamily_id' => $subSand->id, 'price' => 4.80, 'tax_rate' => 12.00, 'is_active' => true, 'image_url' => 'https://source.unsplash.com/100x100/?sandwich'],
+            ['sku' => 'P-AGUA-001', 'name' => 'Agua 500ml', 'subfamily_id' => $subJugos->id, 'price' => 1.00, 'tax_rate' => 0.00, 'is_active' => true, 'image_url' => 'https://source.unsplash.com/100x100/?water,bottle'],
+            ['sku' => 'P-TORTA-001', 'name' => 'Torta Chocolate', 'subfamily_id' => $subPostres->id, 'price' => 3.20, 'tax_rate' => 12.00, 'is_active' => true, 'image_url' => 'https://source.unsplash.com/100x100/?cake,chocolate'],
+            ['sku' => 'P-JUGO-001', 'name' => 'Jugo Naranja', 'subfamily_id' => $subJugos->id, 'price' => 2.20, 'tax_rate' => 12.00, 'is_active' => true, 'image_url' => 'https://source.unsplash.com/100x100/?orange,juice'],
+        ])->map(fn ($p) => Product::create($p));
 
         $centerShift = Shift::create([
             'location_id' => $mainLocation->id,
