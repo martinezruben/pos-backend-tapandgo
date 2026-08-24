@@ -193,7 +193,7 @@ return [
         'grid' => [
             'filters' => [],
             'columns' => [
-                ['field' => 'image_url', 'label' => 'Img', 'width' => '60px', 'render' => fn($value, $row) => $value ? "<img src='{$value}' alt='Familia' class='w-8 h-8 object-cover rounded cursor-pointer hover:shadow-xl transition-shadow' title='Click para ver imagen ampliada'>" : ''],
+                ['field' => 'image_url', 'label' => 'Img', 'width' => '60px', 'render' => fn($value, $row) => $value ? "<img src='{$value}' alt='Familia' class='w-8 h-8 object-cover rounded-full'>" : ''],
                 ['field' => 'name', 'label' => 'Nombre', 'sortable' => true],
             ],
             'sortable' => ['name'],
@@ -266,7 +266,7 @@ return [
                 ],
             ],
             'columns' => [
-                ['field' => 'image_url', 'label' => 'Img', 'width' => '60px', 'render' => fn($value, $row) => $value ? "<img src='{$value}' alt='Producto' class='w-8 h-8 object-cover rounded cursor-pointer hover:shadow-lg transition-shadow' title='Click para ver imagen ampliada' style='cursor:pointer;'>" : ''],
+                ['field' => 'image_url', 'label' => 'Img', 'width' => '60px', 'render' => fn($value, $row) => $value ? "<img src='{$value}' alt='Producto' class='w-8 h-8 object-cover rounded'>" : ''],
                 ['field' => 'name', 'label' => 'Nombre', 'sortable' => true],
                 ['field' => 'sku', 'label' => 'SKU', 'sortable' => true],
                 ['field' => 'subfamily_id', 'label' => 'Subfamilia', 'sortable' => true],
@@ -614,7 +614,7 @@ return [
         'grid' => [
             'filters' => [
                 'type'        => ['label' => 'Tipo', 'type' => 'select', 'options' => ['01' => 'Venta 01', '04' => 'NC 04', '05' => 'ND 05', '07' => 'Guía 07', 'E31' => 'RD Bienes', 'E32' => 'RD Servicios', 'E33' => 'RD Comb.', 'E34' => 'RD Imp.'], 'apply' => ['type' => 'column', 'column' => 'type']],
-                'location_id' => ['label' => 'Localidad', 'type' => 'select', 'model' => Location::class, 'order_by' => 'name', 'label_column' => 'name', 'apply' => ['type' => 'column', 'column' => 'location_id']],
+                'location_id'   => ['label' => 'Localidad', 'type' => 'select', 'model' => Location::class, 'order_by' => 'name', 'label_column' => 'name', 'apply' => ['type' => 'column', 'column' => 'location_id']],
             ],
             'sortable' => ['type', 'establishment', 'location_id', 'start', 'end', 'current'],
             'default_sort' => ['key' => 'type', 'direction' => 'asc'],
@@ -679,77 +679,6 @@ return [
                 ],
             ],
             'default_sort' => ['key' => 'type', 'direction' => 'asc'],
-        ],
-        'footer' => true,
-        'summary' => [
-            'ncf-count' => [
-                'label' => 'Total NCF configurados',
-                'value' => 'COUNT(*)',
-                'model' => NcfSequence::class,
-                'query' => fn($q) => $q,
-            ],
-            'ncf-active' => [
-                'label' => 'NCF con disponibilidad',
-                'value' => 'COUNT(*)',
-                'model' => NcfSequence::class,
-                'query' => fn($q) => $q->whereRaw('end > current'),
-            ],
-        ],
-    ],
-    'settings' => [
-        'model' => \App\Models\SystemParameter::class,
-        'label' => 'Configuración del Sistema',
-        'icon' => 'cog-6-tooth',
-        'single' => true,
-        'enable_toggle_check' => false,
-        'labels' => [
-            'admin_password_min_length' => 'Min. caracteres password admin',
-            'admin_max_failed_login_attempts' => 'Máx. intentos fallidos login',
-            'admin_lockout_minutes' => 'Minutos de bloqueo login',
-        ],
-        'fields' => ['admin_password_min_length', 'admin_max_failed_login_attempts', 'admin_lockout_minutes'],
-        'grid' => [
-            'visible_limit' => 3,
-        ],
-    ],
-    'admin-users' => [
-        'model' => AdminUser::class,
-        'label' => 'Usuarios Backend',
-        'icon' => 'shield-check',
-        'fields' => ['name', 'email', 'is_active', 'password'],
-        'grid' => [
-            'filters' => [
-                'is_active' => [
-                    'label' => 'Activo',
-                    'type' => 'select',
-                    'options' => ['' => 'Todos', '1' => 'Sí', '0' => 'No'],
-                    'apply' => ['type' => 'column', 'column' => 'is_active'],
-                ],
-            ],
-            'sortable' => ['name', 'email', 'is_active'],
-            'default_sort' => ['key' => 'name', 'direction' => 'asc'],
-        ],
-    ],
-    'roles' => [
-        'model' => Role::class,
-        'label' => 'Roles',
-        'icon' => 'user-group',
-        'fields' => ['name'],
-        'grid' => [
-            'filters' => [],
-            'sortable' => ['name'],
-            'default_sort' => ['key' => 'name', 'direction' => 'asc'],
-        ],
-    ],
-    'permissions' => [
-        'model' => Permission::class,
-        'label' => 'Permisos',
-        'icon' => 'lock-closed',
-        'fields' => ['name'],
-        'grid' => [
-            'filters' => [],
-            'sortable' => ['name'],
-            'default_sort' => ['key' => 'name', 'direction' => 'asc'],
         ],
     ],
 ];

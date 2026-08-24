@@ -58,11 +58,6 @@
         box-shadow: 0 4px 24px -4px rgb(37 99 235 / 0.15);
     }
 
-    /* Ítem activo sidebar — reemplazado en Blade por clases Hope (pill azul) */
-    .snow-sidebar-active {
-        @apply bg-primary-600 text-white shadow-md;
-    }
-
     /* Búsqueda compacta en grids */
     .hope-grid-search {
         @apply w-full rounded-md border-0 bg-slate-100 py-1 pl-7 pr-1.5 text-[10px] leading-tight text-slate-800 placeholder:text-slate-400;

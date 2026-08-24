@@ -2,6 +2,28 @@
 set -e
 cd /var/www/html
 
+# Create temp directory before starting
+mkdir -p /tmp/php
+chmod 1777 /tmp/php
+
+# Set temp directory environment variable
+export TMPDIR=/tmp/php
+
+# Wait for MySQL to be ready
+echo "Waiting for MySQL..."
+max_retries=30
+retry=0
+while ! php -r "new PDO('mysql:host=mysql;dbname=kopagpos', 'kopagpos', 'secret');" 2>/dev/null; do
+    retry=$((retry + 1))
+    if [ $retry -ge $max_retries ]; then
+        echo "MySQL connection failed after $max_retries attempts"
+        exit 1
+    fi
+    echo "MySQL not ready, retrying... ($retry/$max_retries)"
+    sleep 1
+done
+echo "MySQL is ready!"
+
 # Asegurar APP_KEY (definido en build, pero verifica)
 if ! grep -q '^APP_KEY=base64:' .env; then
     echo "WARN: APP_KEY no encontrado -> generando"

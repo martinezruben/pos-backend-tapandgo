@@ -15,6 +15,9 @@ services:
       - "8082:80"
     networks:
       - kopagnet
+    volumes:
+      - ./storage:/var/www/html/storage
+      - ./bootstrap/cache:/var/www/html/bootstrap/cache
 
   mysql:
     image: mysql:8.4

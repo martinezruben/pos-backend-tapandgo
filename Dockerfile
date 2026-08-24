@@ -7,11 +7,12 @@ RUN apk add --no-cache --virtual .build-deps \
         libzip-dev oniguruma-dev \
     && apk add --no-cache \
         nginx supervisor git zip unzip nodejs npm \
+        curl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) pdo_mysql mysqli gd intl zip bcmath \
     && pecl install redis \
     && docker-php-ext-enable redis \
-    && mkdir -p /var/log/supervisor && mkdir -p /run/nginx
+    && mkdir -p /var/log/supervisor /run/nginx
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
@@ -30,6 +31,9 @@ RUN if [ -f package.json ]; then \
         npm run build; \
     fi
 
+# Create writable temp directory for PHP operations
+RUN mkdir -p /tmp/php && chmod 1777 /tmp/php
+
 # Permisos + libs de runtime
 RUN chown -R www-data:www-data /var/www/html && \
     find /var/www/html -type f -exec chmod 644 {} \; && \
@@ -41,12 +45,14 @@ RUN chown -R www-data:www-data /var/www/html && \
 
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
-# El default.conf de Alpine en conf.d es incluido FUERA de http{} (nginx.conf línea 18) y rompe; eliminarlo
 RUN rm -f /etc/nginx/conf.d/default.conf
 COPY docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
 
 COPY --chown=www-data:www-data docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Set PHP temp directory by default
+ENV TMPDIR=/tmp/php
 
 EXPOSE 80
 ENTRYPOINT ["entrypoint.sh"]
