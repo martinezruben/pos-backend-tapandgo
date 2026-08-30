@@ -8,17 +8,18 @@ use App\Models\Device;
 use App\Models\Family;
 use App\Models\Location;
 use App\Models\User;
+use App\Services\ImageThumbnailService;
 use App\Support\AdminGridCell;
 use App\Support\AdminGridQuery;
 use App\Support\AdminRbac;
 use App\Support\LocationMapSyncPins;
 use App\Support\PasswordPolicy;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -243,9 +244,9 @@ class ScreenCrudController extends Controller
         if ($screen === 'licenses') {
             $current = $item->status;
             $next = match ($current) {
-                'ACTIVE'   => 'INACTIVE',
+                'ACTIVE' => 'INACTIVE',
                 'INACTIVE' => 'ACTIVE',
-                default    => $current, // EXPIRED / REVOKED: inmutables vía toggle
+                default => $current, // EXPIRED / REVOKED: inmutables vía toggle
             };
             $item->forceFill(['status' => $next])->save();
         } elseif ($screen === 'transactions') {
@@ -309,15 +310,18 @@ class ScreenCrudController extends Controller
         if ($request->hasFile($fieldName)) {
             if ($existing?->image_url) {
                 $this->deleteStoredPublicFile($existing->image_url);
+                ImageThumbnailService::deleteFor($existing->image_url);
             }
             $path = $request->file($fieldName)->store($folder, 'public');
             $data['image_url'] = Storage::disk('public')->url($path);
+            ImageThumbnailService::generate($path);
 
             return;
         }
 
         if ($request->boolean('remove_image') && $existing?->image_url) {
             $this->deleteStoredPublicFile($existing->image_url);
+            ImageThumbnailService::deleteFor($existing->image_url);
             $data['image_url'] = null;
         }
     }

@@ -14,9 +14,11 @@ use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\TransactionPayment;
 use App\Models\User;
+use App\Services\ImageThumbnailService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
@@ -288,7 +290,7 @@ class SyncController extends Controller
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, Family>
+     * @return Collection<int, Family>
      */
     private function pullFamilies(?Carbon $since)
     {
@@ -309,7 +311,7 @@ class SyncController extends Controller
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, Subfamily>
+     * @return Collection<int, Subfamily>
      */
     private function pullSubfamilies(?Carbon $since)
     {
@@ -330,7 +332,7 @@ class SyncController extends Controller
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, Product>
+     * @return Collection<int, Product>
      */
     private function pullProducts(?Carbon $since)
     {
@@ -375,7 +377,7 @@ class SyncController extends Controller
         return [
             'id' => $f->id,
             'name' => $f->name,
-            'imageUrl' => $f->image_url !== null && $f->image_url !== '' ? url($f->image_url) : null,
+            'imageUrl' => ImageThumbnailService::syncUrl($f->image_url),
             'updatedAt' => $f->updated_at->utc()->format('Y-m-d\TH:i:s').'Z',
             'deletedAt' => $f->deleted_at?->utc()->format('Y-m-d\TH:i:s').'Z',
         ];
@@ -416,7 +418,7 @@ class SyncController extends Controller
             'description' => $desc,
             'sku' => $sku,
             'codebar' => $barcodeVal,
-            'imageUrl' => $p->image_url,
+            'imageUrl' => ImageThumbnailService::syncUrl($p->image_url),
             'familyName' => $familyName,
             'categoria' => $familyName,
             'subfamilyName' => $sub?->name ?? '',
