@@ -325,6 +325,78 @@ document.addEventListener('alpine:init', () => {
             },
         };
     });
+
+    Alpine.data('transactionsReportModal', (locations = []) => ({
+        open: false,
+        dateFrom: '',
+        dateTo: '',
+        locationId: '',
+        includeDetail: false,
+        error: '',
+        loading: false,
+        locations: Array.isArray(locations) ? locations : [],
+
+        csrfToken() {
+            return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+        },
+
+        async submit() {
+            this.error = '';
+            this.loading = true;
+            try {
+                const res = await fetch('/admin/transactions/report/export', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': this.csrfToken(),
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        date_from: this.dateFrom || null,
+                        date_to: this.dateTo || null,
+                        location_id: this.locationId || null,
+                        include_detail: this.includeDetail,
+                    }),
+                });
+
+                if (res.status === 422) {
+                    const data = await res.json();
+                    const fromErrors = data.errors ? Object.values(data.errors).flat() : [];
+                    this.error =
+                        (typeof data.message === 'string' && data.message && data.message !== 'The given data was invalid.')
+                            ? data.message
+                            : fromErrors[0] ?? 'Datos no válidos.';
+
+                    return;
+                }
+
+                if (!res.ok) {
+                    this.error = 'No se pudo generar el archivo.';
+
+                    return;
+                }
+
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const cd = res.headers.get('Content-Disposition');
+                const m = cd && /filename="?([^";\n]+)"?/i.exec(cd);
+                a.download = m ? m[1].trim() : 'reporte-transacciones.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+                this.open = false;
+            } catch {
+                this.error = 'Error de red.';
+            } finally {
+                this.loading = false;
+            }
+        },
+    }));
 });
 
 Alpine.start();

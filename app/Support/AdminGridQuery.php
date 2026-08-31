@@ -101,6 +101,18 @@ class AdminGridQuery
                 continue;
             }
 
+            if ($type === 'date_from') {
+                $query->whereDate($apply['column'], '>=', $val);
+
+                continue;
+            }
+
+            if ($type === 'date_to') {
+                $query->whereDate($apply['column'], '<=', $val);
+
+                continue;
+            }
+
             if ($type === 'whereHas') {
                 $relation = $apply['relation'];
                 $column = $apply['column'];
@@ -536,5 +548,4 @@ class AdminGridQuery
 
         return route('admin.screens.index', ['screen' => $screen]).'?'.http_build_query($qs);
     }
-
 }

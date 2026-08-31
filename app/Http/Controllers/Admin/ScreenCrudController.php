@@ -67,7 +67,7 @@ class ScreenCrudController extends Controller
             $query->with($with);
         }
 
-        if ($screen === 'transactions') {
+        if ($screen === 'transactions' || $screen === 'transactions-report') {
             $query->withCount('items');
         }
 
@@ -83,7 +83,7 @@ class ScreenCrudController extends Controller
         $user = auth('admin')->user();
 
         $transactionExportLocations = [];
-        if ($screen === 'transactions') {
+        if ($screen === 'transactions' || $screen === 'transactions-report') {
             $transactionExportLocations = Location::query()
                 ->orderBy('name')
                 ->get(['id', 'name'])
@@ -120,6 +120,7 @@ class ScreenCrudController extends Controller
             'canDelete' => $user->can($p['delete']) && empty($cfg['readonly']),
             'locationsMapPins' => $locationsMapPins,
             'showTransactionExcelExport' => $screen === 'transactions' && $user->can($p['view']),
+            'showTransactionReportExport' => $screen === 'transactions-report' && $user->can($p['view']),
             'transactionExportLocations' => $transactionExportLocations,
         ]);
     }

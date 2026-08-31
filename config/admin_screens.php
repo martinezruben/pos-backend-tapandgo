@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\AdminUser;
 use App\Models\ApiRequestLog;
 use App\Models\Device;
 use App\Models\Family;
@@ -17,8 +16,6 @@ use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\TransactionPayment;
 use App\Models\User;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 return [
     'dashboard' => ['label' => 'Dashboard', 'icon' => 'chart-bar'],
@@ -193,7 +190,7 @@ return [
         'grid' => [
             'filters' => [],
             'columns' => [
-                ['field' => 'image_url', 'label' => 'Img', 'width' => '60px', 'render' => fn($value, $row) => $value ? "<img src='{$value}' alt='Familia' class='w-8 h-8 object-cover rounded-full'>" : ''],
+                ['field' => 'image_url', 'label' => 'Img', 'width' => '60px', 'render' => fn ($value, $row) => $value ? "<img src='{$value}' alt='Familia' class='w-8 h-8 object-cover rounded-full'>" : ''],
                 ['field' => 'name', 'label' => 'Nombre', 'sortable' => true],
             ],
             'sortable' => ['name'],
@@ -266,14 +263,14 @@ return [
                 ],
             ],
             'columns' => [
-                ['field' => 'image_url', 'label' => 'Img', 'width' => '60px', 'render' => fn($value, $row) => $value ? "<img src='{$value}' alt='Producto' class='w-8 h-8 object-cover rounded'>" : ''],
+                ['field' => 'image_url', 'label' => 'Img', 'width' => '60px', 'render' => fn ($value, $row) => $value ? "<img src='{$value}' alt='Producto' class='w-8 h-8 object-cover rounded'>" : ''],
                 ['field' => 'name', 'label' => 'Nombre', 'sortable' => true],
                 ['field' => 'sku', 'label' => 'SKU', 'sortable' => true],
                 ['field' => 'subfamily_id', 'label' => 'Subfamilia', 'sortable' => true],
                 ['field' => 'price', 'label' => 'Precio', 'sortable' => true],
                 ['field' => 'tax_rate', 'label' => 'IVA (%)', 'sortable' => true],
-                ['field' => 'is_active', 'label' => 'Activo', 'sortable' => true, 'render' => fn($v) => $v ? 'Sí' : 'No'],
-                ['field' => 'is_favorite', 'label' => 'Favorito', 'sortable' => true, 'render' => fn($v) => $v ? 'Sí' : 'No'],
+                ['field' => 'is_active', 'label' => 'Activo', 'sortable' => true, 'render' => fn ($v) => $v ? 'Sí' : 'No'],
+                ['field' => 'is_favorite', 'label' => 'Favorito', 'sortable' => true, 'render' => fn ($v) => $v ? 'Sí' : 'No'],
             ],
             'default_sort' => ['key' => 'name', 'direction' => 'asc'],
         ],
@@ -599,12 +596,12 @@ return [
         'label' => 'NCF (Series de consecutivos)',
         'icon' => 'identifier',
         'labels' => [
-            'type'           => 'Tipo',
-            'establishment'  => 'Establecimiento',
-            'start'          => 'Inicio',
-            'end'            => 'Fin',
-            'current'        => 'Contador actual',
-            'location_id'    => 'Localidad',
+            'type' => 'Tipo',
+            'establishment' => 'Establecimiento',
+            'start' => 'Inicio',
+            'end' => 'Fin',
+            'current' => 'Contador actual',
+            'location_id' => 'Localidad',
         ],
         'enable_toggle_check' => true,
         'fields' => ['type', 'establishment', 'location_id', 'start', 'end', 'current'],
@@ -613,8 +610,8 @@ return [
         ],
         'grid' => [
             'filters' => [
-                'type'        => ['label' => 'Tipo', 'type' => 'select', 'options' => ['01' => 'Venta 01', '04' => 'NC 04', '05' => 'ND 05', '07' => 'Guía 07', 'E31' => 'RD Bienes', 'E32' => 'RD Servicios', 'E33' => 'RD Comb.', 'E34' => 'RD Imp.'], 'apply' => ['type' => 'column', 'column' => 'type']],
-                'location_id'   => ['label' => 'Localidad', 'type' => 'select', 'model' => Location::class, 'order_by' => 'name', 'label_column' => 'name', 'apply' => ['type' => 'column', 'column' => 'location_id']],
+                'type' => ['label' => 'Tipo', 'type' => 'select', 'options' => ['01' => 'Venta 01', '04' => 'NC 04', '05' => 'ND 05', '07' => 'Guía 07', 'E31' => 'RD Bienes', 'E32' => 'RD Servicios', 'E33' => 'RD Comb.', 'E34' => 'RD Imp.'], 'apply' => ['type' => 'column', 'column' => 'type']],
+                'location_id' => ['label' => 'Localidad', 'type' => 'select', 'model' => Location::class, 'order_by' => 'name', 'label_column' => 'name', 'apply' => ['type' => 'column', 'column' => 'location_id']],
             ],
             'sortable' => ['type', 'establishment', 'location_id', 'start', 'end', 'current'],
             'default_sort' => ['key' => 'type', 'direction' => 'asc'],
@@ -665,20 +662,62 @@ return [
                     'field' => 'remaining',
                     'label' => 'Restantes',
                     'sortable' => false,
-                    'render' => fn ($row) => \App\Models\NcfSequence::where('type', $row->type)
-                        ->where(function($q) use ($row) {
+                    'render' => fn ($row) => NcfSequence::where('type', $row->type)
+                        ->where(function ($q) use ($row) {
                             if ($row->location_id) {
                                 $q->where('location_id', $row->location_id);
                             } else {
                                 $q->whereNull('location_id');
                             }
                         })
-                        ->sum(function($seq) {
+                        ->sum(function ($seq) {
                             return max(0, $seq->end - $seq->current + 1);
                         }),
                 ],
             ],
             'default_sort' => ['key' => 'type', 'direction' => 'asc'],
+        ],
+    ],
+    'transactions-report' => [
+        'model' => Transaction::class,
+        'label' => 'Reporte Transacciones',
+        'icon' => 'clipboard-document-list',
+        'readonly' => true,
+        'labels' => [
+            'occurred_at' => 'Fecha / hora',
+            'items_count' => 'Líneas',
+        ],
+        'fields' => ['occurred_at', 'external_id', 'location_id', 'device_id', 'user_id', 'status', 'total', 'items_count'],
+        'foreign_labels' => [
+            'location_id' => ['relation' => 'location', 'attribute' => 'name', 'header' => 'Localidad'],
+            'device_id' => ['relation' => 'device', 'attribute' => 'name', 'fallback_attribute' => 'device_fingerprint', 'header' => 'Dispositivo'],
+            'user_id' => ['relation' => 'user', 'attribute' => 'full_name', 'fallback_attribute' => 'username', 'header' => 'Usuario'],
+            'items_count' => ['virtual' => true, 'header' => 'Líneas'],
+        ],
+        'grid' => [
+            'visible_limit' => 10,
+            'filters' => [
+                'date_from' => [
+                    'label' => 'Desde',
+                    'type' => 'date',
+                    'apply' => ['type' => 'date_from', 'column' => 'occurred_at'],
+                ],
+                'date_to' => [
+                    'label' => 'Hasta',
+                    'type' => 'date',
+                    'apply' => ['type' => 'date_to', 'column' => 'occurred_at'],
+                ],
+                'location_id' => [
+                    'label' => 'Localidad',
+                    'type' => 'select',
+                    'model' => Location::class,
+                    'order_by' => 'name',
+                    'label_column' => 'name',
+                    'apply' => ['type' => 'column', 'column' => 'location_id'],
+                ],
+            ],
+            'sortable' => ['external_id', 'location_id', 'device_id', 'user_id', 'status', 'total', 'occurred_at', 'items_count'],
+            'default_sort' => ['key' => 'occurred_at', 'direction' => 'desc'],
         ],
     ],
 ];

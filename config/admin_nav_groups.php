@@ -36,6 +36,6 @@ return [
     [
         'key' => 'reports',
         'label' => 'Reportes',
-        'screens' => ['ncf-report'],
+        'screens' => ['ncf-report', 'transactions-report'],
     ],
 ];

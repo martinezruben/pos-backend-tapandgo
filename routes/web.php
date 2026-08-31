@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ScreenCrudController;
 use App\Http\Controllers\Admin\SystemSettingsController;
 use App\Http\Controllers\Admin\TransactionExcelExportController;
 use App\Http\Controllers\Admin\TransactionLineItemsController;
+use App\Http\Controllers\Admin\TransactionReportExportController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/admin');
@@ -34,6 +35,7 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
 
         Route::get('/transactions/{transaction}/line-items', [TransactionLineItemsController::class, 'show'])->name('transactions.line-items');
         Route::post('/transactions/excel/export', [TransactionExcelExportController::class, 'export'])->name('transactions.excel.export');
+        Route::post('/transactions/report/export', [TransactionReportExportController::class, 'export'])->name('transactions.report.export');
 
         Route::get('/products/excel/export', [ProductExcelController::class, 'export'])->name('products.excel.export');
         Route::post('/products/excel/import', [ProductExcelController::class, 'import'])->name('products.excel.import');

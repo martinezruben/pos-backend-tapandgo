@@ -39,6 +39,20 @@
                             @include('admin.crud.partials.transaction-excel-export-modal')
                         </div>
                     @endif
+                    @if(($showTransactionReportExport ?? false))
+                        <div x-data="transactionsReportModal(@js($transactionExportLocations ?? []))" class="inline-flex items-center gap-0.5">
+                            <button
+                                type="button"
+                                class="inline-flex h-7 items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 text-[10px] font-semibold text-slate-600 shadow-sm transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+                                title="Descargar reporte de transacciones (opcional: detalle de líneas)"
+                                @click="open = true"
+                            >
+                                <svg class="h-3 w-3 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                                Descargar
+                            </button>
+                            @include('admin.crud.partials.transactions-report-export-modal')
+                        </div>
+                    @endif
                     @if(($canEdit ?? false) && empty($cfg['disable_create'] ?? false))
                         <a
                             href="{{ route('admin.screens.create', $screen) }}"
@@ -88,11 +102,21 @@
                     @foreach($gridFilters as $param => $fdef)
                         <div class="flex min-w-[7rem] flex-col gap-0.5">
                             <label class="text-[8px] font-bold uppercase tracking-widest text-slate-400" for="flt-{{ $param }}">{{ $fdef['label'] ?? $param }}</label>
-                            <select id="flt-{{ $param }}" name="filter[{{ $param }}]" class="hope-filter-select">
-                                @foreach(($gridFilterOptions[$param] ?? collect()) as $opt)
-                                    <option value="{{ $opt['id'] }}" @selected((string) request('filter.'.$param) === (string) $opt['id'])>{{ $opt['label'] }}</option>
-                                @endforeach
-                            </select>
+                            @if(($fdef['type'] ?? '') === 'date')
+                                <input
+                                    id="flt-{{ $param }}"
+                                    type="date"
+                                    name="filter[{{ $param }}]"
+                                    value="{{ request('filter.'.$param) }}"
+                                    class="hope-filter-select"
+                                >
+                            @else
+                                <select id="flt-{{ $param }}" name="filter[{{ $param }}]" class="hope-filter-select">
+                                    @foreach(($gridFilterOptions[$param] ?? collect()) as $opt)
+                                        <option value="{{ $opt['id'] }}" @selected((string) request('filter.'.$param) === (string) $opt['id'])>{{ $opt['label'] }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
                         </div>
                     @endforeach
                     <button type="submit" class="rounded-md bg-primary-600 px-2 py-1 text-[10px] font-semibold text-white shadow-sm transition hover:bg-primary-700">Aplicar</button>
