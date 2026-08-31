@@ -1,6 +1,6 @@
-# Guía de Instalación Limpia — Backend TapGo POS (Laravel + MySQL en Docker)
+# Guía de Instalación Limpia — Backend Tap&Go POS (Tap&Go + MySQL en Docker)
 
-> Documento de referencia para equipos y asistentes de IA. Captura TODO lo aprendido al hacer correr el backend Laravel (`pos-backend-tapandgo`) en contenedores Docker desde cero, incluyendo los errores que aparecen y cómo evitarlos.
+> Documento de referencia para equipos y asistentes de IA. Captura TODO lo aprendido al hacer correr el backend Tap&Go (`pos-backend-tapandgo`) en contenedores Docker desde cero, incluyendo los errores que aparecen y cómo evitarlos.
 
 ---
 
@@ -19,7 +19,7 @@
 
 ```
 pos-backend-tapandgo/
-├── Dockerfile                  # Imagen Laravel+nginx+php-fpm (multietapa simplificada, 1 solo stage Alpine)
+├── Dockerfile                  # Imagen Tap&Go (nginx+php-fpm) (multietapa simplificada, 1 solo stage Alpine)
 ├── docker-compose.yml          # 3 servicios: app, mysql, phpmyadmin
 ├── .env                        # Variables de entorno (NO versionar)
 ├── .dockerignore
@@ -31,7 +31,7 @@ pos-backend-tapandgo/
 │   ├── nginx/default.conf
 │   ├── php/local.ini
 │   └── entrypoint.sh
-└── (código Laravel del repo)
+└── (código del repo)
 ```
 
 ---
@@ -98,7 +98,7 @@ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8081             # →
 | 1 | `Vite manifest not found` / login 500 | `package.json` excluido por `.dockerignore` | **No excluir** `package.json`, `vite.config.js`, `tailwind.config.js` del `.dockerignore` |
 | 2 | `composer install` exit 100 / `plugin-api-version 2.9.0` | `composer:2` (v2.8) incompatible con lock | Usar `COPY --from=composer:2.9` |
 | 3 | `... requires php >=8.4` | `composer.lock` hecho con PHP 8.4 | Runtime: `php:8.4-fpm-alpine` (no 8.3) |
-| 4 | `unexpected jvm signature V` / KSP2 fail | N/A (era problema Laravel) | — |
+| 4 | `unexpected jvm signature V` / KSP2 fail | N/A (era problema del backend) | — |
 | 5 | `Unable to load dynamic library 'gd'/'intl'/'zip'` | `apk del .build-deps` borra libs runtime | `apk add --no-cache libpng libzip icu-libs libjpeg-turbo freetype` **después** de borrar .build-deps |
 | 6 | MySQL `Restarting (1)` `unknown variable default-authentication-plugin` | Var eliminada en MySQL 8.4 | Quitar la opción; usar `--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci` |
 | 7 | MySQL `Table 'mysql.plugin' doesn't exist` | Volumen `db_data` corrupto | `docker compose down -v` para destruir volumen |

@@ -44,7 +44,7 @@ return new class extends Migration
             });
         }
 
-        // notifications (ya existe la tabla original de Laravel, skip si existe)
+        // notifications (ya existe la tabla original de Pulse, skip si existe)
         if (! Schema::hasTable('notifications')) {
             Schema::create('notifications', function (Blueprint $table) {
                 $table->uuid('id')->primary();

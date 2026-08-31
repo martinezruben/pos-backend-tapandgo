@@ -41,5 +41,5 @@ fi
 # Descubrir paquetes (necesario tras composer install --no-scripts)
 php artisan package:discover --ansi 2>&1 || echo "WARN: package:discover falló"
 
-echo "Laravel listo."
+echo "Tap&Go listo."
 exec "$@"
