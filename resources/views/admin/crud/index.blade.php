@@ -196,12 +196,10 @@
                         @foreach($visibleFields as $f)
                             <td class="max-w-[12rem] px-2 py-0.5 align-middle text-slate-800">
                                 @if(($screen ?? null) === 'families' && $f === 'image_url' && ! empty($item->image_url))
-                                                                <img src="{{ $item->image_url }}" alt="" class="h-7 w-7 shrink-0 rounded object-cover ring-1 ring-slate-200" width="28" height="28">
+                                                                <img src="{{ \App\Services\ImageThumbnailService::syncUrl($item->image_url) }}" alt="" class="h-7 w-7 shrink-0 rounded object-cover ring-1 ring-slate-200" width="28" height="28">
                                                             @elseif(($screen ?? null) === 'products' && $f === 'image_url' && ! empty($item->image_url))
-                                                                <img src="{{ $item->image_url }}" alt="" class="h-7 w-7 shrink-0 rounded object-cover ring-1 ring-slate-200" width="28" height="28">
-                                                            @elseif(($screen ?? null) === 'families' && $f === 'image_url')
-                                                                <span class="text-slate-400">—</span>
-                                                            @elseif(($screen ?? null) === 'products' && $f === 'image_url')
+                                                                <img src="{{ \App\Services\ImageThumbnailService::syncUrl($item->image_url) }}" alt="" class="h-7 w-7 shrink-0 rounded object-cover ring-1 ring-slate-200" width="28" height="28">
+                                                            @elseif($f === 'image_url')
                                                                 <span class="text-slate-400">—</span>
                                 @elseif(in_array($f, $badgeFields, true) && empty($cfg['foreign_labels'][$f]))
                                     <x-admin.snow.badge :field="$f" :value="$item->{$f}" />

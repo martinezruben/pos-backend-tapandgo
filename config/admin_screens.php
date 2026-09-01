@@ -273,6 +273,7 @@ return [
                 ['field' => 'is_favorite', 'label' => 'Favorito', 'sortable' => true, 'render' => fn ($v) => $v ? 'Sí' : 'No'],
             ],
             'default_sort' => ['key' => 'name', 'direction' => 'asc'],
+            'visible_limit' => 9,
         ],
     ],
     'shifts' => [
