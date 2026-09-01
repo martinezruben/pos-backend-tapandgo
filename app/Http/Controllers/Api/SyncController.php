@@ -365,7 +365,7 @@ class SyncController extends Controller
             'role' => strtolower((string) $u->role),
             'isActive' => (bool) $u->is_active,
             'updatedAt' => $u->updated_at->utc()->format('Y-m-d\TH:i:s').'Z',
-            'deletedAt' => $u->deleted_at?->utc()->format('Y-m-d\TH:i:s').'Z',
+            'deletedAt' => $u->deleted_at?->utc()->format('Y-m-d\TH:i:s\Z'),
         ];
     }
 
@@ -379,7 +379,7 @@ class SyncController extends Controller
             'name' => $f->name,
             'imageUrl' => ImageThumbnailService::syncUrl($f->image_url),
             'updatedAt' => $f->updated_at->utc()->format('Y-m-d\TH:i:s').'Z',
-            'deletedAt' => $f->deleted_at?->utc()->format('Y-m-d\TH:i:s').'Z',
+            'deletedAt' => $f->deleted_at?->utc()->format('Y-m-d\TH:i:s\Z'),
         ];
     }
 
@@ -393,7 +393,7 @@ class SyncController extends Controller
             'familyId' => $s->family_id,
             'name' => $s->name,
             'updatedAt' => $s->updated_at->utc()->format('Y-m-d\TH:i:s').'Z',
-            'deletedAt' => $s->deleted_at?->utc()->format('Y-m-d\TH:i:s').'Z',
+            'deletedAt' => $s->deleted_at?->utc()->format('Y-m-d\TH:i:s\Z'),
         ];
     }
 
@@ -427,7 +427,7 @@ class SyncController extends Controller
             'taxRate' => $taxRateFraction,
             'isFavorite' => $isFavorite,
             'updatedAt' => $p->updated_at->utc()->format('Y-m-d\TH:i:s').'Z',
-            'deletedAt' => $p->deleted_at?->utc()->format('Y-m-d\TH:i:s').'Z',
+            'deletedAt' => $p->deleted_at?->utc()->format('Y-m-d\TH:i:s\Z'),
         ];
     }
 
