@@ -169,6 +169,37 @@
                         <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
+
+                @php
+                    $barcode = trim((string) $item?->barcode);
+                    $barcodePng = null;
+                    if ($barcode !== '') {
+                        try {
+                            $gen = new \Picqer\Barcode\BarcodeGeneratorPNG;
+                            if (strlen($barcode) === 13 && ctype_digit($barcode)) {
+                                try {
+                                    $barcodePng = base64_encode($gen->getBarcode($barcode, $gen::TYPE_EAN_13, 3, 56));
+                                } catch (\Throwable) {
+                                    $barcodePng = base64_encode($gen->getBarcode($barcode, $gen::TYPE_CODE_128, 3, 56));
+                                }
+                            } else {
+                                $barcodePng = base64_encode($gen->getBarcode($barcode, $gen::TYPE_CODE_128, 3, 56));
+                            }
+                        } catch (\Throwable) {
+                            $barcodePng = null;
+                        }
+                    }
+                @endphp
+                @if($barcodePng !== null)
+                    <div class="md:col-span-2">
+                        <label class="snow-label">Etiqueta · código de barras</label>
+                        <div class="inline-flex flex-col items-center gap-1 rounded-lg border border-slate-300 bg-white px-4 py-3 shadow-sm">
+                            <img src="data:image/png;base64,{{ $barcodePng }}" alt="Código de barras {{ $barcode }}" class="h-14 w-auto" width="220">
+                            <span class="font-mono text-xs tracking-[0.2em] text-slate-900">{{ $barcode }}</span>
+                        </div>
+                        <p class="mt-1 text-[10px] text-slate-500">Se genera a partir del código parametrizado (EAN-13 o Code 128).</p>
+                    </div>
+                @endif
             @endif
 
             @if($screen === 'admin-users')

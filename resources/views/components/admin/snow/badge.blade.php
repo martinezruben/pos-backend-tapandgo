@@ -13,14 +13,14 @@
 
     if (! $showEmpty) {
         $boolVal = null;
-        if (in_array($field, ['is_active', 'is_synced', 'is_enabled'], true)) {
+        if (in_array($field, ['is_active', 'is_synced', 'is_enabled', 'is_favorite'], true)) {
             $boolVal = filter_var($raw, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
             if ($boolVal === null) {
                 $boolVal = (bool) (int) $raw;
             }
         }
 
-        if (in_array($field, ['is_active', 'is_synced', 'is_enabled'], true)) {
+        if (in_array($field, ['is_active', 'is_synced', 'is_enabled', 'is_favorite'], true)) {
             $active = $boolVal;
             $variant = $active
                 ? ['ring' => 'border-emerald-200 bg-emerald-50 text-emerald-800', 'dot' => 'bg-emerald-500', 'text' => 'Sí']
