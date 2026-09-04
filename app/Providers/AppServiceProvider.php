@@ -11,6 +11,7 @@ use App\Models\Family;
 use App\Models\License;
 use App\Models\Location;
 use App\Models\Product;
+use App\Models\Promotion;
 use App\Models\Shift;
 use App\Models\Subfamily;
 use App\Models\SystemParameter;
@@ -80,6 +81,7 @@ class AppServiceProvider extends ServiceProvider
         // Auditoría del panel: cambios en modelos clave + login/logout del admin
         AuditsModelChanges::track([
             Product::class,
+            Promotion::class,
             Family::class,
             Subfamily::class,
             Location::class,
