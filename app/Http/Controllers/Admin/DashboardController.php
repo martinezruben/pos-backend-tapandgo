@@ -9,6 +9,7 @@ use App\Models\License;
 use App\Models\Location;
 use App\Models\SyncLog;
 use App\Models\Transaction;
+use App\Models\TransactionPayment;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -32,6 +33,19 @@ class DashboardController extends Controller
             ->whereDate('occurred_at', $today)
             ->count();
 
+        $salesYesterday = (float) Transaction::query()
+            ->where('status', 'PAID')
+            ->whereDate('occurred_at', now()->subDay())
+            ->sum('total');
+
+        $txYesterday = (int) Transaction::query()
+            ->where('status', 'PAID')
+            ->whereDate('occurred_at', now()->subDay())
+            ->count();
+
+        $avgTicketToday = $txToday > 0 ? $salesToday / $txToday : 0.0;
+        $avgTicketYesterday = $txYesterday > 0 ? $salesYesterday / $txYesterday : 0.0;
+
         $sales7d = (float) Transaction::query()
             ->where('status', 'PAID')
             ->where('occurred_at', '>=', $start7)
@@ -42,8 +56,7 @@ class DashboardController extends Controller
             ->where('occurred_at', '>=', $start30)
             ->sum('total');
 
-        $syncLogs7d = SyncLog::query()
-            ->where('started_at', '>=', now()->subDays(7))
+        $syncLogs7d = SyncLog::query()->where('started_at', '>=', now()->subDays(7))
             ->selectRaw('status, COUNT(*) as c')
             ->groupBy('status')
             ->pluck('c', 'status');
@@ -53,6 +66,19 @@ class DashboardController extends Controller
         $syncTotal7d = $syncSuccess7d + $syncFailed7d;
         $syncOkPct = $syncTotal7d > 0 ? round(100 * $syncSuccess7d / $syncTotal7d, 1) : null;
 
+        // Comparativo de ventas: semana en curso (lunes→hoy) vs. semana anterior completa
+        $weekStart = now()->startOfWeek();
+        $salesThisWeek = (float) Transaction::query()
+            ->where('status', 'PAID')
+            ->whereBetween('occurred_at', [$weekStart, now()])
+            ->sum('total');
+        $salesLastWeek = (float) Transaction::query()
+            ->where('status', 'PAID')
+            ->whereBetween('occurred_at', [$weekStart->copy()->subDays(7), $weekStart->copy()->subSecond()])
+            ->sum('total');
+        $weekDeltaPct = $salesLastWeek > 0
+            ? round(100 * ($salesThisWeek - $salesLastWeek) / $salesLastWeek, 1)
+            : ($salesThisWeek > 0 ? 100.0 : null);
         $kpis = [
             [
                 'label' => 'Localidades activas',
@@ -79,6 +105,20 @@ class DashboardController extends Controller
                 'accent' => 'from-violet-500 to-purple-600',
             ],
             [
+                'label' => 'Ticket promedio hoy',
+                'value' => $txToday > 0 ? '$'.number_format($avgTicketToday, 2) : '—',
+                'sub' => $this->deltaLabel($avgTicketToday, $avgTicketYesterday),
+                'icon' => 'credit-card',
+                'accent' => 'from-fuchsia-500 to-pink-600',
+            ],
+            [
+                'label' => 'Ventas semana vs. anterior',
+                'value' => $weekDeltaPct === null ? '—' : ($weekDeltaPct >= 0 ? '+' : '').number_format($weekDeltaPct, 1).'%',
+                'sub' => '$'.number_format($salesThisWeek, 2).' vs $'.number_format($salesLastWeek, 2),
+                'icon' => 'chart-bar',
+                'accent' => $weekDeltaPct !== null && $weekDeltaPct < 0 ? 'from-rose-500 to-red-600' : 'from-teal-500 to-emerald-600',
+            ],
+            [
                 'label' => 'Ventas (7 días)',
                 'value' => '$'.number_format($sales7d, 2),
                 'icon' => 'chart-bar',
@@ -97,11 +137,14 @@ class DashboardController extends Controller
         $syncByDay = $this->syncSuccessFailedByDay($start14, now()->endOfDay());
         $topLocations = $this->topLocationsBySales(30, 5);
         $activity = $this->recentActivity(8);
+        $topProducts = $this->topProductsBySales(30, 5);
+        $paymentMix = $this->salesByPaymentMethod(30);
 
         $chartPayload = [
             'salesTrend' => $salesTrend,
             'familyMix' => $familyMix,
             'syncByDay' => $syncByDay,
+            'paymentMix' => $paymentMix,
             'summary' => [
                 'sales30d' => round($sales30d, 2),
                 'syncOkPct' => $syncOkPct,
@@ -114,8 +157,78 @@ class DashboardController extends Controller
             'kpis' => $kpis,
             'chartPayload' => $chartPayload,
             'topLocations' => $topLocations,
+            'topProducts' => $topProducts,
             'activity' => $activity,
         ]);
+    }
+
+    /** Etiqueta de variación % vs. el día anterior. */
+    private function deltaLabel(float $current, float $previous): string
+    {
+        if ($previous <= 0) {
+            return $current > 0 ? 'vs. ayer: nuevo' : 'vs. ayer: —';
+        }
+        $pct = round(100 * ($current - $previous) / $previous, 1);
+
+        return 'vs. ayer: '.($pct >= 0 ? '+' : '').$pct.'%';
+    }
+
+    /**
+     * @return list<array{name: string, qty: float, total: float, pct: float}>
+     */
+    private function topProductsBySales(int $days, int $limit): array
+    {
+        $since = now()->subDays($days)->startOfDay();
+
+        $rows = DB::table('transaction_items')
+            ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
+            ->where('transactions.status', 'PAID')
+            ->where('transactions.occurred_at', '>=', $since)
+            ->whereNotNull('transaction_items.product_id')
+            ->selectRaw('transaction_items.product_id, MAX(transaction_items.product_name) as name, SUM(transaction_items.qty) as qty, SUM(transaction_items.line_total) as total')
+            ->groupBy('transaction_items.product_id')
+            ->orderByDesc('total')
+            ->limit($limit)
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return [];
+        }
+
+        $sumTop = (float) $rows->sum('total');
+
+        return $rows
+            ->map(fn ($row): array => [
+                'name' => (string) ($row->name ?: '—'),
+                'qty' => (float) $row->qty,
+                'total' => (float) $row->total,
+                'pct' => $sumTop > 0 ? round(100 * (float) $row->total / $sumTop, 1) : 0.0,
+            ])
+            ->all();
+    }
+
+    /**
+     * @return array{labels: list<string>, series: list<float>}
+     */
+    private function salesByPaymentMethod(int $days): array
+    {
+        $since = now()->subDays($days)->startOfDay();
+
+        $rows = TransactionPayment::query()
+            ->whereHas('transaction', fn ($q) => $q
+                ->where('status', 'PAID')
+                ->where('occurred_at', '>=', $since))
+            ->selectRaw('payment_method, SUM(amount) as total')
+            ->groupBy('payment_method')
+            ->orderByDesc('total')
+            ->get();
+
+        $methodLabels = ['CASH' => 'Efectivo', 'CARD' => 'Tarjeta', 'TRANSFER' => 'Transferencia', 'OTHER' => 'Otro'];
+
+        return [
+            'labels' => $rows->pluck('payment_method')->map(fn ($m) => $methodLabels[$m] ?? $m)->values()->all(),
+            'series' => $rows->pluck('total')->map(fn ($v) => round((float) $v, 2))->values()->all(),
+        ];
     }
 
     /**

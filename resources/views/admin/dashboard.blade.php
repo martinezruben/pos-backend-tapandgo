@@ -8,6 +8,9 @@
                         <div class="min-w-0">
                             <p class="text-[9px] font-bold uppercase tracking-widest text-slate-400">{{ $card['label'] }}</p>
                             <p class="mt-1.5 text-lg font-bold tabular-nums leading-tight tracking-tight text-slate-900">{{ $card['value'] }}</p>
+                            @if (! empty($card['sub']))
+                                <p class="mt-0.5 text-[9px] leading-tight text-slate-500">{{ $card['sub'] }}</p>
+                            @endif
                         </div>
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br shadow-sm {{ $card['accent'] }} text-white ring-2 ring-white">
                             <x-admin.snow.icon :name="$card['icon']" class="h-4 w-4" />
@@ -64,6 +67,14 @@
                         <p class="text-[10px] text-slate-500">Últimos 30 días · líneas de ticket</p>
                     </div>
                     <div data-chart="family-donut" class="w-full min-h-[190px] flex-1 xl:min-h-0"></div>
+                </div>
+
+                <div class="snow-card flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white p-4 shadow-hope-card xl:h-[330px]">
+                    <div class="mb-2 shrink-0">
+                        <h3 class="text-sm font-semibold text-slate-900">Ventas por método de pago</h3>
+                        <p class="text-[10px] text-slate-500">Últimos 30 días · transacciones PAID</p>
+                    </div>
+                    <div data-chart="payment-donut" class="w-full min-h-[190px] flex-1 xl:min-h-0"></div>
                 </div>
             </div>
         </div>
@@ -179,6 +190,50 @@
                 <h3 class="text-sm font-semibold text-slate-900">Sincronizaciones por día</h3>
                 <p class="text-[10px] text-slate-500">Correctas vs fallidas (14 días)</p>
                 <div data-chart="sync-stacked" class="mt-2 min-h-[300px] w-full"></div>
+            </div>
+        </div>
+
+        {{-- Tabla top productos --}}
+        <div class="snow-card rounded-xl border border-slate-200/90 bg-white shadow-hope-card">
+            <div class="border-b border-slate-100 px-4 py-3">
+                <h3 class="text-sm font-semibold text-slate-900">Top productos por ventas</h3>
+                <p class="text-[10px] text-slate-500">Últimos 30 días · transacciones PAID</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-100 text-left text-[11px]">
+                    <thead class="snow-table-head">
+                        <tr>
+                            <th class="px-4 py-2 font-semibold">Producto</th>
+                            <th class="px-4 py-2 font-semibold">Cant.</th>
+                            <th class="px-4 py-2 font-semibold">Total</th>
+                            <th class="min-w-[180px] px-4 py-2 font-semibold">Participación</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                        @forelse ($topProducts as $p)
+                            <tr class="hover:bg-slate-50/80">
+                                <td class="px-4 py-2.5 font-medium text-slate-800">{{ $p['name'] }}</td>
+                                <td class="px-4 py-2.5 tabular-nums text-slate-700">{{ number_format($p['qty'], 0, ',', '.') }}</td>
+                                <td class="px-4 py-2.5 tabular-nums text-slate-700">${{ number_format($p['total'], 2) }}</td>
+                                <td class="px-4 py-2.5">
+                                    <div class="flex items-center gap-2">
+                                        <div class="h-2 min-w-[120px] flex-1 overflow-hidden rounded-full bg-slate-100">
+                                            <div
+                                                class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all"
+                                                style="width: {{ $p['pct'] }}%"
+                                            ></div>
+                                        </div>
+                                        <span class="w-10 shrink-0 text-right text-[10px] tabular-nums text-slate-500">{{ number_format($p['pct'], 1, ',', '') }}%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-4 py-6 text-center text-[11px] text-slate-400">Sin ventas de productos en el periodo.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
 

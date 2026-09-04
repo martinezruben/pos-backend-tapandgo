@@ -125,7 +125,7 @@ function mountSalesArea(ApexCharts, el, initial, onPeriodChange) {
     return chart;
 }
 
-function mountFamilyDonut(ApexCharts, el, familyMix) {
+function mountFamilyDonut(ApexCharts, el, familyMix, palette) {
     const empty = !familyMix?.labels?.length;
 
     const baseOptions = (height) => ({
@@ -138,7 +138,7 @@ function mountFamilyDonut(ApexCharts, el, familyMix) {
         series: empty ? [1] : familyMix.series,
         colors: empty
             ? ['#e2e8f0']
-            : ['#2563eb', '#22d3ee', '#38bdf8', '#0ea5e9', '#6366f1', '#8b5cf6'],
+            : (palette ?? ['#2563eb', '#22d3ee', '#38bdf8', '#0ea5e9', '#6366f1', '#8b5cf6']),
         plotOptions: {
             pie: {
                 donut: {
@@ -313,6 +313,11 @@ async function init() {
     const donutEl = document.querySelector('[data-chart="family-donut"]');
     if (donutEl && data.familyMix) {
         mountFamilyDonut(ApexCharts, donutEl, data.familyMix);
+    }
+
+    const paymentEl = document.querySelector('[data-chart="payment-donut"]');
+    if (paymentEl && data.paymentMix) {
+        mountFamilyDonut(ApexCharts, paymentEl, data.paymentMix, ['#059669', '#0ea5e9', '#8b5cf6', '#f59e0b']);
     }
 
     const syncEl = document.querySelector('[data-chart="sync-stacked"]');
