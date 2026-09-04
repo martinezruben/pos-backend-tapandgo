@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminAuditLog;
 use App\Support\AdminRbac;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -59,17 +60,34 @@ class RoleRbacMatrixController extends Controller
 
         $incoming = array_values(array_unique($validated['permissions'] ?? []));
 
-        DB::transaction(function () use ($role, $managedFlat, $incoming): void {
+        $changes = [];
+
+        DB::transaction(function () use ($role, $managedFlat, $incoming, &$changes): void {
             $role->refresh();
             $role->load('permissions');
-            $keep = $role->permissions
-                ->pluck('name')
+            $before = $role->permissions->pluck('name')->all();
+            $keep = collect($before)
                 ->filter(static fn (string $n): bool => ! in_array($n, $managedFlat, true))
                 ->values()
                 ->all();
 
             $role->syncPermissions(array_merge($keep, $incoming));
+
+            // Auditoría manual: syncPermissions toca la tabla pivote, no el modelo
+            $after = $role->permissions->pluck('name')->all();
+            $added = array_values(array_diff($incoming, $before));
+            $removed = array_values(array_diff($before, $after));
+            if ($added !== [] || $removed !== []) {
+                $changes['permissions'] = [
+                    array_map(static fn (string $n): array => ['action' => 'added', 'name' => $n], $added),
+                    array_map(static fn (string $n): array => ['action' => 'removed', 'name' => $n], $removed),
+                ];
+            }
         });
+
+        if ($changes !== []) {
+            AdminAuditLog::record('updated', 'Role', (string) $role->getKey(), $changes);
+        }
 
         return redirect()
             ->route('admin.rbac.matrix.edit', $role)

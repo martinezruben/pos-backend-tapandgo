@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminAuditLog;
 use App\Models\AdminUser;
 use App\Models\Device;
 use App\Models\Family;
@@ -255,6 +256,12 @@ class ScreenCrudController extends Controller
             $current = $item->status;
             $next = $current === 'PAID' ? 'VOIDED' : 'PAID';
             $item->forceFill(['status' => $next])->save();
+
+            // Acción financiera del panel: registrar manualmente (Transaction no está en el observer
+            // para no ensuciar el log con cada sync del POS)
+            AdminAuditLog::record('updated', 'Transaction', (string) $item->getKey(), [
+                'status' => [$current, $next],
+            ]);
         }
 
         return back()->with('status', 'Estado actualizado.');

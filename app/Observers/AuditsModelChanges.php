@@ -13,6 +13,9 @@ class AuditsModelChanges
 {
     public const SENSITIVE = ['password', 'pin_sha384', 'remember_token'];
 
+    /** Cambios operacionales que generan ruido (se actualizan por sync, no por un admin). */
+    public const NOISY = ['last_sync_at'];
+
     public static function track(array $classes): void
     {
         foreach ($classes as $class) {
@@ -29,7 +32,7 @@ class AuditsModelChanges
     {
         $changes = [];
         foreach ($model->getChanges() as $field => $new) {
-            if (in_array($field, self::SENSITIVE, true) || $field === 'updated_at') {
+            if (in_array($field, self::SENSITIVE, true) || in_array($field, self::NOISY, true) || $field === 'updated_at') {
                 continue;
             }
             $changes[$field] = [$model->getOriginal($field), $new];

@@ -4,8 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\AdminAuditLog;
 use App\Models\AdminUser;
+use App\Models\Device;
 use App\Models\Family;
+use App\Models\Location;
+use App\Models\NcfSequence;
 use App\Models\Product;
+use App\Models\Transaction;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -115,6 +120,134 @@ class AdminAuditLogTest extends TestCase
             'entity_type' => 'AdminUser',
             'admin_user_id' => $this->admin->id,
         ]);
+    }
+
+    public function test_ncf_sequence_changes_are_audited(): void
+    {
+        NcfSequence::create([
+            'type' => '01',
+            'establishment' => '1',
+            'start' => 1,
+            'end' => 100,
+            'current' => 1,
+        ]);
+        AdminAuditLog::query()->delete();
+
+        $seq = NcfSequence::first();
+        $seq->update(['current' => 50]);
+
+        $this->assertDatabaseHas('admin_audit_logs', [
+            'action' => 'updated',
+            'entity_type' => 'NcfSequence',
+        ]);
+        $log = AdminAuditLog::query()->where('entity_type', 'NcfSequence')->first();
+        $this->assertArrayHasKey('current', $log->changes);
+        $this->assertEquals(1, $log->changes['current'][0]);
+        $this->assertEquals(50, $log->changes['current'][1]);
+    }
+
+    public function test_rbac_matrix_permission_changes_are_audited(): void
+    {
+        Permission::firstOrCreate(['name' => 'roles.edit', 'guard_name' => 'admin']);
+        Permission::firstOrCreate(['name' => 'licenses.view', 'guard_name' => 'admin']);
+        Permission::firstOrCreate(['name' => 'licenses.edit', 'guard_name' => 'admin']);
+        $this->admin->givePermissionTo('roles.edit');
+        $role = Role::create(['name' => 'rbac-target', 'guard_name' => 'admin']);
+        $role->givePermissionTo('licenses.view');
+
+        $this->actingAs($this->admin, 'admin')
+            ->post(route('admin.rbac.matrix.update', $role), [
+                'permissions' => ['licenses.view', 'licenses.edit'],
+            ])
+            ->assertRedirect();
+
+        $log = AdminAuditLog::query()
+            ->where('entity_type', 'Role')
+            ->where('entity_id', $role->id)
+            ->first();
+        $this->assertNotNull($log, 'El cambio de permisos del rol debe quedar auditado');
+        $changes = $log->changes['permissions'];
+        $this->assertContains('licenses.edit', array_column($changes[0], 'name'));
+        $this->assertEmpty($changes[1], 'Ningún permiso fue removido');
+    }
+
+    public function test_transaction_status_toggle_is_audited(): void
+    {
+        $location = Location::create(['id' => (string) \Str::uuid(), 'name' => 'Main', 'is_active' => true]);
+        $device = Device::create([
+            'id' => (string) \Str::uuid(),
+            'location_id' => $location->id,
+            'device_fingerprint' => 'fp-aud-tx',
+            'is_enabled' => true,
+        ]);
+        $posUser = User::factory()->create();
+        $tx = Transaction::create([
+            'id' => (string) \Str::uuid(),
+            'external_id' => 'EXT-AUD-TX',
+            'location_id' => $location->id,
+            'device_id' => $device->id,
+            'user_id' => $posUser->id,
+            'shift_id' => null,
+            'turn_number' => 1,
+            'status' => 'PAID',
+            'total' => 10,
+            'occurred_at' => now(),
+            'is_synced' => true,
+        ]);
+        AdminAuditLog::query()->delete();
+        Permission::firstOrCreate(['name' => 'transactions.edit', 'guard_name' => 'admin']);
+        $this->admin->givePermissionTo('transactions.edit');
+        $this->actingAs($this->admin, 'admin')
+            ->post(route('admin.screens.toggle-status', ['transactions', $tx->id]))
+            ->assertRedirect();
+
+        $log = AdminAuditLog::query()
+            ->where('entity_type', 'Transaction')
+            ->where('entity_id', $tx->id)
+            ->first();
+        $this->assertNotNull($log, 'El toggle de transacción debe quedar auditado');
+        $this->assertEquals('PAID', $log->changes['status'][0]);
+        $this->assertEquals('VOIDED', $log->changes['status'][1]);
+    }
+
+    public function test_pairing_token_generation_is_audited(): void
+    {
+        Permission::firstOrCreate(['name' => 'locations.edit', 'guard_name' => 'admin']);
+        $location = Location::create(['id' => (string) \Str::uuid(), 'name' => 'Sede Token', 'is_active' => true]);
+        $this->admin->givePermissionTo('locations.edit');
+        AdminAuditLog::query()->delete();
+
+        $this->actingAs($this->admin, 'admin')
+            ->postJson(route('admin.locations.pairing-token.store', $location), [
+                'action' => 'regenerate',
+            ])->assertOk();
+
+        $this->assertDatabaseHas('admin_audit_logs', [
+            'action' => 'created',
+            'entity_type' => 'PairingToken',
+            'entity_id' => $location->id,
+        ]);
+    }
+
+    public function test_last_sync_at_changes_are_not_audited(): void
+    {
+        $location = Location::create(['id' => (string) \Str::uuid(), 'name' => 'Main', 'is_active' => true]);
+        $device = Device::create([
+            'id' => (string) \Str::uuid(),
+            'location_id' => $location->id,
+            'device_fingerprint' => 'fp-audit-noise',
+            'is_enabled' => true,
+        ]);
+        AdminAuditLog::query()->delete();
+
+        $device->update(['last_sync_at' => now()]);
+
+        $log = AdminAuditLog::query()
+            ->where('entity_type', 'Device')
+            ->where('entity_id', $device->id)
+            ->where('action', 'updated')
+            ->first();
+        $this->assertNull($log, 'last_sync_at es un cambio operacional y no debe auditarse');
     }
 
     public function test_audit_log_screen_lists_entries_with_filters(): void

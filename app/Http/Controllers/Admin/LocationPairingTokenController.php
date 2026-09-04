@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminAuditLog;
 use App\Models\Location;
 use App\Support\AdminRbac;
 use App\Support\DevicePairingToken;
@@ -45,6 +46,11 @@ class LocationPairingTokenController extends Controller
         }
 
         $payload = DevicePairingToken::generateNew($location->getKey());
+
+        // El token vive en Cache (no en BD), así que el observer no lo captura: registrar manualmente
+        AdminAuditLog::record('created', 'PairingToken', (string) $location->getKey(), [
+            'pairing_token' => ['—', 'token regenerado · '.$location->name],
+        ]);
 
         return response()->json([
             'code' => $payload['code'],

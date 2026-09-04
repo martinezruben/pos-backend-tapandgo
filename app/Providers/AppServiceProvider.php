@@ -10,6 +10,7 @@ use App\Models\Device;
 use App\Models\Family;
 use App\Models\License;
 use App\Models\Location;
+use App\Models\NcfSequence;
 use App\Models\Product;
 use App\Models\Promotion;
 use App\Models\Shift;
@@ -91,6 +92,7 @@ class AppServiceProvider extends ServiceProvider
             User::class,
             AdminUser::class,
             SystemParameter::class,
+            NcfSequence::class,
         ]);
         Event::listen(Login::class, function (Login $event): void {
             if ($event->user instanceof AdminUser) {
