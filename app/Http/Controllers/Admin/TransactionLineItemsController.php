@@ -25,6 +25,7 @@ class TransactionLineItemsController extends Controller
             'occurred_at' => $transaction->occurred_at?->format('Y-m-d H:i:s'),
             'status' => $transaction->status,
             'total' => (string) $transaction->total,
+            'payment_methods' => $transaction->payments->pluck('payment_method')->unique()->values()->all(),
             'location_name' => $transaction->location?->name,
             'device_label' => $transaction->device !== null
                 ? (($transaction->device->name ?? '') !== ''

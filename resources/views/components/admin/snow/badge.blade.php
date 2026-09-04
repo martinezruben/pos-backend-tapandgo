@@ -46,7 +46,13 @@
                 ? ['ring' => 'border-amber-200 bg-amber-50 text-amber-900', 'dot' => 'bg-amber-500', 'text' => $raw]
                 : ['ring' => 'border-sky-200 bg-sky-50 text-sky-900', 'dot' => 'bg-sky-500', 'text' => $raw];
         } elseif ($field === 'payment_method' && is_string($raw)) {
-            $variant = ['ring' => 'border-snow-200 bg-white text-snow-700', 'dot' => 'bg-snow-400', 'text' => $raw];
+            $s = strtoupper($raw);
+            $variant = match (true) {
+                $s === 'CASH' || str_contains($s, 'CASH') => ['ring' => 'border-emerald-200 bg-emerald-50 text-emerald-800', 'dot' => 'bg-emerald-500', 'text' => $raw],
+                $s === 'CARD' || str_contains($s, 'CARD') => ['ring' => 'border-sky-200 bg-sky-50 text-sky-900', 'dot' => 'bg-sky-500', 'text' => $raw],
+                $s === 'TRANSFER' => ['ring' => 'border-violet-200 bg-violet-50 text-violet-800', 'dot' => 'bg-violet-500', 'text' => $raw],
+                default => ['ring' => 'border-amber-200 bg-amber-50 text-amber-900', 'dot' => 'bg-amber-500', 'text' => $raw],
+            };
         } elseif ($field === 'role' && is_string($raw)) {
             $variant = ['ring' => 'border-indigo-200 bg-indigo-50 text-indigo-800', 'dot' => 'bg-indigo-500', 'text' => $raw];
         } else {

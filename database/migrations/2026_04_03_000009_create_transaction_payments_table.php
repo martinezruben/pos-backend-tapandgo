@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('transaction_payments', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('transaction_id');
-            $table->enum('payment_method', ['CASH', 'CARD', 'TRANSFER', 'OTHER']);
+            $table->string('payment_method', 30);
             $table->decimal('amount', 10, 2);
             $table->string('reference', 100)->nullable();
             $table->timestamps();

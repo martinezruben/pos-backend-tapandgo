@@ -142,10 +142,10 @@ class AdminTransactionReportExportTest extends TestCase
         $rows = $this->rows($res->streamedContent());
         // cabeceras + 2 líneas (EXT-1) + 1 línea (EXT-2)
         $this->assertCount(4, $rows);
-        $this->assertEquals('SKU-CAFE', $rows[1][9]);
-        $this->assertEquals('Café', $rows[1][10]);
-        $this->assertEquals('SKU-TE', $rows[2][9]);
-        $this->assertEquals('SKU-SAND', $rows[3][9]);
+        $this->assertEquals('SKU-CAFE', $rows[1][10]);
+        $this->assertEquals('Café', $rows[1][11]);
+        $this->assertEquals('SKU-TE', $rows[2][10]);
+        $this->assertEquals('SKU-SAND', $rows[3][10]);
     }
 
     public function test_report_filters_by_date_and_location(): void

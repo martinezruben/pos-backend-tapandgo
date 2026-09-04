@@ -55,7 +55,7 @@ class TransactionReportExportController extends Controller
             ->when($to, fn ($q) => $q->where('occurred_at', '<=', $to))
             ->when($locationId, fn ($q) => $q->where('location_id', $locationId))
             ->when($includeDetail, fn ($q) => $q->with('items'))
-            ->with(['location', 'device', 'user'])
+            ->with(['location', 'device', 'user', 'payments'])
             ->orderBy('occurred_at')
             ->orderBy('id')
             ->get();
@@ -69,6 +69,7 @@ class TransactionReportExportController extends Controller
             'Usuario',
             'Turno (cliente)',
             'Estado',
+            'Método de pago',
             'Total',
         ];
         $detailHeaders = ['SKU', 'Producto', 'Cantidad', 'Precio unitario', 'Descuento', 'Impuesto', 'Total línea'];
@@ -100,6 +101,13 @@ class TransactionReportExportController extends Controller
                     ? (($t->user->full_name ?? '') !== '' ? $t->user->full_name : $t->user->username)
                     : '';
 
+                $methodLabels = ['CASH' => 'Efectivo', 'CARD' => 'Tarjeta', 'TRANSFER' => 'Transferencia', 'OTHER' => 'Otro'];
+                $methods = $t->payments
+                    ->pluck('payment_method')
+                    ->unique()
+                    ->map(fn ($m) => $methodLabels[$m] ?? $m)
+                    ->implode(', ');
+
                 $base = [
                     (string) $t->getKey(),
                     $t->external_id,
@@ -109,6 +117,7 @@ class TransactionReportExportController extends Controller
                     $userLabel,
                     (string) $t->turn_number,
                     $t->status,
+                    $methods,
                     (float) $t->total,
                 ];
 

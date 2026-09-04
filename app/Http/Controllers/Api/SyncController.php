@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Device;
 use App\Models\Family;
 use App\Models\License;
+use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Promotion;
 use App\Models\Subfamily;
@@ -215,7 +216,7 @@ class SyncController extends Controller
 
         $promotions = $this->pullPromotions($since)->map(fn (Promotion $pr) => $this->promotionPayload($pr));
 
-        $paymentMethods = $this->paymentMethodsPayload($syncTimestampIso);
+        $paymentMethods = $this->paymentMethodsPayload($syncTimestampIso, $since);
 
         $recordCount = 1 + $users->count() + $families->count() + $subfamilies->count() + $products->count() + $promotions->count() + count($paymentMethods);
 
@@ -484,23 +485,35 @@ class SyncController extends Controller
     }
 
     /**
+     * Métodos de pago desde BD (gestionables en el panel). El POS renderiza
+     * un botón por método usando name/type/color.
+     *
      * @return list<array<string, mixed>>
      */
-    private function paymentMethodsPayload(string $syncTimestampIso): array
+    private function paymentMethodsPayload(string $syncTimestampIso, ?Carbon $since): array
     {
-        $out = [];
-        foreach (config('sync_catalog.payment_methods', []) as $pm) {
-            $out[] = [
-                'id' => $pm['id'],
-                'name' => $pm['name'],
-                'type' => $pm['type'],
-                'isEnabled' => (bool) ($pm['is_enabled'] ?? true),
-                'updatedAt' => $syncTimestampIso,
-                'deletedAt' => null,
-            ];
+        $q = PaymentMethod::withTrashed();
+        if ($since === null) {
+            $q->whereNull('deleted_at');
+        } else {
+            $q->where(function ($w) use ($since): void {
+                $w->where('payment_methods.updated_at', '>', $since)
+                    ->orWhere(function ($w2) use ($since): void {
+                        $w2->whereNotNull('payment_methods.deleted_at')
+                            ->where('payment_methods.deleted_at', '>', $since);
+                    });
+            });
         }
 
-        return $out;
+        return $q->orderBy('name')->get()->map(fn (PaymentMethod $pm) => [
+            'id' => $pm->id,
+            'name' => $pm->name,
+            'type' => $pm->type,
+            'color' => $pm->color,
+            'isEnabled' => (bool) $pm->is_enabled,
+            'updatedAt' => $pm->updated_at->utc()->format('Y-m-d\TH:i:s').'Z',
+            'deletedAt' => $pm->deleted_at?->utc()->format('Y-m-d\TH:i:s\Z'),
+        ])->all();
     }
 
     /**

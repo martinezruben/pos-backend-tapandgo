@@ -1,36 +1,16 @@
 <?php
 
 /**
- * Catálogo enviado en GET /api/sync/pull → data.paymentMethods.
- * Alineado a PaymentMethodEntity (Room): id, name, type, isEnabled, updatedAt, deletedAt.
+ * Catálogo del sync. Los métodos de pago ya NO viven aquí: se gestionan
+ * desde el panel (Operación → Métodos de pago, tabla payment_methods)
+ * y viajan por GET /api/sync/pull → data.paymentMethods.
  */
 return [
     'license_plan_default' => env('SYNC_LICENSE_PLAN_DEFAULT', 'standard'),
 
     'payment_methods' => [
-        [
-            'id' => 'pm-cash',
-            'type' => 'CASH',
-            'name' => 'Efectivo',
-            'is_enabled' => true,
-        ],
-        [
-            'id' => 'pm-card',
-            'type' => 'CARD',
-            'name' => 'Tarjeta',
-            'is_enabled' => true,
-        ],
-        [
-            'id' => 'pm-transfer',
-            'type' => 'TRANSFER',
-            'name' => 'Transferencia',
-            'is_enabled' => true,
-        ],
-        [
-            'id' => 'pm-other',
-            'type' => 'OTHER',
-            'name' => 'Otro',
-            'is_enabled' => true,
-        ],
+        // Deprecated: gestionados en BD (PaymentMethod). IDs legacy iniciales:
+        // pm-cash (Efectivo/CASH), pm-card (Tarjeta/CARD),
+        // pm-transfer (Transferencia/TRANSFER), pm-other (Otro/OTHER).
     ],
 ];

@@ -47,6 +47,10 @@
                         <dd class="text-slate-800" x-text="detail.status ?? '—'"></dd>
                     </div>
                     <div class="flex flex-col gap-0.5">
+                        <dt class="font-semibold uppercase tracking-wide text-slate-400">Método de pago</dt>
+                        <dd class="text-slate-800" x-text="(detail.payment_methods && detail.payment_methods.length) ? detail.payment_methods.join(', ') : '—'"></dd>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
                         <dt class="font-semibold uppercase tracking-wide text-slate-400">Total</dt>
                         <dd class="tabular-nums text-slate-800" x-text="detail.total ?? '—'"></dd>
                     </div>

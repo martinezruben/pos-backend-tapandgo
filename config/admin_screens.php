@@ -8,6 +8,7 @@ use App\Models\Family;
 use App\Models\License;
 use App\Models\Location;
 use App\Models\NcfSequence;
+use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Promotion;
 use App\Models\Shift;
@@ -221,6 +222,45 @@ return [
                 ],
             ],
             'sortable' => ['family_id', 'name'],
+            'default_sort' => ['key' => 'name', 'direction' => 'asc'],
+        ],
+    ],
+    'payment-methods' => [
+        'model' => PaymentMethod::class,
+        'label' => 'Métodos de pago',
+        'icon' => 'credit-card',
+        'labels' => [
+            'name' => 'Nombre (botón en el POS)',
+            'type' => 'Categoría',
+            'color' => 'Color del botón',
+        ],
+        'fields' => ['name', 'type', 'color', 'is_enabled'],
+        'select_options' => [
+            'type' => [
+                'CASH' => 'Efectivo',
+                'CARD' => 'Tarjeta',
+                'TRANSFER' => 'Transferencia',
+                'OTHER' => 'Otro',
+            ],
+        ],
+        'foreign_labels' => [],
+        'grid' => [
+            'visible_limit' => 8,
+            'filters' => [
+                'type' => [
+                    'label' => 'Categoría',
+                    'type' => 'select',
+                    'options' => ['CASH' => 'Efectivo', 'CARD' => 'Tarjeta', 'TRANSFER' => 'Transferencia', 'OTHER' => 'Otro'],
+                    'apply' => ['type' => 'column', 'column' => 'type'],
+                ],
+                'is_enabled' => [
+                    'label' => 'Estado',
+                    'type' => 'select',
+                    'options' => ['1' => 'Activo', '0' => 'Inactivo'],
+                    'apply' => ['type' => 'column', 'column' => 'is_enabled'],
+                ],
+            ],
+            'sortable' => ['name', 'type', 'is_enabled'],
             'default_sort' => ['key' => 'name', 'direction' => 'asc'],
         ],
     ],
