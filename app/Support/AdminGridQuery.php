@@ -19,9 +19,9 @@ class AdminGridQuery
     }
 
     /**
-     * Opciones para selects de filtro (id + label).
+     * Opciones para selects de filtro (id + label, y 'parent' si el filtro es dependiente).
      *
-     * @return array<string, Collection<int, array{id: string, label: string}>>
+     * @return array<string, Collection<int, array{id: string, label: string, parent?: string}>>
      */
     public static function filterOptions(array $cfg): array
     {
@@ -30,6 +30,7 @@ class AdminGridQuery
             if (($def['type'] ?? '') !== 'select') {
                 continue;
             }
+            $parent = $def['depends'] ?? null; // clave del filtro padre (cascada)
             if (isset($def['model'])) {
                 /** @var class-string<Model> $modelClass */
                 $modelClass = $def['model'];
@@ -37,9 +38,10 @@ class AdminGridQuery
                     $rows = Subfamily::query()->with('family')->get()
                         ->sortBy(fn (Model $row) => [data_get($row, 'family.name', ''), data_get($row, 'name', '')])
                         ->values()
-                        ->map(fn (Model $row): array => [
+                        ->map(fn (Model $row) => [
                             'id' => (string) $row->getKey(),
                             'label' => $row->admin_label,
+                            'parent' => (string) $row->family_id,
                         ]);
                     $out[$key] = collect([['id' => '', 'label' => 'Todos']])->merge($rows);
 
@@ -48,10 +50,11 @@ class AdminGridQuery
                 $orderBy = $def['order_by'] ?? 'name';
                 $labelCol = $def['label_column'] ?? 'name';
                 $fallback = $def['fallback_column'] ?? null;
+                $parentColumn = $def['parent_column'] ?? null;
                 $rows = $modelClass::query()
                     ->orderBy($orderBy)
                     ->get()
-                    ->map(function (Model $row) use ($labelCol, $fallback): array {
+                    ->map(function (Model $row) use ($labelCol, $fallback, $parentColumn): array {
                         $label = (string) data_get($row, $labelCol);
                         if ($label === '' && $fallback !== null) {
                             $label = (string) data_get($row, $fallback);
@@ -60,7 +63,12 @@ class AdminGridQuery
                             $label = (string) $row->getKey();
                         }
 
-                        return ['id' => (string) $row->getKey(), 'label' => $label];
+                        $opt = ['id' => (string) $row->getKey(), 'label' => $label];
+                        if ($parentColumn !== null) {
+                            $opt['parent'] = (string) data_get($row, $parentColumn);
+                        }
+
+                        return $opt;
                     });
                 $out[$key] = collect([['id' => '', 'label' => 'Todos']])->merge($rows);
             } elseif (isset($def['options']) && is_array($def['options'])) {

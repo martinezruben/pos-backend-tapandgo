@@ -59,7 +59,7 @@
                 </div>
             </div>
         @else
-        <form method="POST" action="{{ $item ? route('admin.screens.update', [$screen, $item->getKey()]) : route('admin.screens.store', $screen) }}" class="grid grid-cols-1 gap-3 px-4 py-4 md:grid-cols-2 md:gap-x-4 md:gap-y-3" @if(in_array($screen, ['families', 'products'])) enctype="multipart/form-data" @endif>
+        <form method="POST" action="{{ $item ? route('admin.screens.update', [$screen, $item->getKey()]) : route('admin.screens.store', $screen) }}" class="grid grid-cols-1 gap-3 px-4 py-4 md:grid-cols-2 md:gap-x-4 md:gap-y-3" @if(in_array($screen, ['families', 'products'])) enctype="multipart/form-data" @endif x-data="selectCascade">
             @csrf
             @if($item)
                 @method('PUT')
@@ -87,10 +87,10 @@
                         @php
                             $fkOpts = ($foreignSelectOptions ?? [])[$field] ?? collect();
                         @endphp
-                        <select id="f-{{ $field }}" name="{{ $field }}" class="snow-input">
+                        <select id="f-{{ $field }}" name="{{ $field }}" class="snow-input" @if(!empty($cfg['foreign_labels'][$field]['depends'])) data-depends="{{ $cfg['foreign_labels'][$field]['depends'] }}" @endif>
                             <option value="">{{ __('— Seleccionar —') }}</option>
                             @foreach($fkOpts as $opt)
-                                <option value="{{ $opt['id'] }}" @selected((string) old($field, $item?->{$field}) === (string) $opt['id'])>{{ $opt['label'] }}</option>
+                                <option value="{{ $opt['id'] }}" @selected((string) old($field, $item?->{$field}) === (string) $opt['id']) @if(isset($opt['parent'])) data-parent="{{ $opt['parent'] }}" @endif>{{ $opt['label'] }}</option>
                             @endforeach
                         </select>
                     @elseif($field === 'id' && $item)

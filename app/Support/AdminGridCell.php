@@ -80,10 +80,11 @@ class AdminGridCell
             return $query->with('family')->get()
                 ->sortBy(fn (Model $m) => [data_get($m, 'family.name', ''), data_get($m, 'name', '')])
                 ->values()
-                ->map(fn (Model $m): array => [
+                ->map(fn (Model $m): array => array_filter([
                     'id' => (string) $m->getKey(),
                     'label' => self::selectOptionLabel($m, $meta),
-                ]);
+                    'parent' => ! empty($meta['parent_column']) ? (string) data_get($m, $meta['parent_column']) : null,
+                ], fn ($v) => $v !== null));
         }
 
         match ($meta['relation']) {
@@ -92,10 +93,11 @@ class AdminGridCell
             default => $query->orderBy($meta['attribute']),
         };
 
-        return $query->get()->map(fn (Model $m): array => [
+        return $query->get()->map(fn (Model $m): array => array_filter([
             'id' => (string) $m->getKey(),
             'label' => self::selectOptionLabel($m, $meta),
-        ]);
+            'parent' => ! empty($meta['parent_column']) ? (string) data_get($m, $meta['parent_column']) : null,
+        ], fn ($v) => $v !== null));
     }
 
     public static function display(Model $item, string $field, array $cfg): string

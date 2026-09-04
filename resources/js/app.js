@@ -5,6 +5,38 @@ import Alpine from 'alpinejs';
 window.Alpine = Alpine;
 
 document.addEventListener('alpine:init', () => {
+    // Cascada de selects: los selects con data-depends solo muestran opciones
+    // cuyo data-parent coincida con el valor del select padre; al cambiar el
+    // padre se limpia la selección del hijo. Funciona en filtros de grid y form.
+    Alpine.data('selectCascade', () => ({
+        init() {
+            const root = this.$el;
+            const byId = (id) => root.querySelector('#' + CSS.escape(id));
+
+            root.querySelectorAll('select[data-depends]').forEach((child) => {
+                const parent = byId(child.dataset.depends);
+                if (!parent || parent.tagName !== 'SELECT') {
+                    return;
+                }
+                const apply = () => {
+                    const val = parent.value;
+                    [...child.options].forEach((opt) => {
+                        if (opt.dataset.parent === undefined) {
+                            return;
+                        }
+                        const show = val === '' || opt.dataset.parent === val;
+                        opt.hidden = !show;
+                        if (!show && opt.selected) {
+                            opt.selected = false;
+                        }
+                    });
+                };
+                parent.addEventListener('change', apply);
+                apply();
+            });
+        },
+    }));
+
     Alpine.data('locationPairingToken', () => ({
         open: false,
         loading: false,

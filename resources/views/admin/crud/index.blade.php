@@ -102,7 +102,7 @@
             </div>
 
             @if($gridFilters !== [])
-                <div class="flex flex-wrap items-end gap-1.5 border-t border-slate-50 bg-slate-50/70 px-2 py-3 sm:px-3 sm:py-3.5">
+                <div class="flex flex-wrap items-end gap-1.5 border-t border-slate-50 bg-slate-50/70 px-2 py-3 sm:px-3 sm:py-3.5" x-data="selectCascade">
                     @foreach($gridFilters as $param => $fdef)
                         <div class="flex min-w-[7rem] flex-col gap-0.5">
                             <label class="text-[8px] font-bold uppercase tracking-widest text-slate-400" for="flt-{{ $param }}">{{ $fdef['label'] ?? $param }}</label>
@@ -115,9 +115,9 @@
                                     class="hope-filter-select"
                                 >
                             @else
-                                <select id="flt-{{ $param }}" name="filter[{{ $param }}]" class="hope-filter-select">
+                                <select id="flt-{{ $param }}" name="filter[{{ $param }}]" class="hope-filter-select" @if(!empty($fdef['depends'])) data-depends="{{ $fdef['depends'] }}" @endif>
                                     @foreach(($gridFilterOptions[$param] ?? collect()) as $opt)
-                                        <option value="{{ $opt['id'] }}" @selected((string) request('filter.'.$param) === (string) $opt['id'])>{{ $opt['label'] }}</option>
+                                        <option value="{{ $opt['id'] }}" @selected((string) request('filter.'.$param) === (string) $opt['id']) @if(isset($opt['parent'])) data-parent="{{ $opt['parent'] }}" @endif>{{ $opt['label'] }}</option>
                                     @endforeach
                                 </select>
                             @endif
