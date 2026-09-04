@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\AdminAuditLog;
+use App\Models\AdminUser;
 use App\Models\ApiRequestLog;
 use App\Models\Device;
 use App\Models\Family;
@@ -678,6 +680,61 @@ return [
                 ],
             ],
             'default_sort' => ['key' => 'type', 'direction' => 'asc'],
+        ],
+    ],
+    'audit-log' => [
+        'model' => AdminAuditLog::class,
+        'label' => 'Auditoría',
+        'icon' => 'shield-check',
+        'readonly' => true,
+        'fields' => ['created_at', 'admin_user_id', 'action', 'entity_type', 'entity_id', 'changes', 'ip'],
+        'labels' => [
+            'created_at' => 'Fecha / hora',
+            'admin_user_id' => 'Usuario',
+            'entity_type' => 'Entidad',
+            'changes' => 'Cambios',
+            'ip' => 'IP',
+        ],
+        'foreign_labels' => [
+            'admin_user_id' => ['relation' => 'adminUser', 'attribute' => 'name', 'header' => 'Usuario'],
+            'changes' => ['virtual' => true, 'header' => 'Cambios'],
+        ],
+        'grid' => [
+            'visible_limit' => 8,
+            'filters' => [
+                'admin_user_id' => [
+                    'label' => 'Usuario',
+                    'type' => 'select',
+                    'model' => AdminUser::class,
+                    'order_by' => 'name',
+                    'label_column' => 'name',
+                    'apply' => ['type' => 'column', 'column' => 'admin_user_id'],
+                ],
+                'action' => [
+                    'label' => 'Acción',
+                    'type' => 'select',
+                    'options' => ['created' => 'Creación', 'updated' => 'Edición', 'deleted' => 'Eliminación', 'login' => 'Login', 'logout' => 'Logout'],
+                    'apply' => ['type' => 'column', 'column' => 'action'],
+                ],
+                'entity_type' => [
+                    'label' => 'Entidad',
+                    'type' => 'select',
+                    'options' => ['Product' => 'Producto', 'Family' => 'Familia', 'Subfamily' => 'Subfamilia', 'Location' => 'Localidad', 'Device' => 'Dispositivo', 'License' => 'Licencia', 'Shift' => 'Turno', 'User' => 'Usuario POS', 'AdminUser' => 'Admin', 'SystemParameter' => 'Parámetro'],
+                    'apply' => ['type' => 'column', 'column' => 'entity_type'],
+                ],
+                'date_from' => [
+                    'label' => 'Desde',
+                    'type' => 'date',
+                    'apply' => ['type' => 'date_from', 'column' => 'created_at'],
+                ],
+                'date_to' => [
+                    'label' => 'Hasta',
+                    'type' => 'date',
+                    'apply' => ['type' => 'date_to', 'column' => 'created_at'],
+                ],
+            ],
+            'sortable' => ['created_at', 'action', 'entity_type'],
+            'default_sort' => ['key' => 'created_at', 'direction' => 'desc'],
         ],
     ],
     'transactions-report' => [

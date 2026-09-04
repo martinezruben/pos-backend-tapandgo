@@ -4,8 +4,21 @@ namespace App\Providers;
 
 use App\Events\NcfRangeLow;
 use App\Listeners\SendNcfRangeLowNotification;
+use App\Models\AdminAuditLog;
 use App\Models\AdminUser;
+use App\Models\Device;
+use App\Models\Family;
+use App\Models\License;
+use App\Models\Location;
+use App\Models\Product;
+use App\Models\Shift;
+use App\Models\Subfamily;
+use App\Models\SystemParameter;
+use App\Models\User;
+use App\Observers\AuditsModelChanges;
 use App\Services\NcfService;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Event;
@@ -24,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(NcfService::class, function ($app) {
-            return new NcfService();
+            return new NcfService;
         });
     }
 
@@ -63,6 +76,30 @@ class AppServiceProvider extends ServiceProvider
 
         // NCF: notificar admin cuando rango esté bajo
         Event::listen(NcfRangeLow::class, SendNcfRangeLowNotification::class);
+
+        // Auditoría del panel: cambios en modelos clave + login/logout del admin
+        AuditsModelChanges::track([
+            Product::class,
+            Family::class,
+            Subfamily::class,
+            Location::class,
+            Device::class,
+            License::class,
+            Shift::class,
+            User::class,
+            AdminUser::class,
+            SystemParameter::class,
+        ]);
+        Event::listen(Login::class, function (Login $event): void {
+            if ($event->user instanceof AdminUser) {
+                AdminAuditLog::record('login', 'AdminUser', (string) $event->user->getKey(), admin: $event->user);
+            }
+        });
+        Event::listen(Logout::class, function (Logout $event): void {
+            if ($event->user instanceof AdminUser) {
+                AdminAuditLog::record('logout', 'AdminUser', (string) $event->user->getKey(), admin: $event->user);
+            }
+        });
 
         Gate::before(function ($user, ?string $ability = null) {
             if (! $user instanceof AdminUser || $ability === null) {

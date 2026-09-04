@@ -2,13 +2,15 @@
 
 namespace App\Support;
 
+use App\Models\AdminAuditLog;
+use App\Models\AdminUser;
 use App\Models\ApiRequestLog;
 use App\Models\Device;
 use App\Models\Family;
 use App\Models\Location;
 use App\Models\Product;
-use App\Models\Subfamily;
 use App\Models\Shift;
+use App\Models\Subfamily;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,6 +29,7 @@ class AdminGridCell
             'location' => Location::class,
             'device' => Device::class,
             'user' => User::class,
+            'adminUser' => AdminUser::class,
             'shift' => Shift::class,
             'transaction' => Transaction::class,
             'product' => Product::class,
@@ -107,6 +110,20 @@ class AdminGridCell
             }
 
             return (string) $raw;
+        }
+
+        if ($item instanceof AdminAuditLog) {
+            if ($field === 'created_at' && $item->created_at !== null) {
+                return $item->created_at->format('Y-m-d H:i:s');
+            }
+            if ($field === 'changes' && is_array($item->changes)) {
+                $parts = [];
+                foreach ($item->changes as $campo => [$antes, $despues]) {
+                    $parts[] = $campo.': '.Str::limit((string) $antes, 24).' → '.Str::limit((string) $despues, 24);
+                }
+
+                return Str::limit(implode(' · ', $parts), 160) ?: '—';
+            }
         }
 
         if ($item instanceof ApiRequestLog) {
