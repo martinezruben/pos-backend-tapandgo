@@ -35,7 +35,7 @@
     <div class="mt-auto shrink-0 border-t border-slate-100 px-2 py-2">
         <div class="flex items-center gap-1.5 rounded-md bg-slate-50 px-1.5 py-1.5">
             <span class="flex h-6 w-6 items-center justify-center rounded-md bg-primary-600 text-[10px] font-bold text-white">P</span>
-            <span class="text-[9px] font-bold uppercase tracking-wide text-slate-400">POS Backend</span>
+            <span class="text-[9px] font-bold uppercase tracking-wide text-slate-400">Tap&Go</span>
         </div>
     </div>
 </div>

@@ -19,7 +19,7 @@
         <button type="button" class="rounded-md p-1.5 text-slate-600 hover:bg-slate-100" @click="mobileNav = true" aria-label="Abrir menú">
             <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
         </button>
-        <span class="text-xs font-semibold text-primary-700">{{ config('app.name', 'POS') }}</span>
+        <span class="text-xs font-semibold text-primary-700">{{ config('app.name', 'Tap&Go') }}</span>
         <span class="w-8"></span>
     </div>
     <div
