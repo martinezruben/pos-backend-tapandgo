@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureDeviceOperational;
 use App\Http\Middleware\LogApiRequest;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withSchedule(function (Schedule $schedule): void {
+        // Purga de logs operativos (sync, api, auditoría)
+        $schedule->command('pos:prune-logs')->dailyAt('03:00');
+    })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(function (Request $request) {
             if ($request->expectsJson() || $request->is('api/*')) {

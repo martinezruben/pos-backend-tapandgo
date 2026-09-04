@@ -71,6 +71,9 @@
                         </span>
                         <input type="search" placeholder="Buscar en el panel…" class="w-full rounded-md border border-white/20 bg-white/10 py-1.5 pl-8 pr-2 text-[10px] text-white placeholder:text-white/45 focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/25" disabled aria-disabled="true">
                     </div>
+                    <a href="{{ route('admin.2fa.show') }}" class="inline-flex rounded-md border border-white/25 bg-white/10 p-1.5 text-white transition hover:bg-white/20" title="Verificación en dos pasos">
+                        <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+                    </a>
                     <form method="POST" action="{{ route('admin.logout') }}" class="inline">
                         @csrf
                         <button type="submit" class="inline-flex rounded-md border border-white/25 bg-white/10 p-1.5 text-white transition hover:bg-white/20" title="Salir">

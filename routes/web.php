@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminTwoFactorController;
 use App\Http\Controllers\Admin\ApiRequestLogDetailController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CashClosingController;
@@ -21,11 +22,19 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
     Route::middleware('guest:admin')->group(function (): void {
         Route::get('/login', [AuthController::class, 'create'])->name('login');
         Route::post('/login', [AuthController::class, 'store'])->name('login.store');
+
+        // Desafío 2FA (sesión con credenciales ya validadas, sin login pleno)
+        Route::get('/2fa', [AdminTwoFactorController::class, 'challenge'])->name('2fa.challenge');
+        Route::post('/2fa', [AdminTwoFactorController::class, 'verify'])->name('2fa.verify');
     });
 
     Route::middleware('auth:admin')->group(function (): void {
         Route::get('/', DashboardController::class)->name('dashboard');
         Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
+
+        Route::get('/2fa/setup', [AdminTwoFactorController::class, 'show'])->name('2fa.show');
+        Route::post('/2fa/setup', [AdminTwoFactorController::class, 'enable'])->name('2fa.enable');
+        Route::post('/2fa/disable', [AdminTwoFactorController::class, 'disable'])->name('2fa.disable');
 
         Route::get('/locations/{location}/pairing-token', [LocationPairingTokenController::class, 'show'])->name('locations.pairing-token.show');
         Route::post('/locations/{location}/pairing-token', [LocationPairingTokenController::class, 'store'])->name('locations.pairing-token.store');

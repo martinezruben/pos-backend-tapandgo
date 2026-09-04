@@ -19,6 +19,7 @@ class SystemParameter extends Model
         'pos_password_require_symbol',
         'admin_max_failed_login_attempts',
         'admin_lockout_minutes',
+        'sync_paused',
     ];
 
     protected function casts(): array
@@ -32,6 +33,7 @@ class SystemParameter extends Model
             'pos_password_require_lowercase' => 'boolean',
             'pos_password_require_digit' => 'boolean',
             'pos_password_require_symbol' => 'boolean',
+            'sync_paused' => 'boolean',
         ];
     }
 

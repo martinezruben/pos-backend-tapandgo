@@ -134,6 +134,23 @@
                 <p class="mt-1 text-[9px] text-slate-500">Tras superar los intentos, el acceso queda bloqueado temporalmente para esa combinación de correo e IP.</p>
             </section>
 
+            <section>
+                <h2 class="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Sincronización</h2>
+                <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-100 bg-white p-3 text-[11px] text-slate-700">
+                    <input
+                        type="checkbox"
+                        name="sync_paused"
+                        value="1"
+                        class="h-3.5 w-3.5 rounded border-slate-300 text-primary-600"
+                        @checked(old('sync_paused', $params->sync_paused))
+                    >
+                    <span>
+                        <span class="font-semibold">Pausar sincronización del POS</span>
+                        <span class="block text-[9px] text-slate-500">Detiene push/pull de los dispositivos (login y reportes siguen operativos). Útil durante migraciones o incidencias.</span>
+                    </span>
+                </label>
+            </section>
+
             <div class="flex justify-end border-t border-slate-100 pt-3">
                 <button
                     type="submit"

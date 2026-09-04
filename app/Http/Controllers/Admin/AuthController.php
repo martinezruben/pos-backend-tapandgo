@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminUser;
 use App\Models\SystemParameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,7 +13,7 @@ class AuthController extends Controller
 {
     public function create()
     {
-        $adminUserCount = \App\Models\AdminUser::query()->where('is_active', true)->count();
+        $adminUserCount = AdminUser::query()->where('is_active', true)->count();
         $dbStatus = $adminUserCount > 0 ? 'OK' : 'EMPTY';
 
         return view('admin.auth.login', compact('dbStatus'));
@@ -41,6 +42,21 @@ class AuthController extends Controller
 
         if (Auth::guard('admin')->attempt($credentials, $request->boolean('remember'))) {
             RateLimiter::clear($throttleKey);
+
+            // 2FA: posponer el login hasta verificar el código TOTP
+            /** @var AdminUser $admin */
+            $admin = Auth::guard('admin')->user();
+            if ($admin->totp_enabled) {
+                $remember = $request->boolean('remember');
+                Auth::guard('admin')->logout();
+                $request->session()->put('admin_2fa_id', $admin->getKey());
+                $request->session()->put('admin_2fa_remember', $remember);
+                $request->session()->migrate();
+                $request->session()->regenerateToken();
+
+                return redirect()->route('admin.2fa.challenge');
+            }
+
             $request->session()->regenerate();
 
             return redirect()->intended(route('admin.dashboard'));
