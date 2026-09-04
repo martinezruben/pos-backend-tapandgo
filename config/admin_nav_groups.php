@@ -31,11 +31,11 @@ return [
     [
         'key' => 'system',
         'label' => 'Sistema',
-        'screens' => ['admin-users', 'roles', 'permissions'],
+        'screens' => ['admin-users', 'roles', 'permissions', 'audit-log'],
     ],
     [
         'key' => 'reports',
         'label' => 'Reportes',
-        'screens' => ['ncf-report', 'transactions-report'],
+        'screens' => ['ncf-report', 'transactions-report', 'cierre-caja'],
     ],
 ];

@@ -436,6 +436,13 @@ class DemoPosSeeder extends Seeder
             $opsViewerPerms[] = $p['view'];
         }
 
+        // Reportes dedicados fuera del CRUD genérico
+        foreach (['cierre_caja.view', 'audit_log.view'] as $extra) {
+            Permission::firstOrCreate(['name' => $extra, 'guard_name' => 'admin']);
+            $opsManagerPerms[] = $extra;
+            $opsViewerPerms[] = $extra;
+        }
+
         $opsManagerRole = Role::create(['name' => 'ops-manager', 'guard_name' => 'admin']);
         $opsManagerRole->syncPermissions($opsManagerPerms);
 

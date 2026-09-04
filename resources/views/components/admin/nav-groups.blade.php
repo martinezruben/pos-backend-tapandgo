@@ -40,6 +40,20 @@
                         </a>
                     @endif
                 @endforeach
+                @if(($group['key'] ?? '') === 'reports' && $admin->can('cierre_caja.view'))
+                    @php($cashClosingActive = request()->routeIs('admin.cierre-caja.*'))
+                    <a
+                        href="{{ route('admin.cierre-caja.index') }}"
+                        class="group flex items-center gap-2 rounded-lg py-1.5 pl-2 pr-1.5 text-[11px] font-medium transition-all
+                            {{ $cashClosingActive
+                                ? 'bg-primary-600 text-white shadow-sm shadow-primary-600/20'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}"
+                        @if($cashClosingActive) aria-current="page" @endif
+                    >
+                        <x-admin.snow.icon name="banknotes" class="h-4 w-4 shrink-0 {{ $cashClosingActive ? 'text-white' : 'text-slate-400 group-hover:text-primary-600' }}" />
+                        <span class="min-w-0 flex-1 truncate leading-tight">Cierre de caja</span>
+                    </a>
+                @endif
                 @if(($group['key'] ?? '') === 'system' && $admin->can('roles.edit'))
                     <a
                         href="{{ route('admin.rbac.matrix.index') }}"
