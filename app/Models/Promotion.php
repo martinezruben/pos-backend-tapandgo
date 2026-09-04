@@ -15,12 +15,14 @@ class Promotion extends Model
 {
     use HasUuidPrimaryKey, SoftDeletes;
 
-    protected $fillable = ['name', 'type', 'value', 'product_id', 'subfamily_id', 'family_id', 'starts_at', 'ends_at', 'is_active'];
+    protected $fillable = ['name', 'type', 'value', 'buy_qty', 'pay_qty', 'product_id', 'subfamily_id', 'family_id', 'starts_at', 'ends_at', 'is_active'];
 
     protected function casts(): array
     {
         return [
             'value' => 'decimal:2',
+            'buy_qty' => 'decimal:2',
+            'pay_qty' => 'decimal:2',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'is_active' => 'boolean',

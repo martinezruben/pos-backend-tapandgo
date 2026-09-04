@@ -20,6 +20,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -421,7 +422,23 @@ class ScreenCrudController extends Controller
             $rules['role'] = ['required', Rule::in($roleKeys)];
         }
 
+        if ($screen === 'promotions') {
+            $rules['name'] = ['required', 'string', 'max:120'];
+            $rules['value'] = ['nullable', 'numeric', 'min:0'];
+            $rules['buy_qty'] = ['nullable', 'numeric', 'min:1'];
+            $rules['pay_qty'] = ['nullable', 'numeric', 'min:1'];
+            $rules['starts_at'] = ['nullable', 'date'];
+            $rules['ends_at'] = ['nullable', 'date', 'after_or_equal:starts_at'];
+            $rules['product_id'] = ['nullable', 'uuid', Rule::exists('products', 'id')];
+            $rules['subfamily_id'] = ['nullable', 'uuid', Rule::exists('subfamilies', 'id')];
+            $rules['family_id'] = ['nullable', 'uuid', Rule::exists('families', 'id')];
+        }
+
         $data = $request->validate($rules);
+
+        if ($screen === 'promotions') {
+            $this->validatePromotionBusinessRules($request, $data);
+        }
 
         if (isset($data['password']) && $data['password'] !== '') {
             if ($screen === 'admin-users') {
@@ -460,5 +477,54 @@ class ScreenCrudController extends Controller
         }
 
         return $data;
+    }
+
+    /**
+     * Reglas de negocio de promociones (tras la validación base de campos).
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function validatePromotionBusinessRules(Request $request, array $data): void
+    {
+        $fail = function (string $field, string $message): void {
+            throw ValidationException::withMessages([$field => $message]);
+        };
+
+        // PERCENT: valor expresado en %
+        if (($data['type'] ?? null) === 'PERCENT' && (float) ($data['value'] ?? 0) > 100) {
+            $fail('value', 'El porcentaje no puede superar 100.');
+        }
+
+        // BUNDLE no usa «valor» (usa cantidades); el resto exige valor > 0
+        if (($data['type'] ?? null) === 'BUNDLE') {
+            $data['value'] = 0;
+        } elseif (! isset($data['value']) || (float) $data['value'] <= 0) {
+            $fail('value', 'El valor de la promoción es requerido y debe ser mayor que cero.');
+        }
+
+        $scopeCount = collect(['product_id', 'subfamily_id', 'family_id'])
+            ->filter(fn ($f) => ! empty($data[$f]))
+            ->count();
+
+        if ($scopeCount > 1) {
+            $fail('family_id', 'La promoción debe aplicar a un solo objetivo: producto, subfamilia o familia.');
+        }
+
+        if (in_array($data['type'] ?? null, ['PRICE', 'BUNDLE'], true) && $scopeCount === 0) {
+            $fail('family_id', 'Este tipo de promoción requiere definir un producto, subfamilia o familia (no puede ser global).');
+        }
+
+        if (($data['type'] ?? null) === 'BUNDLE') {
+            $buy = isset($data['buy_qty']) ? (float) $data['buy_qty'] : 0.0;
+            $pay = isset($data['pay_qty']) ? (float) $data['pay_qty'] : 0.0;
+            if ($buy < 1 || $pay < 1 || floor($buy) != $buy || floor($pay) != $pay || $pay >= $buy) {
+                $fail('buy_qty', 'Para «lleva N paga M» ambas cantidades deben ser enteros ≥ 1 y «lleva» mayor que «paga» (ej. 2x1).');
+            }
+        }
+
+        if (! empty($data['starts_at']) && ! empty($data['ends_at'])
+            && strtotime((string) $data['ends_at']) < strtotime((string) $data['starts_at'])) {
+            $fail('ends_at', 'La fecha final no puede ser anterior a la inicial.');
+        }
     }
 }

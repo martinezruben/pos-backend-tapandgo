@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('promotions', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name', 120);
-            $table->enum('type', ['PERCENT', 'AMOUNT', 'PRICE']);
+            $table->enum('type', ['PERCENT', 'AMOUNT', 'PRICE', 'BUNDLE']);
             $table->decimal('value', 12, 2);
             $table->uuid('product_id')->nullable()->index();
             $table->uuid('subfamily_id')->nullable()->index();

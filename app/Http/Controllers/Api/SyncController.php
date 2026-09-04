@@ -436,6 +436,8 @@ class SyncController extends Controller
             'name' => $pr->name,
             'type' => $pr->type,
             'value' => (float) $pr->value,
+            'buyQty' => $pr->buy_qty !== null ? (float) $pr->buy_qty : null,
+            'payQty' => $pr->pay_qty !== null ? (float) $pr->pay_qty : null,
             'scopeType' => $scopeType,
             'scopeId' => $scopeId,
             'scopeName' => $pr->displayScopeName(),
