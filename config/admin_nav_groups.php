@@ -16,7 +16,7 @@ return [
     [
         'key' => 'catalog',
         'label' => 'Catálogo',
-        'screens' => ['families', 'subfamilies', 'products'],
+        'screens' => ['families', 'subfamilies', 'promotions', 'products'],
     ],
     [
         'key' => 'ops',

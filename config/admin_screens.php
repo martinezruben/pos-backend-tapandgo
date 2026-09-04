@@ -9,6 +9,7 @@ use App\Models\License;
 use App\Models\Location;
 use App\Models\NcfSequence;
 use App\Models\Product;
+use App\Models\Promotion;
 use App\Models\Shift;
 use App\Models\Subfamily;
 use App\Models\SyncLog;
@@ -220,6 +221,48 @@ return [
                 ],
             ],
             'sortable' => ['family_id', 'name'],
+            'default_sort' => ['key' => 'name', 'direction' => 'asc'],
+        ],
+    ],
+    'promotions' => [
+        'model' => Promotion::class,
+        'label' => 'Promociones',
+        'icon' => 'tag',
+        'labels' => [
+            'value' => 'Valor',
+            'starts_at' => 'Vigente desde',
+            'ends_at' => 'Vigente hasta',
+        ],
+        'fields' => ['name', 'type', 'value', 'product_id', 'subfamily_id', 'family_id', 'starts_at', 'ends_at', 'is_active'],
+        'select_options' => [
+            'type' => [
+                'PERCENT' => '% Descuento',
+                'AMOUNT' => 'Monto fijo de descuento',
+                'PRICE' => 'Precio de oferta',
+            ],
+        ],
+        'foreign_labels' => [
+            'product_id' => ['relation' => 'product', 'attribute' => 'name', 'fallback_attribute' => 'sku', 'header' => 'Producto'],
+            'subfamily_id' => ['relation' => 'subfamily', 'attribute' => 'admin_label', 'header' => 'Subfamilia'],
+            'family_id' => ['relation' => 'family', 'attribute' => 'name', 'header' => 'Familia'],
+        ],
+        'grid' => [
+            'visible_limit' => 9,
+            'filters' => [
+                'type' => [
+                    'label' => 'Tipo',
+                    'type' => 'select',
+                    'options' => ['PERCENT' => '% Descuento', 'AMOUNT' => 'Monto fijo', 'PRICE' => 'Precio oferta'],
+                    'apply' => ['type' => 'column', 'column' => 'type'],
+                ],
+                'is_active' => [
+                    'label' => 'Estado',
+                    'type' => 'select',
+                    'options' => ['1' => 'Activa', '0' => 'Inactiva'],
+                    'apply' => ['type' => 'column', 'column' => 'is_active'],
+                ],
+            ],
+            'sortable' => ['name', 'type', 'value', 'is_active', 'starts_at', 'ends_at'],
             'default_sort' => ['key' => 'name', 'direction' => 'asc'],
         ],
     ],

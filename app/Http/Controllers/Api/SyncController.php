@@ -7,6 +7,7 @@ use App\Models\Device;
 use App\Models\Family;
 use App\Models\License;
 use App\Models\Product;
+use App\Models\Promotion;
 use App\Models\Subfamily;
 use App\Models\SyncLog;
 use App\Models\SyncState;
@@ -212,9 +213,11 @@ class SyncController extends Controller
 
         $products = $this->pullProducts($since)->map(fn (Product $p) => $this->productPayload($p));
 
+        $promotions = $this->pullPromotions($since)->map(fn (Promotion $pr) => $this->promotionPayload($pr));
+
         $paymentMethods = $this->paymentMethodsPayload($syncTimestampIso);
 
-        $recordCount = 1 + $users->count() + $families->count() + $subfamilies->count() + $products->count() + count($paymentMethods);
+        $recordCount = 1 + $users->count() + $families->count() + $subfamilies->count() + $products->count() + $promotions->count() + count($paymentMethods);
 
         SyncState::updateOrCreate(
             ['location_id' => $device->location_id, 'device_id' => $device->id],
@@ -243,6 +246,7 @@ class SyncController extends Controller
                 'families' => $families->values()->all(),
                 'subfamilies' => $subfamilies->values()->all(),
                 'products' => $products->values()->all(),
+                'promotions' => $promotions->values()->all(),
                 'paymentMethods' => $paymentMethods,
             ],
         ]);
@@ -394,6 +398,52 @@ class SyncController extends Controller
             'name' => $s->name,
             'updatedAt' => $s->updated_at->utc()->format('Y-m-d\TH:i:s').'Z',
             'deletedAt' => $s->deleted_at?->utc()->format('Y-m-d\TH:i:s\Z'),
+        ];
+    }
+
+    /**
+     * @return Collection<int, Promotion>
+     */
+    private function pullPromotions(?Carbon $since): Collection
+    {
+        $q = Promotion::withTrashed();
+        if ($since === null) {
+            $q->whereNull('deleted_at');
+        } else {
+            $q->where(function ($w) use ($since): void {
+                $w->where('promotions.updated_at', '>', $since)
+                    ->orWhere(function ($w2) use ($since): void {
+                        $w2->whereNotNull('promotions.deleted_at')
+                            ->where('promotions.deleted_at', '>', $since);
+                    });
+            });
+        }
+
+        return $q->orderBy('promotions.updated_at')->get();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function promotionPayload(Promotion $pr): array
+    {
+        $scope = $pr->scopeAttribute();
+        $scopeType = $scope['scopeType'];
+        $scopeId = $scope['scopeId'];
+
+        return [
+            'id' => $pr->id,
+            'name' => $pr->name,
+            'type' => $pr->type,
+            'value' => (float) $pr->value,
+            'scopeType' => $scopeType,
+            'scopeId' => $scopeId,
+            'scopeName' => $pr->displayScopeName(),
+            'startsAt' => $pr->starts_at?->utc()->format('Y-m-d\TH:i:s').'Z',
+            'endsAt' => $pr->ends_at?->utc()->format('Y-m-d\TH:i:s').'Z',
+            'isActive' => (bool) $pr->is_active,
+            'updatedAt' => $pr->updated_at->utc()->format('Y-m-d\TH:i:s').'Z',
+            'deletedAt' => $pr->deleted_at?->utc()->format('Y-m-d\TH:i:s\Z'),
         ];
     }
 
