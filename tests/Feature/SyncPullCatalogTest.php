@@ -61,26 +61,26 @@ class SyncPullCatalogTest extends TestCase
         $this->assertSame(User::pinSha384FromPlain('password'), $userRow['pin']);
 
         $response->assertJsonStructure([
-                'syncTimestamp',
-                'data' => [
-                    'license' => ['deviceFingerprint', 'isActive', 'plan', 'expiresAt', 'updatedAt'],
-                    'users' => [
-                        ['id', 'username', 'pin', 'role', 'isActive', 'updatedAt', 'deletedAt'],
-                    ],
-                    'families' => [
-                        ['id', 'name', 'imageUrl', 'updatedAt', 'deletedAt'],
-                    ],
-                    'subfamilies' => [
-                        ['id', 'familyId', 'name', 'updatedAt', 'deletedAt'],
-                    ],
-                    'products' => [
-                        ['id', 'name', 'description', 'sku', 'codebar', 'imageUrl', 'familyName', 'categoria', 'subfamilyName', 'unitPrice', 'taxName', 'taxRate', 'isFavorite', 'updatedAt', 'deletedAt'],
-                    ],
-                    'paymentMethods' => [
-                        ['id', 'name', 'type', 'isEnabled', 'updatedAt', 'deletedAt'],
-                    ],
+            'syncTimestamp',
+            'data' => [
+                'license' => ['deviceFingerprint', 'isActive', 'plan', 'expiresAt', 'updatedAt'],
+                'users' => [
+                    ['id', 'username', 'pin', 'role', 'isActive', 'updatedAt', 'deletedAt'],
                 ],
-            ]);
+                'families' => [
+                    ['id', 'name', 'imageUrl', 'updatedAt', 'deletedAt'],
+                ],
+                'subfamilies' => [
+                    ['id', 'familyId', 'name', 'updatedAt', 'deletedAt'],
+                ],
+                'products' => [
+                    ['id', 'name', 'description', 'sku', 'codebar', 'imageUrl', 'familyName', 'categoria', 'subfamilyName', 'unitPrice', 'taxName', 'taxRate', 'isFavorite', 'updatedAt', 'deletedAt'],
+                ],
+                'paymentMethods' => [
+                    ['id', 'name', 'type', 'isEnabled', 'updatedAt', 'deletedAt'],
+                ],
+            ],
+        ]);
     }
 
     public function test_pull_requires_matching_device_fingerprint(): void
