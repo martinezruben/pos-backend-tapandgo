@@ -309,7 +309,7 @@ class ScreenCrudController extends Controller
     private function applyImageUpload(Request $request, array &$data, ?Model $existing, string $folder): void
     {
         $request->validate([
-            ($folder === 'families' ? 'family_image' : 'product_image') => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:2048'],
+            ($folder === 'families' ? 'family_image' : 'product_image') => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
         ], [
             ($folder === 'families' ? 'family_image' : 'product_image').'.image' => 'El archivo debe ser una imagen.',
         ]);

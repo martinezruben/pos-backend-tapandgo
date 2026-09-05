@@ -4,11 +4,12 @@ LABEL maintainer="TapGo POS"
 # Extensiones del sistema + librerías para compilar PHP exts
 RUN apk add --no-cache --virtual .build-deps \
         autoconf build-base icu-dev freetype-dev libjpeg-turbo-dev libpng-dev \
+        libwebp-dev \
         libzip-dev oniguruma-dev \
     && apk add --no-cache \
         nginx supervisor git zip unzip nodejs npm \
         curl \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j$(nproc) pdo_mysql mysqli gd intl zip bcmath \
     && pecl install redis \
     && docker-php-ext-enable redis \
@@ -40,7 +41,7 @@ RUN chown -R www-data:www-data /var/www/html && \
     find /var/www/html/storage -type f -exec chmod 664 {} \; && \
     find /var/www/html/storage -type d -exec chmod 775 {} \; && \
     find /var/www/html/bootstrap/cache -type d -exec chmod 775 {} \; && \
-    apk add --no-cache libpng libzip icu-libs libjpeg-turbo freetype && \
+    apk add --no-cache libpng libzip icu-libs libjpeg-turbo freetype libwebp && \
     apk del .build-deps
 
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf

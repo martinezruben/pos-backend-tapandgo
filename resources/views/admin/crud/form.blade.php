@@ -144,7 +144,7 @@
                         </div>
                     @endif
                     <input id="family_image" type="file" name="family_image" accept="image/jpeg,image/png,image/webp,image/gif" class="snow-input block w-full max-w-md text-[11px] file:mr-2 file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1 file:text-[10px] file:font-medium file:text-slate-700">
-                    <p class="mt-1 text-[10px] text-slate-500">JPEG, PNG, WebP o GIF. Máximo 2 MB.</p>
+                    <p class="mt-1 text-[10px] text-slate-500">JPEG, PNG, WebP o GIF. Máximo 5 MB.</p>
                     @error('family_image')
                         <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
                     @enderror
@@ -164,7 +164,7 @@
                         </div>
                     @endif
                     <input id="product_image" type="file" name="product_image" accept="image/jpeg,image/png,image/webp,image/gif" class="snow-input block w-full max-w-md text-[11px] file:mr-2 file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1 file:text-[10px] file:font-medium file:text-slate-700">
-                    <p class="mt-1 text-[10px] text-slate-500">JPEG, PNG, WebP o GIF. Máximo 2 MB.</p>
+                    <p class="mt-1 text-[10px] text-slate-500">JPEG, PNG, WebP o GIF. Máximo 5 MB.</p>
                     @error('product_image')
                         <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
                     @enderror

@@ -86,6 +86,23 @@ class SyncPullImagesTest extends TestCase
         $this->assertFileExists(Storage::disk('public')->path('families/thumbs/img.webp'));
     }
 
+    public function test_webp_upload_generates_webp_thumbnail(): void
+    {
+        Storage::fake('public');
+
+        $source = __DIR__.'/fixtures/image-600x400.webp';
+        Storage::disk('public')->putFileAs('products', new \Illuminate\Http\File($source), 'prod.webp');
+
+        $thumb = \App\Services\ImageThumbnailService::generate('products/prod.webp');
+        $this->assertNotNull($thumb, 'GD debe poder decodificar WebP y generar la miniatura');
+        $this->assertSame('products/thumbs/prod.webp', $thumb);
+        $this->assertFileExists(Storage::disk('public')->path($thumb));
+
+        // syncUrl apunta a la miniatura cuando existe
+        $url = \App\Services\ImageThumbnailService::syncUrl(Storage::disk('public')->url('products/prod.webp'));
+        $this->assertStringEndsWith('/storage/products/thumbs/prod.webp', $url);
+    }
+
     public function test_external_image_url_passes_through_unchanged(): void
     {
         $family = Family::create(['name' => 'Bebidas', 'image_url' => 'https://example.com/cafe.jpg']);
