@@ -182,14 +182,18 @@ class DashboardController extends Controller
 
         $rows = DB::table('transaction_items')
             ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
+            ->leftJoin('products', 'transaction_items.product_id', '=', 'products.id')
             ->where('transactions.status', 'PAID')
             ->where('transactions.occurred_at', '>=', $since)
             ->whereNotNull('transaction_items.product_id')
-            ->selectRaw('transaction_items.product_id, MAX(transaction_items.product_name) as name, SUM(transaction_items.qty) as qty, SUM(transaction_items.line_total) as total')
+            ->selectRaw("transaction_items.product_id, MAX(COALESCE(NULLIF(products.name, ''), NULLIF(transaction_items.product_name, ''))) as name, SUM(transaction_items.qty) as qty, SUM(transaction_items.line_total) as total")
             ->groupBy('transaction_items.product_id')
             ->orderByDesc('total')
-            ->limit($limit)
+            ->limit($limit * 2)
             ->get();
+
+        // Excluir filas sin nombre resoluble (producto eliminado y línea sin nombre)
+        $rows = $rows->filter(fn ($row) => $row->name !== null && trim((string) $row->name) !== '')->take($limit);
 
         if ($rows->isEmpty()) {
             return [];
@@ -199,7 +203,7 @@ class DashboardController extends Controller
 
         return $rows
             ->map(fn ($row): array => [
-                'name' => (string) ($row->name ?: '—'),
+                'name' => (string) $row->name,
                 'qty' => (float) $row->qty,
                 'total' => (float) $row->total,
                 'pct' => $sumTop > 0 ? round(100 * (float) $row->total / $sumTop, 1) : 0.0,

@@ -12,8 +12,8 @@
                                 <p class="mt-0.5 text-[9px] leading-tight text-slate-500">{{ $card['sub'] }}</p>
                             @endif
                         </div>
-                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br shadow-sm {{ $card['accent'] }} text-white ring-2 ring-white">
-                            <x-admin.snow.icon :name="$card['icon']" class="h-4 w-4" />
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-slate-500">
+                            <x-admin.snow.icon :name="$card['icon']" class="h-4.5 w-4.5" />
                         </span>
                     </div>
                 </div>

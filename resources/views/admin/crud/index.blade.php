@@ -198,7 +198,7 @@
                 @foreach($items as $item)
                     <tr class="transition-colors hover:bg-slate-50/90">
                         @foreach($visibleFields as $f)
-                            <td class="max-w-[12rem] px-2 py-0.5 align-middle text-slate-800">
+                            <td class="max-w-[12rem] px-2 py-2 align-middle text-slate-800">
                                 @if($f === 'image_url' && ! empty($item->image_url))
                                                                 <img src="{{ \App\Services\ImageThumbnailService::syncUrl($item->image_url) }}" alt="" class="h-7 w-7 shrink-0 rounded object-cover ring-1 ring-slate-200" width="28" height="28">
                                                             @elseif($f === 'image_url')
@@ -212,7 +212,7 @@
                                 @endif
                             </td>
                         @endforeach
-                        <td class="whitespace-nowrap px-2 py-0.5 text-right align-middle">
+                        <td class="whitespace-nowrap px-2 py-2 text-right align-middle">
                             <div class="inline-flex items-center gap-0">
                                 @if($apiLogDetail)
                                     <button
