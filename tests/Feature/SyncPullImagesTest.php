@@ -91,15 +91,15 @@ class SyncPullImagesTest extends TestCase
         Storage::fake('public');
 
         $source = __DIR__.'/fixtures/image-600x400.webp';
-        Storage::disk('public')->putFileAs('products', new \Illuminate\Http\File($source), 'prod.webp');
+        Storage::disk('public')->putFileAs('products', new File($source), 'prod.webp');
 
-        $thumb = \App\Services\ImageThumbnailService::generate('products/prod.webp');
+        $thumb = ImageThumbnailService::generate('products/prod.webp');
         $this->assertNotNull($thumb, 'GD debe poder decodificar WebP y generar la miniatura');
         $this->assertSame('products/thumbs/prod.webp', $thumb);
         $this->assertFileExists(Storage::disk('public')->path($thumb));
 
         // syncUrl apunta a la miniatura cuando existe
-        $url = \App\Services\ImageThumbnailService::syncUrl(Storage::disk('public')->url('products/prod.webp'));
+        $url = ImageThumbnailService::syncUrl(Storage::disk('public')->url('products/prod.webp'));
         $this->assertStringEndsWith('/storage/products/thumbs/prod.webp', $url);
     }
 
