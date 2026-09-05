@@ -73,7 +73,7 @@ class SyncController extends Controller
         foreach ($payload['transactions'] as $i => $txData) {
             try {
                 $raw = $this->normalizeFlexibleTimestampInput($txData['occurred_at']);
-                $payload['transactions'][$i]['occurred_at'] = $this->parseFlexibleTimestampToUtc($raw);
+                $payload['transactions'][$i]['occurred_at'] = $this->parseFlexibleTimestamp($raw);
             } catch (InvalidArgumentException $e) {
                 return response()->json([
                     'message' => $e->getMessage(),
@@ -189,7 +189,7 @@ class SyncController extends Controller
         $since = null;
         if (isset($validated['lastSyncTimestamp']) && $validated['lastSyncTimestamp'] !== '') {
             try {
-                $since = $this->parseFlexibleTimestampToUtc(trim($validated['lastSyncTimestamp']));
+                $since = $this->parseFlexibleTimestamp(trim($validated['lastSyncTimestamp']));
             } catch (InvalidArgumentException $e) {
                 return response()->json([
                     'message' => $e->getMessage(),
@@ -520,7 +520,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Convierte entrada de cliente (string / int / float) a string para {@see parseFlexibleTimestampToUtc()}.
+     * Convierte entrada de cliente (string / int / float) a string para {@see parseFlexibleTimestamp()}.
      */
     private function normalizeFlexibleTimestampInput(string|int|float $value): string
     {
@@ -541,10 +541,13 @@ class SyncController extends Controller
 
     /**
      * Acepta ISO 8601, milisegundos Unix (≥13 dígitos o valor ≥ 1e12), o segundos Unix.
+     * Devuelve el instante en la zona de la app (GMT-4): la BD almacena hora de muro
+     * local, y las comparaciones de delta/filtros son contra esa hora.
      * Usado en pull (`lastSyncTimestamp`) y push (`occurred_at`).
      */
-    private function parseFlexibleTimestampToUtc(string $raw): Carbon
+    private function parseFlexibleTimestamp(string $raw): Carbon
     {
+        $appTz = config('app.timezone');
         $s = trim($raw);
         if ($s === '') {
             throw new InvalidArgumentException('El valor no puede estar vacío.');
@@ -554,14 +557,14 @@ class SyncController extends Controller
             $n = (int) $s;
 
             if (strlen($s) >= 13 || $n >= 1_000_000_000_000) {
-                return Carbon::createFromTimestampMs($n, 'UTC');
+                return Carbon::createFromTimestampMs($n, $appTz);
             }
 
-            return Carbon::createFromTimestamp($n, 'UTC');
+            return Carbon::createFromTimestamp($n, $appTz);
         }
 
         try {
-            return Carbon::parse($s)->utc();
+            return Carbon::parse($s)->timezone($appTz);
         } catch (\Throwable) {
             throw new InvalidArgumentException('No es una fecha ISO válida ni un timestamp numérico (segundos o milisegundos).');
         }

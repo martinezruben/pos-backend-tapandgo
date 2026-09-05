@@ -9,19 +9,17 @@ use Illuminate\Support\Facades\Date;
 abstract class TestCase extends BaseTestCase
 {
     /**
-     * Los tests corren en UTC (phpunit.xml APP_TIMEZONE=UTC) pero el entrypoint
-     * de Docker puede cargar .env con APP_TIMEZONE=America/La_Paz que anula el
-     * putenv() de phpunit.xml → los timestamps fallan por offset de 4h.
-     *
-     * Forzamos UTC a nivel PHP + config y limpiamos config cache + CSRF.
+     * Los tests corren en America/Santo_Domingo (GMT-4, sin DST), igual que
+     * producción. Se fuerza a nivel PHP + config porque el entrypoint de
+     * Docker puede cargar un .env con otra zona que anule phpunit.xml.
      */
     protected function setUp(): void
     {
         parent::setUp();
 
         // Fuerza zona horaria UTC para tests (consistente con phpunit.xml)
-        date_default_timezone_set('UTC');
-        config(['app.timezone' => 'UTC']);
+        date_default_timezone_set('America/Santo_Domingo');
+        config(['app.timezone' => 'America/Santo_Domingo']);
         Date::setTestNow(now());
 
         // Limpia cualquier config cache generado por entrypoint

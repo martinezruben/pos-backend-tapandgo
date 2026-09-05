@@ -85,7 +85,7 @@ APP_KEY=$(php -r 'echo "base64:".base64_encode(random_bytes(32));' 2>/dev/null |
 APP_DEBUG=true
 APP_URL=http://localhost
 
-APP_TIMEZONE=America/La_Paz
+APP_TIMEZONE=America/Santo_Domingo
 APP_LOCALE=en
 APP_FALLBACK_LOCALE=en
 APP_FAKER_LOCALE=en_US

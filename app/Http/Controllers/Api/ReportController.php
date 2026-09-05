@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use App\Models\TransactionPayment;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,10 +16,10 @@ class ReportController extends Controller
     {
         $locationId = $request->query('location_id');
 
-        // Filtrar el dia segun la zona horaria del comercio (occurred_at se guarda en UTC)
+        // Filtrar el día según la zona del comercio; la BD guarda hora de muro local (GMT-4)
         $tz = config('app.pos_sales_timezone', 'America/Santo_Domingo');
-        $dayStart = Carbon::now($tz)->startOfDay()->utc();
-        $dayEnd = Carbon::now($tz)->endOfDay()->utc();
+        $dayStart = Carbon::now($tz)->startOfDay();
+        $dayEnd = Carbon::now($tz)->endOfDay();
 
         $base = Transaction::query()->whereBetween('occurred_at', [$dayStart, $dayEnd]);
 
