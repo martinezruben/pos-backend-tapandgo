@@ -42,7 +42,8 @@ class ReportController extends Controller
             'tickets_today' => $tickets,
             'avg_ticket_today' => $avgTicket,
             'online_sales_today' => (float) $onlineSales,
-            'sales_by_payment_method' => $salesByMethod,
+            // Forzar objeto JSON (assoc array); sin esto Laravel puede serializar la coleccion como lista
+            'sales_by_payment_method' => $salesByMethod->map(fn ($v) => (float) $v)->toArray(),
         ]);
     }
 
