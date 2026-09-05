@@ -432,6 +432,7 @@ class ScreenCrudController extends Controller
 
         if ($screen === 'promotions') {
             $rules['name'] = ['required', 'string', 'max:120'];
+            $rules['description'] = ['nullable', 'string', 'max:255'];
             $rules['value'] = ['nullable', 'numeric', 'min:0'];
             $rules['buy_qty'] = ['nullable', 'numeric', 'min:1'];
             $rules['pay_qty'] = ['nullable', 'numeric', 'min:1'];

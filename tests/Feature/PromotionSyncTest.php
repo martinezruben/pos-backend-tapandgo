@@ -277,6 +277,73 @@ class PromotionSyncTest extends TestCase
         $this->assertSame($sub->id, $productOption['parent']);
     }
 
+    public function test_sync_payload_includes_promotion_description(): void
+    {
+        $location = Location::create(['id' => (string) Str::uuid(), 'name' => 'Main', 'is_active' => true]);
+        $device = Device::create([
+            'id' => (string) Str::uuid(),
+            'location_id' => $location->id,
+            'device_fingerprint' => 'fp-desc',
+            'is_enabled' => true,
+        ]);
+        License::create([
+            'device_id' => $device->id,
+            'valid_from' => now()->subDay(),
+            'valid_to' => now()->addDay(),
+            'status' => 'ACTIVE',
+        ]);
+
+        $family = Family::create(['name' => 'Cigarrillos']);
+
+        // descripción definida por el admin
+        $custom = Promotion::create([
+            'name' => '2x1 Cigarrillos',
+            'description' => '2x1: lleva dos unidades del mismo producto al mismo precio y paga solo una.',
+            'type' => 'BUNDLE',
+            'value' => 0,
+            'buy_qty' => 2,
+            'pay_qty' => 1,
+            'family_id' => $family->id,
+            'is_active' => true,
+        ]);
+
+        // sin descripción: se genera una a partir de las reglas
+        $auto = Promotion::create([
+            'name' => 'Oferta bebidas',
+            'type' => 'PRICE',
+            'value' => 0.99,
+            'family_id' => $family->id,
+            'is_active' => true,
+        ]);
+
+        $token = $device->createToken('desc')->plainTextToken;
+        $rows = collect($this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/sync/pull?'.http_build_query(['device_fingerprint' => $device->device_fingerprint]))
+            ->assertOk()
+            ->json('data.promotions'));
+
+        $customRow = $rows->firstWhere('id', $custom->id);
+        $this->assertSame(
+            '2x1: lleva dos unidades del mismo producto al mismo precio y paga solo una.',
+            $customRow['description'],
+        );
+
+        $autoRow = $rows->firstWhere('id', $auto->id);
+        $this->assertSame('Precio de oferta en Cigarrillos: paga 0.99 por unidad.', $autoRow['description']);
+    }
+
+    public function test_bundle_description_auto_mentions_same_product_and_price(): void
+    {
+        $auto = new Promotion([
+            'type' => 'BUNDLE', 'value' => 0, 'buy_qty' => 2, 'pay_qty' => 1,
+        ]);
+
+        $desc = $auto->effectiveDescription();
+        $this->assertStringContainsString('mismo producto', $desc);
+        $this->assertStringContainsString('mismo precio', $desc);
+        $this->assertStringContainsString('precio de oferta', $desc);
+    }
+
     public function test_promotions_grid_filters_by_family(): void
     {
         $admin = $this->promoManager();

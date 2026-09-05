@@ -297,6 +297,7 @@ return [
         ],
         'grid' => [
             'visible_limit' => 9,
+            'exclude_from_grid' => ['description'],
             'filters' => [
                 'family_id' => [
                     'label' => 'Familia',

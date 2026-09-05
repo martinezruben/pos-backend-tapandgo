@@ -436,6 +436,7 @@ class SyncController extends Controller
         return [
             'id' => $pr->id,
             'name' => $pr->name,
+            'description' => $pr->effectiveDescription(),
             'type' => $pr->type,
             'value' => (float) $pr->value,
             'buyQty' => $pr->buy_qty !== null ? (int) $pr->buy_qty : null,

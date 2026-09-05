@@ -15,7 +15,7 @@ class Promotion extends Model
 {
     use HasUuidPrimaryKey, SoftDeletes;
 
-    protected $fillable = ['name', 'type', 'value', 'buy_qty', 'pay_qty', 'product_id', 'subfamily_id', 'family_id', 'starts_at', 'ends_at', 'is_active'];
+    protected $fillable = ['name', 'description', 'type', 'value', 'buy_qty', 'pay_qty', 'product_id', 'subfamily_id', 'family_id', 'starts_at', 'ends_at', 'is_active'];
 
     protected function casts(): array
     {
@@ -63,6 +63,31 @@ class Promotion extends Model
             $this->subfamily_id !== null => (string) ($this->subfamily?->name ?? $this->subfamily_id),
             $this->family_id !== null => (string) ($this->family?->name ?? $this->family_id),
             default => 'Todos los productos',
+        };
+    }
+
+    /**
+     * Descripción para el operario del POS. Usa la descripción definida en el
+     * panel; si no existe, genera una a partir de las reglas de la promoción.
+     */
+    public function effectiveDescription(): string
+    {
+        if ($this->description !== null && $this->description !== '') {
+            return (string) $this->description;
+        }
+
+        $scope = $this->displayScopeName();
+
+        return match ($this->type) {
+            'PERCENT' => sprintf('%s%% de descuento en %s.', rtrim(rtrim((string) $this->value, '0'), '.'), $scope),
+            'AMOUNT' => sprintf('Descuento fijo de %s en %s.', rtrim(rtrim((string) $this->value, '0'), '.'), $scope),
+            'PRICE' => sprintf('Precio de oferta en %s: paga %s por unidad.', $scope, rtrim(rtrim((string) $this->value, '0'), '.')),
+            'BUNDLE' => sprintf(
+                'Lleva %d unidades del mismo producto y paga %d. Las unidades van al mismo precio de lista, salvo precio de oferta fijado en la promoción.',
+                (int) $this->buy_qty,
+                (int) $this->pay_qty,
+            ),
+            default => $scope,
         };
     }
 }
