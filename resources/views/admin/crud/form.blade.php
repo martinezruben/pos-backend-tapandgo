@@ -95,8 +95,13 @@
                         </select>
                     @elseif($field === 'id' && $item)
                         <input id="f-id" type="text" value="{{ $item->getKey() }}" class="snow-input bg-slate-50 text-slate-700" readonly aria-readonly="true">
-                    @elseif($field === 'password')
-                        <input id="f-{{ $field }}" type="password" name="password" class="snow-input" placeholder="{{ $item ? 'Dejar vacío para mantener' : '' }}" autocomplete="new-password">
+                    @elseif($field === 'pin4')
+                        @if($item && method_exists($item, 'pin4Plain') && $item->pin4Plain() !== null)
+                            <p class="mb-1 text-[10px] text-slate-600">
+                                PIN actual: <span class="font-mono font-semibold tracking-[0.3em] text-slate-900">{{ $item->pin4Plain() }}</span>
+                            </p>
+                        @endif
+                        <input id="f-{{ $field }}" type="text" name="{{ $field }}" inputmode="numeric" maxlength="4" placeholder="{{ $item ? 'Dejar vacío para mantener' : 'Ej. 7391' }}" class="snow-input font-mono tracking-[0.3em]" autocomplete="off">
                     @elseif(!empty($cfg['select_options'][$field] ?? []))
                         @php
                             $selectDefault = $item?->{$field} ?? array_key_first($cfg['select_options'][$field] ?? []);

@@ -39,7 +39,7 @@ class RoleRbacMatrixController extends Controller
         return response()->view('admin.rbac.matrix', [
             'role' => $role,
             'roles' => $roles,
-            'screens' => AdminRbac::managedScreens(),
+            'screenGroups' => $this->screensGroupedByNavSection(),
             'assigned' => $assigned,
         ]);
     }
@@ -92,6 +92,39 @@ class RoleRbacMatrixController extends Controller
         return redirect()
             ->route('admin.rbac.matrix.edit', $role)
             ->with('status', 'Permisos del rol actualizados.');
+    }
+
+    /**
+     * Pantallas de la matriz agrupadas por sección del menú (mismo orden que
+     * el sidebar); pantallas sin grupo van al final en «Otras pantallas».
+     *
+     * @return list<array{label: string, screens: list<array{key: string, label: string, readonly: bool}>}>
+     */
+    private function screensGroupedByNavSection(): array
+    {
+        $managed = collect(AdminRbac::managedScreens())->keyBy('key');
+        $groups = [];
+        $grouped = [];
+
+        foreach (config('admin_nav_groups', []) as $group) {
+            $screens = [];
+            foreach ($group['screens'] ?? [] as $key) {
+                if ($managed->has($key)) {
+                    $screens[] = $managed->get($key);
+                    $grouped[] = $key;
+                }
+            }
+            if ($screens !== []) {
+                $groups[] = ['label' => $group['label'], 'screens' => $screens];
+            }
+        }
+
+        $others = $managed->except($grouped)->values()->all();
+        if ($others !== []) {
+            $groups[] = ['label' => 'Otras pantallas', 'screens' => $others];
+        }
+
+        return $groups;
     }
 
     private function authorizeMatrix(): void

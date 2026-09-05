@@ -556,10 +556,14 @@ return [
         'model' => SyncState::class,
         'label' => 'Estado de Sincronización',
         'icon' => 'arrow-path',
-        'fields' => ['location_id', 'device_id', 'last_pull_at', 'last_push_at', 'last_success_at', 'last_error_at', 'last_error_message'],
+        'labels' => [
+            'last_sync_since' => 'Última sync (hace)',
+        ],
+        'fields' => ['location_id', 'device_id', 'last_pull_at', 'last_push_at', 'last_success_at', 'last_sync_since', 'last_error_at', 'last_error_message'],
         'foreign_labels' => [
             'location_id' => ['relation' => 'location', 'attribute' => 'name', 'header' => 'Localidad'],
             'device_id' => ['relation' => 'device', 'attribute' => 'name', 'fallback_attribute' => 'device_fingerprint', 'header' => 'Dispositivo'],
+            'last_sync_since' => ['virtual' => true, 'header' => 'Última sync (hace)'],
         ],
         'grid' => [
             'filters' => [

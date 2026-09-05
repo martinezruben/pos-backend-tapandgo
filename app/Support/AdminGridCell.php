@@ -11,6 +11,7 @@ use App\Models\Location;
 use App\Models\Product;
 use App\Models\Shift;
 use App\Models\Subfamily;
+use App\Models\SyncState;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -112,6 +113,12 @@ class AdminGridCell
             }
 
             return (string) $raw;
+        }
+
+        if ($item instanceof SyncState && $field === 'last_sync_since') {
+            return $item->last_success_at !== null
+                ? $item->last_success_at->locale('es')->diffForHumans()
+                : '—';
         }
 
         if ($item instanceof AdminAuditLog) {

@@ -20,17 +20,28 @@ class User extends Authenticatable
         'password',
         'pin_sha384',
         'pin4_sha384',
+        'pin4_enc',
         'full_name',
         'role',
         'is_active',
         'location_id',
     ];
 
-    protected $hidden = ['password', 'remember_token', 'pin_sha384', 'pin4_sha384'];
+    protected $hidden = ['password', 'remember_token', 'pin_sha384', 'pin4_sha384', 'pin4_enc'];
 
     protected function casts(): array
     {
-        return ['password' => 'hashed', 'is_active' => 'boolean'];
+        return [
+            'password' => 'hashed',
+            'is_active' => 'boolean',
+            'pin4_enc' => 'encrypted',
+        ];
+    }
+
+    /** PIN de 4 dígitos en claro si está almacenado cifrado; null en caso contrario. */
+    public function pin4Plain(): ?string
+    {
+        return $this->pin4_enc !== null ? (string) $this->pin4_enc : null;
     }
 
     public function locations()

@@ -204,10 +204,14 @@ class ScreenCrudController extends Controller
         $item = $model::findOrFail($id);
 
         if ($screen === 'devices' && $item instanceof Device) {
-            $request->validate([
+            $validated = $request->validate([
+                'name' => ['nullable', 'string', 'max:100'],
                 'is_enabled' => ['nullable', 'boolean'],
             ]);
-            $item->update(['is_enabled' => $request->boolean('is_enabled')]);
+            $item->update([
+                'name' => $validated['name'] ?? null,
+                'is_enabled' => $request->boolean('is_enabled'),
+            ]);
 
             return redirect()->route('admin.screens.index', $screen)->with('status', 'Actualizado correctamente.');
         }
@@ -464,6 +468,7 @@ class ScreenCrudController extends Controller
                 ]);
             }
             $data['pin4_sha384'] = User::pin4Sha384FromPlain((string) $data['pin4']);
+            $data['pin4_enc'] = $data['pin4']; // cast encrypted del modelo
         }
         unset($data['pin4']);
 

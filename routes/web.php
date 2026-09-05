@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminTwoFactorController;
 use App\Http\Controllers\Admin\ApiRequestLogDetailController;
+use App\Http\Controllers\Admin\AuditLogDetailController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CashClosingController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -42,6 +43,7 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::post('/devices/{device}/reset-last-sync', [DeviceLastSyncController::class, 'store'])->name('devices.reset-last-sync');
 
         Route::get('/api-request-logs/{id}', [ApiRequestLogDetailController::class, 'show'])->name('api-request-logs.show');
+        Route::get('/audit-logs/{id}', [AuditLogDetailController::class, 'show'])->name('audit-logs.show');
 
         Route::get('/transactions/{transaction}/line-items', [TransactionLineItemsController::class, 'show'])->name('transactions.line-items');
         Route::post('/transactions/excel/export', [TransactionExcelExportController::class, 'export'])->name('transactions.excel.export');

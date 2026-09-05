@@ -167,6 +167,68 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
+    Alpine.data('auditLogDetail', (detailBaseUrl = '') => ({
+        detailBaseUrl: typeof detailBaseUrl === 'string' ? detailBaseUrl : '',
+        open: false,
+        loading: false,
+        error: '',
+        row: null,
+
+        actionLabel(action) {
+            const labels = {
+                created: 'Creación',
+                updated: 'Edición',
+                deleted: 'Eliminación',
+                login: 'Login',
+                logout: 'Logout',
+            };
+
+            return labels[action] ?? action;
+        },
+
+        changeEntries(changes) {
+            if (changes == null || typeof changes !== 'object') {
+                return [];
+            }
+
+            return Object.entries(changes).map(([field, pair]) => ({
+                field,
+                before: Array.isArray(pair) ? String(pair[0] ?? '—') : '—',
+                after: Array.isArray(pair) ? String(pair[1] ?? '—') : '—',
+            }));
+        },
+
+        async openDetail(id) {
+            this.open = true;
+            this.loading = true;
+            this.error = '';
+            this.row = null;
+            const base = this.detailBaseUrl.replace(/\/$/, '');
+            try {
+                const res = await fetch(`${base}/${encodeURIComponent(id)}`, {
+                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'same-origin',
+                });
+                if (!res.ok) {
+                    this.error = 'No se pudo cargar el detalle.';
+
+                    return;
+                }
+                this.row = await res.json();
+            } catch {
+                this.error = 'Error de red.';
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        closeDetail() {
+            this.open = false;
+            this.row = null;
+            this.error = '';
+        },
+    }));
+
     Alpine.data('apiRequestLogDetail', (detailBaseUrl = '') => ({
         detailBaseUrl: typeof detailBaseUrl === 'string' ? detailBaseUrl : '',
         open: false,

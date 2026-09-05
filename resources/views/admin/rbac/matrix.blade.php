@@ -49,7 +49,13 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 bg-white">
-                        @foreach($screens as $s)
+                        @foreach($screenGroups as $group)
+                            <tr class="bg-slate-50/80">
+                                <td colspan="4" class="sticky left-0 z-[1] bg-slate-50/95 px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-slate-400 shadow-[1px_0_0_0_rgb(241_245_249)]">
+                                    {{ $group['label'] }}
+                                </td>
+                            </tr>
+                            @foreach($group['screens'] as $s)
                             @php
                                 $p = \App\Support\AdminRbac::permissionsForScreen($s['key']);
                                 $ro = $s['readonly'];
@@ -97,6 +103,7 @@
                                     @endif
                                 </td>
                             </tr>
+                            @endforeach
                         @endforeach
                     </tbody>
                 </table>
