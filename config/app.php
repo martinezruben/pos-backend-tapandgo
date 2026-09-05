@@ -67,6 +67,9 @@ return [
 
     'timezone' => env('APP_TIMEZONE', 'UTC'),
 
+    // Zona horaria de operacion del POS (reportes "de hoy"); la app siempre opera en GMT-4
+    'pos_sales_timezone' => env('APP_POS_SALES_TIMEZONE', 'America/Santo_Domingo'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration
