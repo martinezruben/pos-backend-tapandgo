@@ -427,6 +427,7 @@ class ScreenCrudController extends Controller
             $rules['username'] = ['required', 'string', 'max:50', $usernameUnique];
             $rules['full_name'] = ['nullable', 'string', 'max:100'];
             $rules['role'] = ['required', Rule::in($roleKeys)];
+            $rules['pin4'] = ['nullable', 'digits:4'];
         }
 
         if ($screen === 'promotions') {
@@ -454,6 +455,16 @@ class ScreenCrudController extends Controller
                 PasswordPolicy::assertComplexity($data['password'], 'pos');
             }
         }
+
+        if ($screen === 'android-users' && isset($data['pin4']) && $data['pin4'] !== '' && $data['pin4'] !== null) {
+            if (User::isWeakPin4((string) $data['pin4'])) {
+                throw ValidationException::withMessages([
+                    'pin4' => 'Ese PIN es demasiado común o predecible. Elige otro de 4 dígitos.',
+                ]);
+            }
+            $data['pin4_sha384'] = User::pin4Sha384FromPlain((string) $data['pin4']);
+        }
+        unset($data['pin4']);
 
         foreach ($cfg['fields'] as $field) {
             if (str_starts_with($field, 'is_')) {

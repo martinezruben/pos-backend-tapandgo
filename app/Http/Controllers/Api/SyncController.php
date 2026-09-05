@@ -367,6 +367,7 @@ class SyncController extends Controller
             'username' => $u->username,
             // pin_sha384: SHA-384 hex del texto en claro (trim), para validación offline; fallback legacy si aún no existe.
             'pin' => $u->pin_sha384 ?? hash('sha384', $u->getAuthPassword()),
+            'pin4' => $u->pin4_sha384, // SHA-384 del PIN rápido de 4 dígitos (null si no está definido)
             'role' => strtolower((string) $u->role),
             'isActive' => (bool) $u->is_active,
             'updatedAt' => $u->updated_at->utc()->format('Y-m-d\TH:i:s').'Z',

@@ -135,6 +135,7 @@ return [
             'full_name' => 'Nombre completo',
             'role' => 'Rol',
             'password' => 'Contraseña',
+            'pin4' => 'PIN rápido (4 dígitos)',
             'is_active' => 'Activo',
             'location_id' => 'Localidad',
             'last_activity_at' => 'Última actividad',
@@ -146,13 +147,13 @@ return [
                 'ADMIN' => 'Administrador (ADMIN)',
             ],
         ],
-        'fields' => ['username', 'full_name', 'role', 'is_active', 'location_id', 'last_activity_at', 'password'],
+        'fields' => ['username', 'full_name', 'role', 'is_active', 'location_id', 'last_activity_at', 'password', 'pin4'],
         'foreign_labels' => [
             'location_id' => ['relation' => 'location', 'attribute' => 'name', 'header' => 'Localidad'],
             'last_activity_at' => ['virtual' => true, 'header' => 'Última actividad'],
         ],
         'grid' => [
-            'exclude_from_grid' => ['password'],
+            'exclude_from_grid' => ['password', 'pin4'],
             'visible_limit' => 12,
             'filters' => [
                 'role' => [
