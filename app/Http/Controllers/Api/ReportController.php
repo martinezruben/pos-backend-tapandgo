@@ -15,7 +15,12 @@ class ReportController extends Controller
     {
         $locationId = $request->query('location_id');
 
-        $base = Transaction::query()->whereDate('occurred_at', now()->toDateString());
+        // Filtrar el dia segun la zona horaria del comercio (occurred_at se guarda en UTC)
+        $tz = config('app.pos_sales_timezone', 'America/Santo_Domingo');
+        $dayStart = Carbon::now($tz)->startOfDay()->utc();
+        $dayEnd = Carbon::now($tz)->endOfDay()->utc();
+
+        $base = Transaction::query()->whereBetween('occurred_at', [$dayStart, $dayEnd]);
 
         if ($locationId) {
             $base->where('location_id', $locationId);
@@ -28,8 +33,8 @@ class ReportController extends Controller
 
         $salesByMethod = TransactionPayment::query()
             ->select('payment_method', DB::raw('SUM(amount) as total'))
-            ->whereHas('transaction', function ($q) use ($locationId): void {
-                $q->whereDate('occurred_at', now()->toDateString());
+            ->whereHas('transaction', function ($q) use ($locationId, $dayStart, $dayEnd): void {
+                $q->whereBetween('occurred_at', [$dayStart, $dayEnd]);
                 if ($locationId) {
                     $q->where('location_id', $locationId);
                 }
