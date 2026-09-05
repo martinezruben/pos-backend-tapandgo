@@ -2,8 +2,9 @@
 
 namespace Tests;
 
-use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Date;
 
 abstract class TestCase extends BaseTestCase
@@ -23,8 +24,8 @@ abstract class TestCase extends BaseTestCase
         Date::setTestNow(now());
 
         // Limpia cualquier config cache generado por entrypoint
-        \Illuminate\Support\Facades\Artisan::call('config:clear');
-        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        Artisan::call('config:clear');
+        Artisan::call('optimize:clear');
 
         // Excluye todas las rutas de CSRF
         PreventRequestForgery::except(['*']);
