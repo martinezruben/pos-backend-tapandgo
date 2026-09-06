@@ -65,7 +65,7 @@
                 </dl>
 
                 <div>
-                    <h3 class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">Líneas</h3>
+                    <h3 class="mb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Líneas</h3>
                     <div class="overflow-x-auto rounded-lg border border-slate-200">
                         <table class="w-full min-w-[640px] border-collapse text-left text-[10px]">
                             <thead class="border-b border-slate-100 bg-slate-50/90">
@@ -96,7 +96,7 @@
                 </div>
 
                 <div>
-                    <h3 class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">Pagos</h3>
+                    <h3 class="mb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Pagos</h3>
                     <div class="overflow-x-auto rounded-lg border border-slate-200">
                         <table class="w-full min-w-[360px] border-collapse text-left text-[10px]">
                             <thead class="border-b border-slate-100 bg-slate-50/90">

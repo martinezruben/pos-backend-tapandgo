@@ -38,7 +38,7 @@
 
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div class="flex flex-col gap-0.5">
-                    <label for="tx-excel-from" class="text-[8px] font-bold uppercase tracking-widest text-slate-400">Desde</label>
+                    <label for="tx-excel-from" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Desde</label>
                     <input
                         id="tx-excel-from"
                         type="date"
@@ -48,7 +48,7 @@
                     >
                 </div>
                 <div class="flex flex-col gap-0.5">
-                    <label for="tx-excel-to" class="text-[8px] font-bold uppercase tracking-widest text-slate-400">Hasta</label>
+                    <label for="tx-excel-to" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Hasta</label>
                     <input
                         id="tx-excel-to"
                         type="date"
@@ -60,7 +60,7 @@
             </div>
 
             <div class="flex flex-col gap-0.5">
-                <label for="tx-excel-loc" class="text-[8px] font-bold uppercase tracking-widest text-slate-400">Localidad</label>
+                <label for="tx-excel-loc" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Localidad</label>
                 <select
                     id="tx-excel-loc"
                     x-model="locationId"

@@ -7,44 +7,62 @@ export default {
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
+        './app/Http/Controllers/**/*.php',
     ],
 
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Inter', 'Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Public Sans', 'Figtree', ...defaultTheme.fontFamily.sans],
+                mono: ['IBM Plex Mono', ...defaultTheme.fontFamily.mono],
             },
             fontSize: {
                 '2xs': ['0.6875rem', { lineHeight: '1rem' }],
             },
             colors: {
-                /** Fondo página estilo Hope UI */
-                canvas: '#F4F7FC',
+                /**
+                 * Sistema de diseño "Backend Admin" (Claude Design):
+                 * fondo neutro cálido-frío, una sola tinta de acento,
+                 * el color se reserva para estado/acción, no para el cromo.
+                 */
+                canvas: '#f2f3f6',
                 snow: {
-                    25: '#fcfdfe',
-                    50: '#f8fafc',
-                    100: '#f1f5f9',
-                    200: '#e2e8f0',
-                    300: '#cbd5e1',
-                    400: '#94a3b8',
-                    500: '#64748b',
-                    600: '#475569',
-                    700: '#334155',
-                    800: '#1e293b',
-                    900: '#0f172a',
+                    25: '#fbfcfe',
+                    50: '#f6f7f9',
+                    100: '#f2f3f6',
+                    200: '#dcdee2',
+                    300: '#cbced3',
+                    400: '#9498a2',
+                    500: '#6d727b',
+                    600: '#505560',
+                    700: '#2e333d',
+                    800: '#1b1f29',
+                    900: '#0e1218',
+                },
+                slate: {
+                    50: '#f6f7f9',
+                    100: '#f2f3f6',
+                    200: '#dcdee2',
+                    300: '#cbced3',
+                    400: '#9498a2',
+                    500: '#6d727b',
+                    600: '#505560',
+                    700: '#2e333d',
+                    800: '#1b1f29',
+                    900: '#0e1218',
                 },
                 primary: {
-                    25: '#f0f7ff',
-                    50: '#eff6ff',
-                    100: '#dbeafe',
-                    200: '#bfdbfe',
-                    300: '#93c5fd',
-                    400: '#60a5fa',
-                    500: '#3b82f6',
-                    600: '#2563eb',
-                    700: '#1d4ed8',
-                    800: '#1e40af',
-                    900: '#1e3a8a',
+                    25: '#f2f7ff',
+                    50: '#eaf3ff',
+                    100: '#d7e6fc',
+                    200: '#bdd3f2',
+                    300: '#9ab9e8',
+                    400: '#719ad6',
+                    500: '#4b7bc0',
+                    600: '#3a69ad',
+                    700: '#1e4b8d',
+                    800: '#15396d',
+                    900: '#072754',
                 },
                 /** Acento secundario (botones alternativos, charts) */
                 hope: {

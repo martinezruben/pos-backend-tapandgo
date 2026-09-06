@@ -12,10 +12,10 @@
             @method('PUT')
 
             <section>
-                <h2 class="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Usuarios backend (panel admin)</h2>
+                <h2 class="mb-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Usuarios backend (panel admin)</h2>
                 <div class="space-y-3 rounded-lg border border-slate-100 bg-white p-3">
                     <div class="flex flex-col gap-0.5 sm:max-w-xs">
-                        <label for="admin_password_min_length" class="text-[8px] font-bold uppercase tracking-widest text-slate-400">Longitud mínima</label>
+                        <label for="admin_password_min_length" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Longitud mínima</label>
                         <input
                             type="number"
                             name="admin_password_min_length"
@@ -54,10 +54,10 @@
             </section>
 
             <section>
-                <h2 class="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Usuarios POS (app / Android)</h2>
+                <h2 class="mb-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Usuarios POS (app / Android)</h2>
                 <div class="space-y-3 rounded-lg border border-slate-100 bg-white p-3">
                     <div class="flex flex-col gap-0.5 sm:max-w-xs">
-                        <label for="pos_password_min_length" class="text-[8px] font-bold uppercase tracking-widest text-slate-400">Longitud mínima</label>
+                        <label for="pos_password_min_length" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Longitud mínima</label>
                         <input
                             type="number"
                             name="pos_password_min_length"
@@ -96,10 +96,10 @@
             </section>
 
             <section>
-                <h2 class="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Login panel (backend)</h2>
+                <h2 class="mb-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Login panel (backend)</h2>
                 <div class="grid grid-cols-1 gap-3 rounded-lg border border-slate-100 bg-white p-3 sm:grid-cols-2">
                     <div class="flex flex-col gap-0.5">
-                        <label for="admin_max_failed_login_attempts" class="text-[8px] font-bold uppercase tracking-widest text-slate-400">Intentos fallidos antes de bloquear</label>
+                        <label for="admin_max_failed_login_attempts" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Intentos fallidos antes de bloquear</label>
                         <input
                             type="number"
                             name="admin_max_failed_login_attempts"
@@ -115,7 +115,7 @@
                         @enderror
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <label for="admin_lockout_minutes" class="text-[8px] font-bold uppercase tracking-widest text-slate-400">Duración del bloqueo (minutos)</label>
+                        <label for="admin_lockout_minutes" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Duración del bloqueo (minutos)</label>
                         <input
                             type="number"
                             name="admin_lockout_minutes"
@@ -135,7 +135,7 @@
             </section>
 
             <section>
-                <h2 class="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Sincronización</h2>
+                <h2 class="mb-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Sincronización</h2>
                 <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-100 bg-white p-3 text-[11px] text-slate-700">
                     <input
                         type="checkbox"

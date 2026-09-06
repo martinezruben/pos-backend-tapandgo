@@ -115,7 +115,7 @@ class DashboardController extends Controller
                 'label' => 'Ventas semana vs. anterior',
                 'value' => $weekDeltaPct === null ? '—' : ($weekDeltaPct >= 0 ? '+' : '').number_format($weekDeltaPct, 1).'%',
                 'sub' => '$'.number_format($salesThisWeek, 2).' vs $'.number_format($salesLastWeek, 2),
-                'icon' => 'chart-bar',
+                'icon' => $weekDeltaPct !== null && $weekDeltaPct < 0 ? 'arrow-trending-down' : 'arrow-trending-up',
                 'accent' => $weekDeltaPct !== null && $weekDeltaPct < 0 ? 'from-rose-500 to-red-600' : 'from-teal-500 to-emerald-600',
             ],
             [

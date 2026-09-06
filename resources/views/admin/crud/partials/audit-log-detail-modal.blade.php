@@ -53,7 +53,7 @@
                 </dl>
 
                 <div>
-                    <h3 class="mb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">Cambios</h3>
+                    <h3 class="mb-1 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Cambios</h3>
                     <template x-if="row && changeEntries(row.changes).length">
                         <table class="min-w-full divide-y divide-slate-100 text-left text-[10px]">
                             <thead class="snow-table-head">

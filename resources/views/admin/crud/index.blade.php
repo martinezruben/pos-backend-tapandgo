@@ -108,7 +108,7 @@
                 <div class="flex flex-wrap items-end gap-1.5 border-t border-slate-50 bg-slate-50/70 px-2 py-3 sm:px-3 sm:py-3.5" x-data="selectCascade">
                     @foreach($gridFilters as $param => $fdef)
                         <div class="flex min-w-[7rem] flex-col gap-0.5">
-                            <label class="text-[8px] font-bold uppercase tracking-widest text-slate-400" for="flt-{{ $param }}">{{ $fdef['label'] ?? $param }}</label>
+                            <label class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400" for="flt-{{ $param }}">{{ $fdef['label'] ?? $param }}</label>
                             @if(($fdef['type'] ?? '') === 'date')
                                 <input
                                     id="flt-{{ $param }}"
@@ -137,11 +137,11 @@
             <div class="border-b border-slate-100 bg-gradient-to-b from-slate-50/90 to-white px-2 py-2 sm:px-3">
                 <div class="mb-1.5 flex flex-wrap items-end justify-between gap-2">
                     <div>
-                        <h3 class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Mapa de localidades</h3>
+                        <h3 class="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Mapa de localidades</h3>
                         <p class="text-[9px] text-slate-500">Mismos filtros que la tabla · número = dispositivos activos · verde = al menos una sincronización exitosa en el periodo</p>
                     </div>
                     <div class="flex min-w-0 flex-col gap-0.5 sm:items-end">
-                        <label for="admin-locations-map-period" class="text-[8px] font-bold uppercase tracking-widest text-slate-400">Sincronizaciones</label>
+                        <label for="admin-locations-map-period" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Sincronizaciones</label>
                         <select id="admin-locations-map-period" class="hope-filter-select max-w-full py-1 text-[10px] sm:min-w-[12rem]">
                             <option value="today" selected>Hoy</option>
                             <option value="yesterday">Ayer</option>
@@ -201,7 +201,7 @@
                 @foreach($items as $item)
                     <tr class="transition-colors hover:bg-slate-50/90">
                         @foreach($visibleFields as $f)
-                            <td class="max-w-[12rem] px-2 py-2 align-middle text-slate-800">
+                            <td class="max-w-[12rem] px-2 py-1 align-middle text-slate-800">
                                 @if($f === 'image_url' && ! empty($item->image_url))
                                                                 <img src="{{ \App\Services\ImageThumbnailService::syncUrl($item->image_url) }}" alt="" class="h-7 w-7 shrink-0 rounded object-cover ring-1 ring-slate-200" width="28" height="28">
                                                             @elseif($f === 'image_url')
@@ -211,16 +211,16 @@
                                 @elseif(in_array($f, $badgeFields, true) && empty($cfg['foreign_labels'][$f]))
                                     <x-admin.snow.badge :field="$f" :value="$item->{$f}" />
                                 @else
-                                    <span class="block truncate font-normal text-slate-700">{{ \App\Support\AdminGridCell::display($item, $f, $cfg) }}</span>
+                                    <span class="block truncate font-normal text-slate-600">{{ \App\Support\AdminGridCell::display($item, $f, $cfg) }}</span>
                                 @endif
                             </td>
                         @endforeach
-                        <td class="whitespace-nowrap px-2 py-2 text-right align-middle">
+                        <td class="whitespace-nowrap px-2 py-1 text-right align-middle">
                             <div class="inline-flex items-center gap-0">
                                 @if($auditLogDetail)
                                     <button
                                         type="button"
-                                        class="inline-flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-primary-50 hover:text-primary-600"
+                                        class="snow-icon-btn h-6 w-6"
                                         title="Ver detalle"
                                         @click="openDetail('{{ $item->getKey() }}')"
                                     >
@@ -230,7 +230,7 @@
                                 @if($apiLogDetail)
                                     <button
                                         type="button"
-                                        class="inline-flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-primary-50 hover:text-primary-600"
+                                        class="snow-icon-btn h-6 w-6"
                                         title="Ver detalle"
                                         @click="openDetail('{{ $item->getKey() }}')"
                                     >
@@ -240,7 +240,7 @@
                                 @if($transactionLineItems)
                                     <button
                                         type="button"
-                                        class="inline-flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-primary-50 hover:text-primary-600"
+                                        class="snow-icon-btn h-6 w-6"
                                         title="Ver líneas y pagos"
                                         @click="openDetail('{{ $item->getKey() }}')"
                                     >
@@ -250,7 +250,7 @@
                                 @if(($locationPairing ?? false))
                                     <button
                                         type="button"
-                                        class="inline-flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-primary-50 hover:text-primary-600"
+                                        class="snow-icon-btn h-6 w-6"
                                         title="Código temporal de vinculación"
                                         @click="$dispatch('open-location-pairing', { locationId: '{{ $item->getKey() }}', locationName: @js($item->name) })"
                                     >
@@ -261,7 +261,7 @@
                                     <form method="POST" action="{{ route('admin.screens.toggle-status', [$screen, $item->getKey()]) }}" class="inline" onsubmit="return confirm('¿Cambiar estado de esta licencia?');">
                                         @csrf
                                         <button type="submit"
-                                            class="inline-flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-primary-50 hover:text-primary-600"
+                                            class="snow-icon-btn h-6 w-6"
                                             title="Alternar estado (ACTIVE ↔ INACTIVE)">
                                             <svg class="h-3.5 w-3.5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 6h10M7 12h10M7 18h10" />
@@ -273,7 +273,7 @@
                                 @if($canEdit ?? false)
                                     <a
                                         href="{{ route('admin.screens.edit', [$screen, $item->getKey()]) }}"
-                                        class="inline-flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-primary-50 hover:text-primary-600"
+                                        class="snow-icon-btn h-6 w-6"
                                         title="Editar"
                                     >
                                         <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
@@ -283,7 +283,7 @@
                                     <form method="POST" action="{{ route('admin.screens.destroy', [$screen, $item->getKey()]) }}" class="inline" onsubmit="return confirm('¿Eliminar este registro?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="inline-flex h-6 w-6 items-center justify-center rounded-md text-slate-300 transition hover:bg-red-50 hover:text-red-600" title="Eliminar">
+                                        <button type="submit" class="snow-icon-btn-danger h-6 w-6" title="Eliminar">
                                             <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
                                         </button>
                                     </form>

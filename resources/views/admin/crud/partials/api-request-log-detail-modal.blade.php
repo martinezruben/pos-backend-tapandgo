@@ -73,11 +73,11 @@
                     </dl>
 
                     <div>
-                        <h3 class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">Parámetros (JSON)</h3>
+                        <h3 class="mb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Parámetros (JSON)</h3>
                         <pre class="max-h-[220px] overflow-auto rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-[10px] leading-relaxed text-slate-800 whitespace-pre-wrap break-words font-mono" x-text="jsonBlock(row.parameters_json, row.parameters)"></pre>
                     </div>
                     <div>
-                        <h3 class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">Respuesta (JSON / cuerpo)</h3>
+                        <h3 class="mb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Respuesta (JSON / cuerpo)</h3>
                         <pre class="max-h-[280px] overflow-auto rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-[10px] leading-relaxed text-slate-800 whitespace-pre-wrap break-words font-mono" x-text="jsonBlock(row.response_json, row.response_summary)"></pre>
                     </div>
                 </div>

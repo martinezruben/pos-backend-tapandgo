@@ -4,7 +4,7 @@
             <h2 class="text-sm font-bold text-slate-900">{{ $item ? 'Editar' : 'Crear' }} · {{ $cfg['label'] }}</h2>
             <p class="mt-0.5 text-[11px] text-slate-500">
                 @if(($screen ?? null) === 'devices' && $item)
-                    Solo lectura salvo «Habilitado». Puedes restablecer la última sincronización.
+                    Puedes editar el nombre y «Habilitado», y restablecer la última sincronización.
                 @else
                     Completa los campos y guarda.
                 @endif
@@ -20,11 +20,7 @@
                     <span class="snow-label">Huella del dispositivo</span>
                     <p class="mt-0.5 break-all rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 font-mono text-[12px] text-slate-800">{{ $item->device_fingerprint }}</p>
                 </div>
-                <div>
-                    <span class="snow-label">Nombre</span>
-                    <p class="mt-0.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-[13px] text-slate-800">{{ $item->name ?? '—' }}</p>
-                </div>
-                <div>
+                <div class="md:col-span-2">
                     <span class="snow-label">Última sincronización</span>
                     <p class="mt-0.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-[13px] text-slate-800 tabular-nums">{{ $item->last_sync_at?->format('Y-m-d H:i') ?? '—' }}</p>
                     <form method="POST" action="{{ route('admin.devices.reset-last-sync', $item) }}" class="mt-2 inline" onsubmit="return confirm('¿Restablecer la última sincronización?');">
@@ -38,6 +34,13 @@
                     <form method="POST" action="{{ route('admin.screens.update', [$screen, $item->getKey()]) }}" class="flex flex-col gap-3 border-t border-slate-100 pt-3">
                         @csrf
                         @method('PUT')
+                        <div>
+                            <label class="snow-label" for="f-name">Nombre</label>
+                            <input id="f-name" type="text" name="name" value="{{ old('name', $item->name) }}" maxlength="100" placeholder="Nombre del dispositivo" class="snow-input max-w-md">
+                            @error('name')
+                                <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                         <div>
                             <label class="snow-label" for="f-is_enabled">Habilitado</label>
                             <div class="mt-1">
@@ -95,13 +98,55 @@
                         </select>
                     @elseif($field === 'id' && $item)
                         <input id="f-id" type="text" value="{{ $item->getKey() }}" class="snow-input bg-slate-50 text-slate-700" readonly aria-readonly="true">
-                    @elseif($field === 'pin4')
-                        @if($item && method_exists($item, 'pin4Plain') && $item->pin4Plain() !== null)
-                            <p class="mb-1 text-[10px] text-slate-600">
-                                PIN actual: <span class="font-mono font-semibold tracking-[0.3em] text-slate-900">{{ $item->pin4Plain() }}</span>
-                            </p>
+                    @elseif($field === 'password')
+                        <input id="f-{{ $field }}" type="password" name="{{ $field }}" value="" placeholder="{{ $item ? 'Dejar vacío para mantener la actual' : 'Contraseña' }}" class="snow-input" autocomplete="new-password">
+                        @if($item)
+                            <p class="mt-1 text-[10px] text-slate-500">Por seguridad, la contraseña actual no se muestra.</p>
                         @endif
-                        <input id="f-{{ $field }}" type="text" name="{{ $field }}" inputmode="numeric" maxlength="4" placeholder="{{ $item ? 'Dejar vacío para mantener' : 'Ej. 7391' }}" class="snow-input font-mono tracking-[0.3em]" autocomplete="off">
+                    @elseif($field === 'pin4')
+                        <div class="mt-0.5 flex flex-col gap-3" x-data="{
+                            digits: ['', '', '', ''],
+                            sync(value) {
+                                const clean = value.replace(/\D/g, '').slice(0, 4).split('');
+                                this.digits = [clean[0] || '', clean[1] || '', clean[2] || '', clean[3] || ''];
+                            },
+                        }">
+                            @if($item && method_exists($item, 'pin4Plain') && $item->pin4Plain() !== null)
+                                <div>
+                                    <span class="mb-1 block text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400">PIN actual</span>
+                                    <div class="inline-flex gap-1.5" aria-hidden="true">
+                                        @foreach(str_split(str_pad((string) $item->pin4Plain(), 4)) as $digit)
+                                            <span class="flex h-9 w-8 items-center justify-center rounded-md border border-slate-200 bg-slate-50 font-mono text-base font-bold tabular-nums text-slate-700 shadow-sm">{{ trim($digit) }}</span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                            <div>
+                                <span class="mb-1 block text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400">{{ $item ? 'Nuevo PIN' : 'PIN' }}</span>
+                                <div class="relative inline-flex cursor-text gap-1.5" @click="$refs.pin4Input.focus()">
+                                    <template x-for="(digit, index) in digits" :key="index">
+                                        <span
+                                            class="flex h-10 w-9 items-center justify-center rounded-md border-2 font-mono text-lg font-bold tabular-nums text-slate-900 shadow-sm transition"
+                                            :class="digit ? 'border-primary-400 bg-primary-50/70' : 'border-slate-200 bg-white'"
+                                            x-text="digit || '·'"
+                                        ></span>
+                                    </template>
+                                    <input
+                                        x-ref="pin4Input"
+                                        id="f-{{ $field }}"
+                                        type="text"
+                                        name="{{ $field }}"
+                                        inputmode="numeric"
+                                        maxlength="4"
+                                        autocomplete="off"
+                                        aria-label="{{ $item ? 'Nuevo PIN' : 'PIN' }}"
+                                        class="absolute inset-0 h-full w-full cursor-text opacity-0"
+                                        @input="sync($event.target.value)"
+                                    >
+                                </div>
+                                <p class="mt-1 text-[10px] text-slate-500">{{ $item ? 'Dejar vacío para mantener el PIN actual.' : '4 dígitos, ej. 7391' }}</p>
+                            </div>
+                        </div>
                     @elseif(!empty($cfg['select_options'][$field] ?? []))
                         @php
                             $selectDefault = $item?->{$field} ?? array_key_first($cfg['select_options'][$field] ?? []);
