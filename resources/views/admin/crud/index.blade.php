@@ -203,7 +203,7 @@
                         @foreach($visibleFields as $f)
                             <td class="max-w-[12rem] px-2 py-1 align-middle text-slate-800">
                                 @if($f === 'image_url' && ! empty($item->image_url))
-                                                                <img src="{{ \App\Services\ImageThumbnailService::syncUrl($item->image_url) }}" alt="" class="h-7 w-7 shrink-0 rounded object-cover ring-1 ring-slate-200" width="28" height="28">
+                                                                <img src="{{ \App\Services\ImageThumbnailService::displayUrl($item->image_url) }}" alt="" class="h-7 w-7 shrink-0 rounded object-cover ring-1 ring-slate-200" width="28" height="28">
                                                             @elseif($f === 'image_url')
                                                                 <span class="inline-flex h-7 w-7 items-center justify-center rounded bg-slate-100/80 ring-1 ring-slate-200/80" title="Sin imagen" aria-label="Sin imagen">
                                                                     <svg class="h-3.5 w-3.5 text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5v9l9 5.25M3 7.5l9 5.25m0-9v9"/></svg>

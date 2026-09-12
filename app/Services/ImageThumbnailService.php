@@ -46,29 +46,62 @@ class ImageThumbnailService
     }
 
     /**
-     * URL de sincronización para una `image_url` de familia/producto:
-     * - URL externa (http/https): se devuelve intacta.
-     * - Ruta local (/storage/...): URL absoluta de la miniatura si existe; si no, de la original.
+     * Extrae la ruta relativa al disco «public» de una image_url almacenada.
+     * Acepta rutas locales (/storage/…) y URLs absolutas legacy cuyo host ya no
+     * es el actual (ej. https://posbackend.test/storage/…); las URL verdaderamente
+     * externas (CDN, unsplash…) devuelven null.
      */
-    public static function syncUrl(?string $imageUrl): ?string
+    protected static function localRelativePath(?string $imageUrl): ?string
     {
         if ($imageUrl === null || $imageUrl === '') {
             return null;
         }
 
-        if (preg_match('#^https?://#i', $imageUrl)) {
-            return $imageUrl;
-        }
-
         if (preg_match('#/storage/(.+)$#', $imageUrl, $m)) {
-            $path = $m[1];
-            $thumbPath = dirname($path).'/thumbs/'.pathinfo($path, PATHINFO_FILENAME).'.webp';
-            $chosen = Storage::disk('public')->exists($thumbPath) ? $thumbPath : $path;
-
-            return Storage::disk('public')->url($chosen);
+            return $m[1];
         }
 
-        return url($imageUrl);
+        return null;
+    }
+
+    /**
+     * Ruta del disco de la miniatura si existe; si no, la ruta de la original.
+     */
+    protected static function bestLocalPath(string $path): string
+    {
+        $thumbPath = dirname($path).'/thumbs/'.pathinfo($path, PATHINFO_FILENAME).'.webp';
+
+        return Storage::disk('public')->exists($thumbPath) ? $thumbPath : $path;
+    }
+
+    /**
+     * URL para el panel admin: RELATIVA al host actual (/storage/…), de modo que
+     * las imágenes carguen visite el panel desde donde lo visite (IP:puerto,
+     * dominio, localhost), sin importar el APP_URL con el que se almacenaron.
+     */
+    public static function displayUrl(?string $imageUrl): ?string
+    {
+        $path = self::localRelativePath($imageUrl);
+        if ($path === null) {
+            return $imageUrl !== null && $imageUrl !== '' ? $imageUrl : null;
+        }
+
+        return '/storage/'.self::bestLocalPath($path);
+    }
+
+    /**
+     * URL de sincronización para el POS: ABSOLUTA usando APP_URL (el POS necesita
+     * un host completo para descargar la imagen). Legacy absolutas con host viejo
+     * se reescriben al APP_URL actual.
+     */
+    public static function syncUrl(?string $imageUrl): ?string
+    {
+        $path = self::localRelativePath($imageUrl);
+        if ($path === null) {
+            return $imageUrl !== null && $imageUrl !== '' ? $imageUrl : null;
+        }
+
+        return rtrim(config('app.url'), '/').'/storage/'.self::bestLocalPath($path);
     }
 
     /**

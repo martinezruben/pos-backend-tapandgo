@@ -97,8 +97,10 @@ class AdminPanelUxTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        $this->assertStringContainsString('PIN actual:', $html);
-        $this->assertStringContainsString('7391', $html);
+        $this->assertStringContainsString('PIN actual', $html);
+        foreach (str_split('7391') as $digit) {
+            $this->assertStringContainsString('>'.$digit.'</span>', $html);
+        }
     }
 
     public function test_sync_states_show_last_sync_since(): void

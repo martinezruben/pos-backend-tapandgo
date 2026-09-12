@@ -186,7 +186,7 @@
                     <label class="snow-label" for="family_image">Imagen de la categoría (POS)</label>
                     @if($item?->image_url)
                         <div class="mb-2 flex flex-wrap items-center gap-3">
-                            <img src="{{ $item->image_url }}" alt="" class="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-slate-200" width="64" height="64">
+                            <img src="{{ \App\Services\ImageThumbnailService::displayUrl($item->image_url) }}" alt="" class="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-slate-200" width="64" height="64">
                             <label class="inline-flex cursor-pointer items-center gap-1.5 text-[11px] text-slate-600">
                                 <input type="checkbox" name="remove_image" value="1" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500">
                                 Quitar imagen actual
@@ -206,7 +206,7 @@
                     <label class="snow-label" for="product_image">Imagen del producto</label>
                     @if($item?->image_url)
                         <div class="mb-2 flex flex-wrap items-center gap-3">
-                            <img src="{{ $item->image_url }}" alt="" class="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-slate-200" width="64" height="64">
+                            <img src="{{ \App\Services\ImageThumbnailService::displayUrl($item->image_url) }}" alt="" class="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-slate-200" width="64" height="64">
                             <label class="inline-flex cursor-pointer items-center gap-1.5 text-[11px] text-slate-600">
                                 <input type="checkbox" name="remove_image" value="1" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500">
                                 Quitar imagen actual
