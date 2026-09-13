@@ -4,6 +4,9 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
+use Intervention\Image\Encoders\JpegEncoder;
+use Intervention\Image\Encoders\PngEncoder;
+use Intervention\Image\Encoders\WebpEncoder;
 use Intervention\Image\ImageManager;
 
 /**
@@ -17,6 +20,53 @@ class ImageThumbnailService
     public const int MAX_SIZE = 400;
 
     public const int QUALITY = 80;
+
+    /** Tamaño máximo del original comprimido (para fallback y disco). */
+    public const int ORIGINAL_MAX_SIZE = 1600;
+
+    public const int ORIGINAL_QUALITY = 82;
+
+    /** Original mayor a este tamaño (bytes) se re-encodea en el backfill. */
+    public const int COMPRESS_THRESHOLD_BYTES = 300 * 1024;
+
+    /**
+     * Re-encodea el original en su lugar: máximo ORIGINAL_MAX_SIZE por lado y
+     * calidad ORIGINAL_QUALITY. Así el fallback del POS (cuando no hay
+     * miniatura) nunca entrega un archivo de varios MB.
+     *
+     * @return bool true si se re-encodeó, false si se dejó como estaba.
+     */
+    public static function compressOriginal(string $diskPath, int $maxSize = self::ORIGINAL_MAX_SIZE): bool
+    {
+        $disk = Storage::disk('public');
+        if (! $disk->exists($diskPath)) {
+            return false;
+        }
+
+        // Ya comprimido y pequeño: no re-procesar
+        if ($disk->size($diskPath) <= self::COMPRESS_THRESHOLD_BYTES) {
+            return false;
+        }
+
+        try {
+            $image = (new ImageManager(new GdDriver))->decodePath($disk->path($diskPath));
+        } catch (\Throwable) {
+            return false;
+        }
+
+        $image->scaleDown(width: $maxSize, height: $maxSize);
+        $ext = strtolower(pathinfo($diskPath, PATHINFO_EXTENSION));
+
+        if ($ext === 'png') {
+            $image->encode(new PngEncoder(interlaced: true))->save($disk->path($diskPath));
+        } elseif ($ext === 'webp') {
+            $image->encode(new WebpEncoder(quality: self::ORIGINAL_QUALITY))->save($disk->path($diskPath));
+        } else {
+            $image->encode(new JpegEncoder(quality: self::ORIGINAL_QUALITY))->save($disk->path($diskPath));
+        }
+
+        return true;
+    }
 
     /**
      * Genera (o regenera) la miniatura de un archivo ya almacenado en el disco «public».
@@ -35,6 +85,9 @@ class ImageThumbnailService
         try {
             $image = (new ImageManager(new GdDriver))->decodePath($disk->path($diskPath));
         } catch (\Throwable) {
+            // Sin miniatura posible: al menos comprimir el original para el fallback del POS
+            self::compressOriginal($diskPath);
+
             return null;
         }
 

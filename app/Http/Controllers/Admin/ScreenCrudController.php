@@ -336,6 +336,10 @@ class ScreenCrudController extends Controller
             $path = $request->file($fieldName)->store($folder, 'public');
             $data['image_url'] = Storage::disk('public')->url($path);
 
+            // Comprimir el original en el lugar (máx 1600px): el fallback del
+            // POS cuando no hay miniatura nunca entrega un archivo de MBs.
+            ImageThumbnailService::compressOriginal($path);
+
             if (ImageThumbnailService::generate($path) === null) {
                 // La imagen original se guardó; la miniatura no (ej. GD sin WebP en el host)
                 \Illuminate\Support\Facades\Log::warning('No se pudo generar miniatura', ['path' => $path]);
