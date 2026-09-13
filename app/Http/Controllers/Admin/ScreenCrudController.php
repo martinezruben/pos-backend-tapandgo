@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -323,7 +324,7 @@ class ScreenCrudController extends Controller
         // No fallar en silencio: si el navegador envió un archivo que PHP rechazó
         // (upload_max_filesize) o llegó corrupto, informarlo claramente.
         if ($request->files->has($fieldName) && ! $request->file($fieldName)?->isValid()) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 $fieldName => 'La imagen no se pudo subir (puede superar el límite del servidor). Intenta con una de menor tamaño.',
             ]);
         }
@@ -334,6 +335,13 @@ class ScreenCrudController extends Controller
                 ImageThumbnailService::deleteFor($existing->image_url);
             }
             $path = $request->file($fieldName)->store($folder, 'public');
+            if ($path === false || $path === null || $path === '') {
+                // store() retorna false (config throw=false) cuando el disco no
+                // es escribible: sin este check quedaría una URL sin archivo.
+                throw ValidationException::withMessages([
+                    $fieldName => 'No se pudo guardar la imagen en el almacenamiento del servidor (permisos de escritura).',
+                ]);
+            }
             $data['image_url'] = Storage::disk('public')->url($path);
 
             // Comprimir el original en el lugar (máx 1600px): el fallback del
@@ -342,7 +350,7 @@ class ScreenCrudController extends Controller
 
             if (ImageThumbnailService::generate($path) === null) {
                 // La imagen original se guardó; la miniatura no (ej. GD sin WebP en el host)
-                \Illuminate\Support\Facades\Log::warning('No se pudo generar miniatura', ['path' => $path]);
+                Log::warning('No se pudo generar miniatura', ['path' => $path]);
             }
 
             return;

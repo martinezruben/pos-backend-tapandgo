@@ -24,6 +24,7 @@ class ImageCompressionTest extends TestCase
         }
         $tmp = tempnam(sys_get_temp_dir(), 'big').'.jpg';
         imagejpeg($im, $tmp, 95);
+        imagedestroy($im);
 
         Storage::disk('public')->putFileAs('products', new File($tmp), 'big.jpg');
         $before = filesize(Storage::disk('public')->path('products/big.jpg'));
