@@ -458,6 +458,10 @@ class ScreenCrudController extends Controller
             $rules['pin4'] = ['nullable', 'digits:4'];
         }
 
+        if ($screen === 'families') {
+            $rules['description'] = ['nullable', 'string', 'max:255'];
+        }
+
         if ($screen === 'promotions') {
             $rules['name'] = ['required', 'string', 'max:120'];
             $rules['description'] = ['nullable', 'string', 'max:255'];
@@ -472,6 +476,10 @@ class ScreenCrudController extends Controller
         }
 
         $data = $request->validate($rules);
+
+        if ($screen === 'families') {
+            $rules['description'] = ['nullable', 'string', 'max:255'];
+        }
 
         if ($screen === 'promotions') {
             $this->validatePromotionBusinessRules($request, $data);

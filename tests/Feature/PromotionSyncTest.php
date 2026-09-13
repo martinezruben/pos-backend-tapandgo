@@ -277,6 +277,40 @@ class PromotionSyncTest extends TestCase
         $this->assertSame($sub->id, $productOption['parent']);
     }
 
+    public function test_family_payload_includes_description(): void
+    {
+        $location = Location::create(['id' => (string) Str::uuid(), 'name' => 'Main', 'is_active' => true]);
+        $device = Device::create([
+            'id' => (string) Str::uuid(),
+            'location_id' => $location->id,
+            'device_fingerprint' => 'fp-fam-desc',
+            'is_enabled' => true,
+        ]);
+        License::create([
+            'device_id' => $device->id,
+            'valid_from' => now()->subDay(),
+            'valid_to' => now()->addDay(),
+            'status' => 'ACTIVE',
+        ]);
+
+        $withDesc = Family::create([
+            'name' => 'Cervezas, Vinos y Licores',
+            'description' => 'Categoría de bebidas alcohólicas: cervezas, vinos y licores.',
+        ]);
+        Family::create(['name' => 'Sin descripción']);
+
+        $token = $device->createToken('fam-desc')->plainTextToken;
+        $rows = collect($this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/sync/pull?'.http_build_query(['device_fingerprint' => $device->device_fingerprint]))
+            ->assertOk()
+            ->json('data.families'));
+
+        $row = $rows->firstWhere('id', $withDesc->id);
+        $this->assertSame('Categoría de bebidas alcohólicas: cervezas, vinos y licores.', $row['description']);
+        $sinDesc = $rows->firstWhere('name', 'Sin descripción');
+        $this->assertNull($sinDesc['description']);
+    }
+
     public function test_sync_payload_includes_promotion_description(): void
     {
         $location = Location::create(['id' => (string) Str::uuid(), 'name' => 'Main', 'is_active' => true]);

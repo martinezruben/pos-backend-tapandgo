@@ -383,6 +383,7 @@ class SyncController extends Controller
         return [
             'id' => $f->id,
             'name' => $f->name,
+            'description' => $f->description !== null && $f->description !== '' ? $f->description : null,
             'imageUrl' => ImageThumbnailService::syncUrl($f->image_url),
             'updatedAt' => $f->updated_at->utc()->format('Y-m-d\TH:i:s').'Z',
             'deletedAt' => $f->deleted_at?->utc()->format('Y-m-d\TH:i:s\Z'),

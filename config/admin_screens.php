@@ -186,14 +186,16 @@ return [
         'label' => 'Familias',
         'icon' => 'squares-2x2',
         'labels' => [
+            'description' => 'Descripción para el operario (POS)',
             'image_url' => 'Imagen',
         ],
-        'fields' => ['name', 'image_url'],
+        'fields' => ['name', 'description', 'image_url'],
         'foreign_labels' => [
             'image_url' => ['virtual' => true, 'header' => 'Imagen'],
         ],
         'grid' => [
             'filters' => [],
+            'exclude_from_grid' => ['description'],
             'columns' => [
                 ['field' => 'image_url', 'label' => 'Img', 'width' => '60px', 'render' => fn ($value, $row) => $value ? "<img src='{$value}' alt='Familia' class='w-8 h-8 object-cover rounded-full'>" : ''],
                 ['field' => 'name', 'label' => 'Nombre', 'sortable' => true],

@@ -12,7 +12,7 @@ class Family extends Model
 {
     use HasFactory, HasUuidPrimaryKey, SoftDeletes;
 
-    protected $fillable = ['name', 'image_url'];
+    protected $fillable = ['name', 'description', 'image_url'];
 
     public function subfamilies(): HasMany
     {
