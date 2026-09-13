@@ -320,6 +320,14 @@ class ScreenCrudController extends Controller
 
         $fieldName = $folder === 'families' ? 'family_image' : 'product_image';
 
+        // No fallar en silencio: si el navegador envió un archivo que PHP rechazó
+        // (upload_max_filesize) o llegó corrupto, informarlo claramente.
+        if ($request->files->has($fieldName) && ! $request->file($fieldName)?->isValid()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                $fieldName => 'La imagen no se pudo subir (puede superar el límite del servidor). Intenta con una de menor tamaño.',
+            ]);
+        }
+
         if ($request->hasFile($fieldName)) {
             if ($existing?->image_url) {
                 $this->deleteStoredPublicFile($existing->image_url);
@@ -327,7 +335,11 @@ class ScreenCrudController extends Controller
             }
             $path = $request->file($fieldName)->store($folder, 'public');
             $data['image_url'] = Storage::disk('public')->url($path);
-            ImageThumbnailService::generate($path);
+
+            if (ImageThumbnailService::generate($path) === null) {
+                // La imagen original se guardó; la miniatura no (ej. GD sin WebP en el host)
+                \Illuminate\Support\Facades\Log::warning('No se pudo generar miniatura', ['path' => $path]);
+            }
 
             return;
         }
