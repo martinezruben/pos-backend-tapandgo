@@ -43,6 +43,9 @@ class SystemSettingsController extends Controller
             'office365_client_id' => ['nullable', 'string', 'max:255'],
             'office365_client_secret' => ['nullable', 'string'],
             'office365_scopes' => ['nullable', 'string'],
+            'contingency_enabled' => ['boolean'],
+            'contingency_email_list' => ['nullable', 'string'],
+            'contingency_resend_hours' => ['required', 'integer', 'min:1', 'max:168'],
         ]);
 
         foreach ([
@@ -55,12 +58,21 @@ class SystemSettingsController extends Controller
             'pos_password_require_digit',
             'pos_password_require_symbol',
             'sync_paused',
+            'contingency_enabled',
         ] as $boolField) {
             $validated[$boolField] = $request->boolean($boolField);
         }
 
         if ($validated['office365_scopes']) {
             $validated['office365_scopes'] = json_decode($validated['office365_scopes'], true);
+        }
+
+        // Parse contingency emails from newline-separated text to array
+        if ($validated['contingency_email_list']) {
+            $emails = array_filter(array_map('trim', explode("\n", $validated['contingency_email_list'])));
+            $validated['contingency_email_list'] = array_values($emails);
+        } else {
+            $validated['contingency_email_list'] = [];
         }
 
         $params = SystemParameter::query()->firstOrFail();

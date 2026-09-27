@@ -726,6 +726,9 @@ return [
             'office365_client_id' => 'ID de Cliente',
             'office365_client_secret' => 'Secreto de Cliente',
             'office365_scopes' => 'Permisos (Scopes)',
+            'contingency_enabled' => 'Habilitar notificaciones de contingencia',
+            'contingency_email_list' => 'Correos para notificaciones (uno por línea)',
+            'contingency_resend_hours' => 'Intervalo de reenvío (horas)',
         ],
         'select_options' => [
             'mail_driver' => [
@@ -750,11 +753,15 @@ return [
             'office365_client_id',
             'office365_client_secret',
             'office365_scopes',
+            'contingency_enabled',
+            'contingency_email_list',
+            'contingency_resend_hours',
         ],
         'field_tabs' => [
             'General' => ['mail_driver', 'mail_from_address', 'mail_from_name'],
             'SMTP' => ['smtp_host', 'smtp_port', 'smtp_username', 'smtp_password', 'smtp_encryption'],
             'Office 365' => ['office365_tenant_id', 'office365_client_id', 'office365_client_secret', 'office365_scopes'],
+            'Contingencia' => ['contingency_enabled', 'contingency_email_list', 'contingency_resend_hours'],
         ],
         'field_types' => [
             'mail_driver' => 'select',
@@ -762,6 +769,9 @@ return [
             'office365_scopes' => 'textarea',
             'smtp_password' => 'password',
             'office365_client_secret' => 'password',
+            'contingency_enabled' => 'checkbox',
+            'contingency_email_list' => 'textarea',
+            'contingency_resend_hours' => 'number',
         ],
     ],
     'ncf-sequences' => [

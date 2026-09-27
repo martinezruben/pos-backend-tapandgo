@@ -155,10 +155,11 @@
                 <h2 class="mb-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Correos (SMTP / Office 365)</h2>
                 <div class="rounded-lg border border-slate-100 bg-white overflow-hidden">
                     <!-- Tabs -->
-                    <div class="flex border-b border-slate-100 bg-slate-50/50">
-                        <button type="button" @click="activeTab = 'general'" :class="{ 'border-b-2 border-primary-600 bg-white text-primary-600' : activeTab === 'general', 'text-slate-600 hover:text-slate-900' : activeTab !== 'general' }" class="flex-1 px-3 py-2 text-xs font-semibold transition">General</button>
-                        <button type="button" @click="activeTab = 'smtp'" :class="{ 'border-b-2 border-primary-600 bg-white text-primary-600' : activeTab === 'smtp', 'text-slate-600 hover:text-slate-900' : activeTab !== 'smtp' }" class="flex-1 px-3 py-2 text-xs font-semibold transition">SMTP</button>
-                        <button type="button" @click="activeTab = 'office365'" :class="{ 'border-b-2 border-primary-600 bg-white text-primary-600' : activeTab === 'office365', 'text-slate-600 hover:text-slate-900' : activeTab !== 'office365' }" class="flex-1 px-3 py-2 text-xs font-semibold transition">Office 365</button>
+                    <div class="flex border-b border-slate-100 bg-slate-50/50 overflow-x-auto">
+                        <button type="button" @click="activeTab = 'general'" :class="{ 'border-b-2 border-primary-600 bg-white text-primary-600' : activeTab === 'general', 'text-slate-600 hover:text-slate-900' : activeTab !== 'general' }" class="flex-1 px-3 py-2 text-xs font-semibold transition whitespace-nowrap">General</button>
+                        <button type="button" @click="activeTab = 'smtp'" :class="{ 'border-b-2 border-primary-600 bg-white text-primary-600' : activeTab === 'smtp', 'text-slate-600 hover:text-slate-900' : activeTab !== 'smtp' }" class="flex-1 px-3 py-2 text-xs font-semibold transition whitespace-nowrap">SMTP</button>
+                        <button type="button" @click="activeTab = 'office365'" :class="{ 'border-b-2 border-primary-600 bg-white text-primary-600' : activeTab === 'office365', 'text-slate-600 hover:text-slate-900' : activeTab !== 'office365' }" class="flex-1 px-3 py-2 text-xs font-semibold transition whitespace-nowrap">Office 365</button>
+                        <button type="button" @click="activeTab = 'contingency'" :class="{ 'border-b-2 border-primary-600 bg-white text-primary-600' : activeTab === 'contingency', 'text-slate-600 hover:text-slate-900' : activeTab !== 'contingency' }" class="flex-1 px-3 py-2 text-xs font-semibold transition whitespace-nowrap">Contingencia</button>
                     </div>
 
                     <!-- Tab Content -->
@@ -267,6 +268,58 @@
                                 @enderror
                             </div>
                             <button type="button" @click="$dispatch('test-office365')" class="w-full rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-200">Validar credenciales Office 365</button>
+                        </div>
+
+                        <!-- Contingencia Tab -->
+                        <div x-show="activeTab === 'contingency'" class="space-y-3">
+                            <div class="flex flex-col gap-0.5">
+                                <label class="flex cursor-pointer items-center gap-2 text-xs text-slate-700">
+                                    <input
+                                        type="checkbox"
+                                        name="contingency_enabled"
+                                        value="1"
+                                        class="h-3.5 w-3.5 rounded border-slate-300 text-primary-600"
+                                        @checked(old('contingency_enabled', $params->contingency_enabled))
+                                    >
+                                    <span class="font-semibold">Habilitar notificaciones de contingencia</span>
+                                </label>
+                                @error('contingency_enabled')
+                                    <p class="text-[10px] text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="flex flex-col gap-0.5">
+                                <label for="contingency_email_list" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Correos para notificaciones (uno por línea)</label>
+                                <textarea
+                                    name="contingency_email_list"
+                                    id="contingency_email_list"
+                                    placeholder="admin@example.com&#10;ops@example.com&#10;soporte@example.com"
+                                    class="snow-input text-xs"
+                                    rows="4"
+                                >{{ old('contingency_email_list', is_array($params->contingency_email_list) ? implode("\n", $params->contingency_email_list) : $params->contingency_email_list) }}</textarea>
+                                @error('contingency_email_list')
+                                    <p class="text-[10px] text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="text-[8px] text-slate-500">Ingrese un correo por línea. Estos correos recibirán notificaciones cuando una localidad entre en contingencia.</p>
+                            </div>
+
+                            <div class="flex flex-col gap-0.5">
+                                <label for="contingency_resend_hours" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Intervalo de reenvío (horas)</label>
+                                <input
+                                    type="number"
+                                    name="contingency_resend_hours"
+                                    id="contingency_resend_hours"
+                                    placeholder="8"
+                                    value="{{ old('contingency_resend_hours', $params->contingency_resend_hours) }}"
+                                    min="1"
+                                    max="168"
+                                    class="snow-input text-xs"
+                                >
+                                @error('contingency_resend_hours')
+                                    <p class="text-[10px] text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="text-[8px] text-slate-500">Cada cuántas horas se enviarán recordatorios de contingencia activa (máximo 7 días = 168 horas).</p>
+                            </div>
                         </div>
 
                         <!-- Test Email Section -->
