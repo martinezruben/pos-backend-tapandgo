@@ -8,27 +8,26 @@ use Illuminate\Http\Request;
 
 class MailTestController extends Controller
 {
-    protected MailConfigurationService $mailService;
-
-    public function __construct(MailConfigurationService $mailService)
-    {
-        $this->mailService = $mailService;
-        $this->middleware('auth:admin');
-        $this->middleware('gate:system_parameters.edit');
-    }
+    public function __construct(protected MailConfigurationService $mailService) {}
 
     public function validateSmtp()
     {
+        $this->authorize('system_parameters.edit');
+
         return response()->json($this->mailService->validateSmtpConnection());
     }
 
     public function validateOffice365()
     {
+        $this->authorize('system_parameters.edit');
+
         return response()->json($this->mailService->validateOffice365Connection());
     }
 
     public function sendTest(Request $request)
     {
+        $this->authorize('system_parameters.edit');
+
         $validated = $request->validate([
             'to_address' => 'required|email',
         ]);
@@ -36,5 +35,12 @@ class MailTestController extends Controller
         return response()->json(
             $this->mailService->testEmail($validated['to_address'])
         );
+    }
+
+    protected function authorize(string $permission)
+    {
+        $user = auth('admin')->user();
+        abort_unless($user, 403);
+        abort_unless($user->can($permission), 403);
     }
 }

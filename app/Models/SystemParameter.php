@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class SystemParameter extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'admin_password_min_length',
         'admin_password_require_uppercase',

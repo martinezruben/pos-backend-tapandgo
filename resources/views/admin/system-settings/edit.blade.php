@@ -268,6 +268,31 @@
                             </div>
                             <button type="button" @click="$dispatch('test-office365')" class="w-full rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-200">Validar credenciales Office 365</button>
                         </div>
+
+                        <!-- Test Email Section -->
+                        <div class="space-y-3 border-t border-slate-100 pt-3">
+                            <p class="text-[9px] text-slate-500 font-medium">Enviar un correo de prueba para validar la configuración:</p>
+                            <div class="flex flex-col gap-0.5 sm:flex-row sm:gap-2">
+                                <input
+                                    type="email"
+                                    id="test_email"
+                                    placeholder="tu-email@example.com"
+                                    class="snow-input text-xs flex-1"
+                                    x-ref="testEmail"
+                                >
+                                <button
+                                    type="button"
+                                    id="test-button"
+                                    onclick="testMailConnection(document.getElementById('test_email').value)"
+                                    class="rounded-lg bg-primary-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-primary-700 whitespace-nowrap"
+                                >
+                                    Enviar correo de prueba
+                                </button>
+                            </div>
+                            <div id="test-result" class="hidden rounded-lg border px-3 py-2 text-xs">
+                                <p id="test-message"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -282,4 +307,60 @@
             </div>
         </form>
     </div>
+
+    <script>
+        function testMailConnection(email) {
+            if (!email) {
+                showTestResult('Por favor ingresa un correo válido', false);
+                return;
+            }
+
+            const button = document.getElementById('test-button');
+            const resultDiv = document.getElementById('test-result');
+            const messageEl = document.getElementById('test-message');
+
+            button.disabled = true;
+            button.textContent = 'Enviando...';
+
+            fetch('/admin/mail/test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                },
+                body: JSON.stringify({ to_address: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showTestResult(data.message, data.success);
+            })
+            .catch(error => {
+                showTestResult('Error al enviar correo: ' + error.message, false);
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.textContent = 'Enviar correo de prueba';
+            });
+        }
+
+        function showTestResult(message, success) {
+            const resultDiv = document.getElementById('test-result');
+            const messageEl = document.getElementById('test-message');
+
+            messageEl.textContent = message;
+            resultDiv.classList.remove('hidden');
+
+            if (success) {
+                resultDiv.classList.remove('border-red-100', 'bg-red-50');
+                resultDiv.classList.add('border-green-100', 'bg-green-50');
+                messageEl.classList.remove('text-red-700');
+                messageEl.classList.add('text-green-700');
+            } else {
+                resultDiv.classList.remove('border-green-100', 'bg-green-50');
+                resultDiv.classList.add('border-red-100', 'bg-red-50');
+                messageEl.classList.remove('text-green-700');
+                messageEl.classList.add('text-red-700');
+            }
+        }
+    </script>
 </x-admin.layouts.app>

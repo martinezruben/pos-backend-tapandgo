@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Models\SystemParameter;
 use Exception;
-use Swift_SmtpTransport;
 use Swift_Mailer;
+use Swift_SmtpTransport;
 
 class MailConfigurationService
 {
@@ -57,7 +57,7 @@ class MailConfigurationService
         try {
             $config = $this->getSmtpConfig();
 
-            if (!$config['host'] || !$config['port'] || !$config['username'] || !$config['password']) {
+            if (! $config['host'] || ! $config['port'] || ! $config['username'] || ! $config['password']) {
                 return ['success' => false, 'message' => 'Credenciales SMTP incompletas'];
             }
 
@@ -72,7 +72,7 @@ class MailConfigurationService
 
             return ['success' => true, 'message' => 'Conexión SMTP válida'];
         } catch (Exception $e) {
-            return ['success' => false, 'message' => 'Error de conexión SMTP: ' . $e->getMessage()];
+            return ['success' => false, 'message' => 'Error de conexión SMTP: '.$e->getMessage()];
         }
     }
 
@@ -81,7 +81,7 @@ class MailConfigurationService
         try {
             $config = $this->getOffice365Config();
 
-            if (!$config['tenant_id'] || !$config['client_id'] || !$config['client_secret']) {
+            if (! $config['tenant_id'] || ! $config['client_id'] || ! $config['client_secret']) {
                 return ['success' => false, 'message' => 'Credenciales Office 365 incompletas'];
             }
 
@@ -89,7 +89,7 @@ class MailConfigurationService
             // to validate the token can be obtained. For now, just validate fields.
             return ['success' => true, 'message' => 'Credenciales Office 365 válidas (validación básica)'];
         } catch (Exception $e) {
-            return ['success' => false, 'message' => 'Error de validación Office 365: ' . $e->getMessage()];
+            return ['success' => false, 'message' => 'Error de validación Office 365: '.$e->getMessage()];
         }
     }
 
@@ -106,7 +106,7 @@ class MailConfigurationService
 
             return ['success' => false, 'message' => 'Driver de correo no soportado'];
         } catch (Exception $e) {
-            return ['success' => false, 'message' => 'Error al enviar correo de prueba: ' . $e->getMessage()];
+            return ['success' => false, 'message' => 'Error al enviar correo de prueba: '.$e->getMessage()];
         }
     }
 
@@ -115,7 +115,7 @@ class MailConfigurationService
         try {
             $config = $this->getSmtpConfig();
 
-            if (!$config['host'] || !$config['port'] || !$config['username'] || !$config['password']) {
+            if (! $config['host'] || ! $config['port'] || ! $config['username'] || ! $config['password']) {
                 return ['success' => false, 'message' => 'Configuración SMTP incompleta'];
             }
 
@@ -126,7 +126,7 @@ class MailConfigurationService
 
             $mailer = new Swift_Mailer($transport);
 
-            $message = (new \Swift_Message())
+            $message = (new \Swift_Message)
                 ->setSubject('Prueba de conexión - Tap&Go')
                 ->setFrom($config['username'], $this->getMailFromName())
                 ->setTo($toAddress)
@@ -136,7 +136,7 @@ class MailConfigurationService
 
             return ['success' => true, 'message' => "Correo de prueba enviado a {$toAddress}"];
         } catch (Exception $e) {
-            return ['success' => false, 'message' => 'Error al enviar correo SMTP: ' . $e->getMessage()];
+            return ['success' => false, 'message' => 'Error al enviar correo SMTP: '.$e->getMessage()];
         }
     }
 

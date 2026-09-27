@@ -66,6 +66,10 @@ class SystemSettingsController extends Controller
         $params = SystemParameter::query()->firstOrFail();
         $params->update($validated);
 
+        if ($request->wantsJson()) {
+            return response()->json(['status' => 'Parámetros guardados correctamente.']);
+        }
+
         return redirect()
             ->route('admin.system-settings.edit')
             ->with('status', 'Parámetros guardados correctamente.');
