@@ -35,6 +35,9 @@ class SystemParameter extends Model
         'office365_client_id',
         'office365_client_secret',
         'office365_scopes',
+        'contingency_enabled',
+        'contingency_email_list',
+        'contingency_resend_hours',
     ];
 
     protected function casts(): array
@@ -53,6 +56,9 @@ class SystemParameter extends Model
             'smtp_password' => 'encrypted',
             'office365_client_secret' => 'encrypted',
             'office365_scopes' => 'json',
+            'contingency_enabled' => 'boolean',
+            'contingency_email_list' => 'json',
+            'contingency_resend_hours' => 'integer',
         ];
     }
 
