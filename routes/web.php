@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\CashClosingController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DeviceLastSyncController;
 use App\Http\Controllers\Admin\LocationPairingTokenController;
+use App\Http\Controllers\Admin\MailTestController;
 use App\Http\Controllers\Admin\ProductExcelController;
 use App\Http\Controllers\Admin\RoleRbacMatrixController;
 use App\Http\Controllers\Admin\ScreenCrudController;
@@ -61,6 +62,10 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
 
         Route::get('/system-settings', [SystemSettingsController::class, 'edit'])->name('system-settings.edit');
         Route::put('/system-settings', [SystemSettingsController::class, 'update'])->name('system-settings.update');
+
+        Route::post('/mail/validate-smtp', [MailTestController::class, 'validateSmtp'])->name('mail.validate-smtp');
+        Route::post('/mail/validate-office365', [MailTestController::class, 'validateOffice365'])->name('mail.validate-office365');
+        Route::post('/mail/test', [MailTestController::class, 'sendTest'])->name('mail.test');
 
         Route::get('/screens/{screen}', [ScreenCrudController::class, 'index'])->name('screens.index');
         Route::get('/screens/{screen}/create', [ScreenCrudController::class, 'create'])->name('screens.create');

@@ -20,6 +20,18 @@ class SystemParameter extends Model
         'admin_max_failed_login_attempts',
         'admin_lockout_minutes',
         'sync_paused',
+        'mail_driver',
+        'mail_from_address',
+        'mail_from_name',
+        'smtp_host',
+        'smtp_port',
+        'smtp_username',
+        'smtp_password',
+        'smtp_encryption',
+        'office365_tenant_id',
+        'office365_client_id',
+        'office365_client_secret',
+        'office365_scopes',
     ];
 
     protected function casts(): array
@@ -34,6 +46,10 @@ class SystemParameter extends Model
             'pos_password_require_digit' => 'boolean',
             'pos_password_require_symbol' => 'boolean',
             'sync_paused' => 'boolean',
+            'smtp_port' => 'integer',
+            'smtp_password' => 'encrypted',
+            'office365_client_secret' => 'encrypted',
+            'office365_scopes' => 'json',
         ];
     }
 
