@@ -437,7 +437,7 @@ class DemoPosSeeder extends Seeder
         }
 
         // Reportes dedicados fuera del CRUD genérico
-        foreach (['dashboard.view', 'cierre_caja.view', 'audit_log.view'] as $extra) {
+        foreach (['dashboard.view', 'dashboard_technical.view', 'cierre_caja.view', 'audit_log.view'] as $extra) {
             Permission::firstOrCreate(['name' => $extra, 'guard_name' => 'admin']);
             $opsManagerPerms[] = $extra;
             $opsViewerPerms[] = $extra;

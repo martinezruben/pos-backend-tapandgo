@@ -1,5 +1,5 @@
 @php
-    $dashActive = request()->routeIs('admin.dashboard');
+    $dashActive = request()->routeIs('admin.dashboard', 'admin.dashboard.*');
 @endphp
 <div class="flex h-full min-h-0 flex-col text-slate-300">
     <div class="flex shrink-0 items-center gap-2.5 border-b border-slate-700 px-3 py-3">

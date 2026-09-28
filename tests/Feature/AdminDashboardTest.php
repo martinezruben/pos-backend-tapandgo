@@ -10,7 +10,6 @@ use App\Models\Location;
 use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Subfamily;
-use App\Models\SyncLog;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\TransactionPayment;
@@ -147,10 +146,21 @@ class AdminDashboardTest extends TestCase
             ->assertViewHas('chartPayload', fn (array $payload): bool => $payload['paymentMix']['labels'] === ['Bono regalo', 'Efectivo']);
     }
 
-    public function test_alert_card_lists_each_operational_issue(): void
+    private function adminWith(string ...$permissions): AdminUser
+    {
+        $admin = AdminUser::factory()->create();
+        foreach ($permissions as $name) {
+            Permission::findOrCreate($name, 'admin');
+            $admin->givePermissionTo($name);
+        }
+
+        return $admin;
+    }
+
+    public function test_technical_dashboard_lists_issues_in_modals(): void
     {
         $location = Location::factory()->create(['name' => 'Sucursal Sur', 'contingency_started_at' => now()->subHours(3)]);
-        $device = Device::factory()->create([
+        Device::factory()->create([
             'location_id' => $location->id,
             'name' => 'Caja Atrasada',
             'is_enabled' => true,
@@ -158,39 +168,71 @@ class AdminDashboardTest extends TestCase
         ]);
         $licensed = Device::factory()->create(['location_id' => $location->id, 'name' => 'Caja Por Vencer', 'last_sync_at' => now()]);
         License::factory()->create(['device_id' => $licensed->id, 'valid_to' => now()->addDays(3)]);
-        SyncLog::factory()->create(['status' => 'FAILED', 'started_at' => now()->subHour()]);
+
+        $this->actingAs($this->adminWith('dashboard_technical.view'), 'admin')
+            ->get(route('admin.dashboard.technical'))
+            ->assertOk()
+            ->assertViewIs('admin.dashboard-technical')
+            // El KPI abre el modal y el modal trae la lista
+            ->assertSee("\$dispatch('open-modal', 'dash-contingencies')", false)
+            ->assertSee('Localidades en contingencia (1)')
+            ->assertSee('Sucursal Sur')
+            ->assertSee("\$dispatch('open-modal', 'dash-devices-no-sync')", false)
+            ->assertSee('Caja Atrasada')
+            ->assertSee("\$dispatch('open-modal', 'dash-licenses-expiring')", false)
+            ->assertSee('Caja Por Vencer');
+    }
+
+    public function test_technical_kpis_are_not_clickable_when_nothing_is_wrong(): void
+    {
+        $location = Location::factory()->create(['contingency_started_at' => null]);
+        $device = Device::factory()->create(['location_id' => $location->id, 'is_enabled' => true, 'last_sync_at' => now()->subHour()]);
+        License::factory()->create(['device_id' => $device->id, 'valid_to' => now()->addDays(30)]);
+
+        $this->actingAs($this->adminWith('dashboard_technical.view'), 'admin')
+            ->get(route('admin.dashboard.technical'))
+            ->assertOk()
+            ->assertDontSee("\$dispatch('open-modal'", false)
+            ->assertViewHas('kpis', fn (array $kpis): bool => collect($kpis)->every(fn ($k) => ($k['tone'] ?? null) !== 'warn'));
+    }
+
+    public function test_commercial_dashboard_shows_sales_not_operations(): void
+    {
+        Location::factory()->create(['name' => 'Sucursal Sur', 'contingency_started_at' => now()->subHours(3)]);
         Transaction::factory()->create(['status' => 'VOIDED', 'total' => 123.45, 'occurred_at' => now()]);
 
         $this->actingAs($this->adminWithDashboard(), 'admin')
             ->get(route('admin.dashboard'))
             ->assertOk()
-            ->assertSee('Alertas operativas')
-            ->assertSee('1 localidad(es) en contingencia')
-            ->assertSee('Sucursal Sur')
-            ->assertSee('dispositivo(s) sin sincronizar')
-            ->assertSee('Caja Atrasada')
-            ->assertSee('1 licencia(s) próxima(s) a vencer')
-            ->assertSee('Caja Por Vencer')
-            ->assertSee('1 sincronización(es) fallida(s)')
-            ->assertSee('1 transacción(es) anulada(s) hoy')
-            ->assertSee('$123.45');
+            ->assertSee('Anulaciones hoy')
+            ->assertSee('$123.45')
+            ->assertDontSee('Sucursal Sur')
+            ->assertDontSee('dash-contingencies');
     }
 
-    public function test_alert_card_is_hidden_when_nothing_is_wrong(): void
+    public function test_admin_with_only_technical_permission_lands_on_technical(): void
     {
-        $location = Location::factory()->create(['contingency_started_at' => null]);
-        $device = Device::factory()->create(['location_id' => $location->id, 'is_enabled' => true, 'last_sync_at' => now()->subHour()]);
-        License::factory()->create(['device_id' => $device->id, 'valid_to' => now()->addDays(30)]);
-        SyncLog::factory()->create([
-            'location_id' => $location->id,
-            'device_id' => $device->id,
-            'status' => 'SUCCESS',
-            'started_at' => now()->subHour(),
-        ]);
+        $this->actingAs($this->adminWith('dashboard_technical.view'), 'admin')
+            ->get(route('admin.dashboard'))
+            ->assertRedirect(route('admin.dashboard.technical'));
+    }
 
+    public function test_technical_dashboard_requires_its_permission(): void
+    {
+        $this->actingAs($this->adminWithDashboard(), 'admin')
+            ->get(route('admin.dashboard.technical'))
+            ->assertRedirect(route('admin.dashboard'));
+    }
+
+    public function test_tabs_only_show_when_both_dashboards_are_allowed(): void
+    {
         $this->actingAs($this->adminWithDashboard(), 'admin')
             ->get(route('admin.dashboard'))
-            ->assertOk()
-            ->assertDontSee('Alertas operativas');
+            ->assertDontSee('aria-label="Dashboards"', false);
+
+        $this->actingAs($this->adminWith('dashboard.view', 'dashboard_technical.view'), 'admin')
+            ->get(route('admin.dashboard'))
+            ->assertSee('aria-label="Dashboards"', false)
+            ->assertSee(route('admin.dashboard.technical'));
     }
 }

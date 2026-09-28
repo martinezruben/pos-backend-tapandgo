@@ -8,135 +8,177 @@ use App\Models\License;
 use App\Models\Location;
 use App\Services\DashboardService;
 use App\Support\AdminRbac;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * Dos dashboards: comercial (ventas, `dashboard.view`) y técnico
+ * (operación de localidades, dispositivos y sync, `dashboard_technical.view`).
+ */
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request): View
+    public function commercial(Request $request): View|RedirectResponse
     {
-        // Es la página de inicio tras el login: sin permiso se muestra una
-        // bienvenida sin cifras en lugar de un 403.
-        if (! auth('admin')->user()?->can(AdminRbac::permissionsForScreen('dashboard')['view'])) {
-            return view('admin.dashboard-welcome');
+        // Es la página de inicio tras el login: sin permiso se lleva al técnico
+        // o a una bienvenida sin cifras en lugar de un 403.
+        if (! $this->canView('dashboard')) {
+            return $this->canView('dashboard-technical')
+                ? redirect()->route('admin.dashboard.technical')
+                : view('admin.dashboard-welcome');
         }
 
-        $locationId = $request->query('location_id');
-        $service = new DashboardService($locationId);
+        $service = new DashboardService($request->query('location_id'));
 
-        $kpisData = $service->getKpis();
-        $salesToday = $kpisData['salesToday'];
-        $txToday = $kpisData['txToday'];
-        $salesYesterday = $kpisData['salesYesterday'];
-        $txYesterday = $kpisData['txYesterday'];
-        $avgTicketToday = $kpisData['avgTicketToday'];
-        $avgTicketYesterday = $kpisData['avgTicketYesterday'];
-        $sales7d = $kpisData['sales7d'];
-        $sales30d = $kpisData['sales30d'];
-        $salesThisWeek = $kpisData['salesThisWeek'];
-        $salesLastWeek = $kpisData['salesLastWeek'];
-        $weekDeltaPct = $kpisData['weekDeltaPct'];
-        $syncSuccess7d = $kpisData['syncSuccess7d'];
-        $syncFailed7d = $kpisData['syncFailed7d'];
-        $syncOkPct = $kpisData['syncOkPct'];
+        $k = $service->getKpis();
+        $voided = $service->getVoidedTransactions();
 
-        $start14 = now()->subDays(13)->startOfDay();
-        $start30 = now()->subDays(29)->startOfDay();
+        $kpis = [
+            [
+                'label' => 'Ventas hoy',
+                'value' => '$'.number_format($k['salesToday'], 2),
+                'icon' => 'banknotes',
+            ],
+            [
+                'label' => 'Transacciones hoy',
+                'value' => (string) $k['txToday'],
+                'icon' => 'queue-list',
+            ],
+            [
+                'label' => 'Ticket promedio hoy',
+                'value' => $k['txToday'] > 0 ? '$'.number_format($k['avgTicketToday'], 2) : '—',
+                'sub' => $this->deltaLabel($k['avgTicketToday'], $k['avgTicketYesterday']),
+                'icon' => 'credit-card',
+            ],
+            [
+                'label' => 'Ventas semana vs. anterior',
+                'value' => $k['weekDeltaPct'] === null ? '—' : ($k['weekDeltaPct'] >= 0 ? '+' : '').number_format($k['weekDeltaPct'], 1).'%',
+                'sub' => '$'.number_format($k['salesThisWeek'], 2).' vs $'.number_format($k['salesLastWeek'], 2),
+                'icon' => $k['weekDeltaPct'] !== null && $k['weekDeltaPct'] < 0 ? 'arrow-trending-down' : 'arrow-trending-up',
+            ],
+            [
+                'label' => 'Ventas (7 días)',
+                'value' => '$'.number_format($k['sales7d'], 2),
+                'icon' => 'chart-bar',
+            ],
+            [
+                'label' => 'Ventas (30 días)',
+                'value' => '$'.number_format($k['sales30d'], 2),
+                'icon' => 'chart-bar',
+            ],
+            [
+                'label' => 'Anulaciones hoy',
+                'value' => (string) $voided['today']['count'],
+                'sub' => '$'.number_format($voided['today']['total'], 2),
+                'icon' => 'x-circle',
+                'tone' => $voided['today']['count'] > 0 ? 'warn' : null,
+            ],
+            [
+                'label' => 'Anulaciones (7 días)',
+                'value' => (string) $voided['week']['count'],
+                'sub' => '$'.number_format($voided['week']['total'], 2),
+                'icon' => 'x-circle',
+            ],
+        ];
+
+        $chartPayload = [
+            'salesTrend' => $service->getDailySalesTrend(now()->subDays(29)->startOfDay(), now()->endOfDay()),
+            'familyMix' => $service->getSalesByFamily(30),
+            'paymentMix' => $service->getSalesByPaymentMethod(30),
+        ];
+
+        return view('admin.dashboard', [
+            'kpis' => $kpis,
+            'chartPayload' => $chartPayload,
+            'topLocations' => $service->getTopLocationsBySales(30, 5),
+            'topProducts' => $service->getTopProductsBySales(30, 5),
+        ]);
+    }
+
+    public function technical(Request $request): View|RedirectResponse
+    {
+        if (! $this->canView('dashboard-technical')) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        $service = new DashboardService($request->query('location_id'));
+
+        $contingencies = $service->getLocationsInContingency();
+        $devicesNoSync = $service->getDevicesNotSyncedSince(4);
+        $licensesExpiring = $service->getLicensesExpiringWithin(7);
+        $sync7d = $service->getSyncStats7d();
+        $syncFailures24h = $service->getSyncFailuresLast24h();
 
         $kpis = [
             [
                 'label' => 'Localidades activas',
                 'value' => (string) Location::query()->where('is_active', true)->count(),
                 'icon' => 'map-pin',
-                'accent' => 'from-primary-500 to-primary-600',
             ],
             [
-                'label' => 'Dispositivos',
+                'label' => 'En contingencia',
+                'value' => (string) count($contingencies),
+                'sub' => count($contingencies) > 0 ? 'Ver localidades' : 'Ninguna',
+                'icon' => 'exclamation-triangle',
+                'tone' => count($contingencies) > 0 ? 'warn' : null,
+                'modal' => count($contingencies) > 0 ? 'dash-contingencies' : null,
+            ],
+            [
+                'label' => 'Dispositivos habilitados',
                 'value' => (string) Device::query()->where('is_enabled', true)->count(),
                 'icon' => 'device-phone-mobile',
-                'accent' => 'from-sky-500 to-cyan-500',
             ],
             [
-                'label' => 'Ventas hoy',
-                'value' => '$'.number_format($salesToday, 2),
-                'icon' => 'banknotes',
-                'accent' => 'from-emerald-500 to-teal-600',
-            ],
-            [
-                'label' => 'Transacciones hoy',
-                'value' => (string) $txToday,
-                'icon' => 'queue-list',
-                'accent' => 'from-violet-500 to-purple-600',
-            ],
-            [
-                'label' => 'Ticket promedio hoy',
-                'value' => $txToday > 0 ? '$'.number_format($avgTicketToday, 2) : '—',
-                'sub' => $this->deltaLabel($avgTicketToday, $avgTicketYesterday),
-                'icon' => 'credit-card',
-                'accent' => 'from-fuchsia-500 to-pink-600',
-            ],
-            [
-                'label' => 'Ventas semana vs. anterior',
-                'value' => $weekDeltaPct === null ? '—' : ($weekDeltaPct >= 0 ? '+' : '').number_format($weekDeltaPct, 1).'%',
-                'sub' => '$'.number_format($salesThisWeek, 2).' vs $'.number_format($salesLastWeek, 2),
-                'icon' => $weekDeltaPct !== null && $weekDeltaPct < 0 ? 'arrow-trending-down' : 'arrow-trending-up',
-                'accent' => $weekDeltaPct !== null && $weekDeltaPct < 0 ? 'from-rose-500 to-red-600' : 'from-teal-500 to-emerald-600',
-            ],
-            [
-                'label' => 'Ventas (7 días)',
-                'value' => '$'.number_format($sales7d, 2),
-                'icon' => 'chart-bar',
-                'accent' => 'from-primary-600 to-sky-500',
+                'label' => 'Sin sincronizar (+4 h)',
+                'value' => (string) count($devicesNoSync),
+                'sub' => count($devicesNoSync) > 0 ? 'Ver dispositivos' : 'Todos al día',
+                'icon' => 'arrow-path',
+                'tone' => count($devicesNoSync) > 0 ? 'warn' : null,
+                'modal' => count($devicesNoSync) > 0 ? 'dash-devices-no-sync' : null,
             ],
             [
                 'label' => 'Licencias activas',
                 'value' => (string) License::query()->where('status', 'ACTIVE')->count(),
                 'icon' => 'key',
-                'accent' => 'from-amber-500 to-orange-500',
+            ],
+            [
+                'label' => 'Licencias por vencer (7 días)',
+                'value' => (string) count($licensesExpiring),
+                'sub' => count($licensesExpiring) > 0 ? 'Ver licencias' : 'Ninguna',
+                'icon' => 'key',
+                'tone' => count($licensesExpiring) > 0 ? 'warn' : null,
+                'modal' => count($licensesExpiring) > 0 ? 'dash-licenses-expiring' : null,
+            ],
+            [
+                'label' => 'Sync correctas (7 días)',
+                'value' => $sync7d['okPct'] === null ? '—' : $sync7d['okPct'].'%',
+                'sub' => $sync7d['success'].' de '.($sync7d['success'] + $sync7d['failed']),
+                'icon' => 'arrow-path',
+            ],
+            [
+                'label' => 'Sync fallidas (24 h)',
+                'value' => (string) $syncFailures24h['count'],
+                'sub' => 'de '.$syncFailures24h['total'].' sincronizaciones',
+                'icon' => 'x-circle',
+                'tone' => $syncFailures24h['count'] > 0 ? 'warn' : null,
             ],
         ];
 
-        // Datos para gráficos
-        $salesTrend = $service->getDailySalesTrend($start30, now()->endOfDay());
-        $familyMix = $service->getSalesByFamily(30);
-        $syncByDay = $service->getSyncSuccessFailedByDay($start14, now()->endOfDay());
-        $topLocations = $service->getTopLocationsBySales(30, 5);
-        $activity = $service->getRecentActivity(8);
-        $topProducts = $service->getTopProductsBySales(30, 5);
-        $paymentMix = $service->getSalesByPaymentMethod(30);
-
-        // Alertas
-        $alerts = [
-            'contingencies' => $service->getLocationsInContingency(),
-            'devicesNoSync' => $service->getDevicesNotSyncedSince(4),
-            'licensesExpiring' => $service->getLicensesExpiringWithin(7),
-            'syncFailures24h' => $service->getSyncFailuresLast24h(),
-        ];
-        $voided = $service->getVoidedTransactions();
-
-        $chartPayload = [
-            'salesTrend' => $salesTrend,
-            'familyMix' => $familyMix,
-            'syncByDay' => $syncByDay,
-            'paymentMix' => $paymentMix,
-            'summary' => [
-                'sales30d' => round($sales30d, 2),
-                'syncOkPct' => $syncOkPct,
-                'syncSuccess7d' => $syncSuccess7d,
-                'syncFailed7d' => $syncFailed7d,
-            ],
-        ];
-
-        return view('admin.dashboard', [
+        return view('admin.dashboard-technical', [
             'kpis' => $kpis,
-            'chartPayload' => $chartPayload,
-            'topLocations' => $topLocations,
-            'topProducts' => $topProducts,
-            'activity' => $activity,
-            'alerts' => $alerts,
-            'voided' => $voided,
-            'locationId' => $locationId,
+            'contingencies' => $contingencies,
+            'devicesNoSync' => $devicesNoSync,
+            'licensesExpiring' => $licensesExpiring,
+            'activity' => $service->getRecentActivity(8),
+            'chartPayload' => [
+                'syncByDay' => $service->getSyncSuccessFailedByDay(now()->subDays(13)->startOfDay(), now()->endOfDay()),
+            ],
         ]);
+    }
+
+    private function canView(string $screen): bool
+    {
+        return (bool) auth('admin')->user()?->can(AdminRbac::permissionsForScreen($screen)['view']);
     }
 
     /** Etiqueta de variación % vs. el día anterior. */

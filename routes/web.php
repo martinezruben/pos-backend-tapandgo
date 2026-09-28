@@ -33,7 +33,8 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
     });
 
     Route::middleware('auth:admin')->group(function (): void {
-        Route::get('/', DashboardController::class)->name('dashboard');
+        Route::get('/', [DashboardController::class, 'commercial'])->name('dashboard');
+        Route::get('/dashboard/tecnico', [DashboardController::class, 'technical'])->name('dashboard.technical');
         Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
 
         Route::get('/2fa/setup', [AdminTwoFactorController::class, 'show'])->name('2fa.show');

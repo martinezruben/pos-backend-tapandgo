@@ -75,18 +75,6 @@ class DashboardService
             ? round(100 * ($salesThisWeek - $salesLastWeek) / $salesLastWeek, 1)
             : ($salesThisWeek > 0 ? 100.0 : null);
 
-        // Sincronizaciones
-        $syncLogs7d = SyncLog::query()
-            ->where('started_at', '>=', now()->subDays(7))
-            ->selectRaw('status, COUNT(*) as c')
-            ->groupBy('status')
-            ->pluck('c', 'status');
-
-        $syncSuccess7d = (int) ($syncLogs7d['SUCCESS'] ?? 0);
-        $syncFailed7d = (int) ($syncLogs7d['FAILED'] ?? 0);
-        $syncTotal7d = $syncSuccess7d + $syncFailed7d;
-        $syncOkPct = $syncTotal7d > 0 ? round(100 * $syncSuccess7d / $syncTotal7d, 1) : null;
-
         return [
             'salesToday' => $salesToday,
             'txToday' => $txToday,
@@ -99,9 +87,31 @@ class DashboardService
             'salesThisWeek' => $salesThisWeek,
             'salesLastWeek' => $salesLastWeek,
             'weekDeltaPct' => $weekDeltaPct,
-            'syncSuccess7d' => $syncSuccess7d,
-            'syncFailed7d' => $syncFailed7d,
-            'syncOkPct' => $syncOkPct,
+        ];
+    }
+
+    /**
+     * Sincronizaciones de los últimos 7 días.
+     *
+     * @return array{success: int, failed: int, okPct: float|null}
+     */
+    public function getSyncStats7d(): array
+    {
+        $byStatus = SyncLog::query()
+            ->where('started_at', '>=', now()->subDays(7))
+            ->when($this->locationId, fn ($q) => $q->where('location_id', $this->locationId))
+            ->selectRaw('status, COUNT(*) as c')
+            ->groupBy('status')
+            ->pluck('c', 'status');
+
+        $success = (int) ($byStatus['SUCCESS'] ?? 0);
+        $failed = (int) ($byStatus['FAILED'] ?? 0);
+        $total = $success + $failed;
+
+        return [
+            'success' => $success,
+            'failed' => $failed,
+            'okPct' => $total > 0 ? round(100 * $success / $total, 1) : null,
         ];
     }
 
