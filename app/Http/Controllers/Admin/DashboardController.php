@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Device;
-use App\Models\License;
 use App\Models\Location;
 use App\Services\DashboardService;
 use App\Support\AdminRbac;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 /**
@@ -28,7 +27,8 @@ class DashboardController extends Controller
                 : view('admin.dashboard-welcome');
         }
 
-        $service = new DashboardService($request->query('location_id'));
+        $location = $this->selectedLocation($request);
+        $service = new DashboardService($location?->id);
 
         $k = $service->getKpis();
         $voided = $service->getVoidedTransactions();
@@ -90,8 +90,11 @@ class DashboardController extends Controller
         return view('admin.dashboard', [
             'kpis' => $kpis,
             'chartPayload' => $chartPayload,
-            'topLocations' => $service->getTopLocationsBySales(30, 5),
+            // Con una localidad elegida el ranking de localidades no aporta
+            'topLocations' => $location ? null : $service->getTopLocationsBySales(30, 5),
             'topProducts' => $service->getTopProductsBySales(30, 5),
+            'locationOptions' => $this->locationOptions(),
+            'selectedLocation' => $location,
         ]);
     }
 
@@ -101,18 +104,20 @@ class DashboardController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        $service = new DashboardService($request->query('location_id'));
+        $location = $this->selectedLocation($request);
+        $service = new DashboardService($location?->id);
 
         $contingencies = $service->getLocationsInContingency();
         $devicesNoSync = $service->getDevicesNotSyncedSince(4);
         $licensesExpiring = $service->getLicensesExpiringWithin(7);
         $sync7d = $service->getSyncStats7d();
         $syncFailures24h = $service->getSyncFailuresLast24h();
+        $counts = $service->getInventoryCounts();
 
         $kpis = [
             [
                 'label' => 'Localidades activas',
-                'value' => (string) Location::query()->where('is_active', true)->count(),
+                'value' => (string) $counts['locations'],
                 'icon' => 'map-pin',
             ],
             [
@@ -125,7 +130,7 @@ class DashboardController extends Controller
             ],
             [
                 'label' => 'Dispositivos habilitados',
-                'value' => (string) Device::query()->where('is_enabled', true)->count(),
+                'value' => (string) $counts['devices'],
                 'icon' => 'device-phone-mobile',
             ],
             [
@@ -138,7 +143,7 @@ class DashboardController extends Controller
             ],
             [
                 'label' => 'Licencias activas',
-                'value' => (string) License::query()->where('status', 'ACTIVE')->count(),
+                'value' => (string) $counts['licenses'],
                 'icon' => 'key',
             ],
             [
@@ -173,7 +178,25 @@ class DashboardController extends Controller
             'chartPayload' => [
                 'syncByDay' => $service->getSyncSuccessFailedByDay(now()->subDays(13)->startOfDay(), now()->endOfDay()),
             ],
+            'locationOptions' => $this->locationOptions(),
+            'selectedLocation' => $location,
         ]);
+    }
+
+    /** Localidad del filtro `?location_id=`; un ID desconocido se ignora. */
+    private function selectedLocation(Request $request): ?Location
+    {
+        $id = $request->query('location_id');
+
+        return is_string($id) && $id !== '' ? Location::query()->find($id) : null;
+    }
+
+    /**
+     * @return Collection<int, Location>
+     */
+    private function locationOptions()
+    {
+        return Location::query()->orderBy('name')->get(['id', 'name', 'is_active']);
     }
 
     private function canView(string $screen): bool

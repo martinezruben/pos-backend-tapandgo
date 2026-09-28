@@ -199,6 +199,7 @@ class DashboardService
         $dateSql = $this->sqlDateColumn('started_at');
         $raw = SyncLog::query()
             ->whereBetween('started_at', [$from, $to])
+            ->when($this->locationId, fn ($q) => $q->where('location_id', $this->locationId))
             ->selectRaw("{$dateSql} as d, status, COUNT(*) as c")
             ->groupBy(DB::raw($dateSql), 'status')
             ->get();
@@ -387,11 +388,35 @@ class DashboardService
             ->all();
     }
 
+    /**
+     * Conteos de inventario técnico, acotados a la localidad si hay filtro.
+     *
+     * @return array{locations: int, devices: int, licenses: int}
+     */
+    public function getInventoryCounts(): array
+    {
+        return [
+            'locations' => Location::query()
+                ->where('is_active', true)
+                ->when($this->locationId, fn ($q) => $q->whereKey($this->locationId))
+                ->count(),
+            'devices' => Device::query()
+                ->where('is_enabled', true)
+                ->when($this->locationId, fn ($q) => $q->where('location_id', $this->locationId))
+                ->count(),
+            'licenses' => License::query()
+                ->where('status', 'ACTIVE')
+                ->when($this->locationId, fn ($q) => $q->whereHas('device', fn ($d) => $d->where('location_id', $this->locationId)))
+                ->count(),
+        ];
+    }
+
     public function getLocationsInContingency(): array
     {
         return Location::query()
             ->where('is_active', true)
             ->whereNotNull('contingency_started_at')
+            ->when($this->locationId, fn ($q) => $q->whereKey($this->locationId))
             ->orderBy('contingency_started_at')
             ->get(['name', 'contingency_started_at'])
             ->map(fn ($loc) => [
@@ -410,6 +435,7 @@ class DashboardService
             ->where(function ($q) use ($since) {
                 $q->whereNull('last_sync_at')->orWhere('last_sync_at', '<', $since);
             })
+            ->when($this->locationId, fn ($q) => $q->where('location_id', $this->locationId))
             ->with('location:id,name')
             ->orderByRaw('COALESCE(last_sync_at, created_at) ASC')
             ->get(['id', 'name', 'location_id', 'last_sync_at', 'created_at'])
@@ -432,6 +458,7 @@ class DashboardService
         return License::query()
             ->where('status', 'ACTIVE')
             ->whereBetween('valid_to', [now(), $until])
+            ->when($this->locationId, fn ($q) => $q->whereHas('device', fn ($d) => $d->where('location_id', $this->locationId)))
             ->with(['device:id,name,location_id', 'device.location:id,name'])
             ->orderBy('valid_to')
             ->get()
@@ -449,6 +476,7 @@ class DashboardService
 
         $result = SyncLog::query()
             ->where('started_at', '>=', $since)
+            ->when($this->locationId, fn ($q) => $q->where('location_id', $this->locationId))
             ->selectRaw('COUNT(*) as total, SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as failed', ['FAILED'])
             ->first();
 

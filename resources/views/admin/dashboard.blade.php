@@ -90,6 +90,7 @@
             </div>
         </div>
 
+        @if ($topLocations !== null)
         {{-- Tabla top localidades --}}
         <div class="snow-card rounded-xl border border-slate-200/90 bg-white shadow-hope-card">
             <div class="border-b border-slate-100 px-4 py-3">
@@ -131,6 +132,7 @@
                 </table>
             </div>
         </div>
+        @endif
     </div>
 
     @push('scripts')
