@@ -7,6 +7,7 @@ use App\Models\SystemParameter;
 use App\Support\AdminRbac;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 class SystemSettingsController extends Controller
@@ -31,6 +32,21 @@ class SystemSettingsController extends Controller
             'pos_password_min_length' => ['required', 'integer', 'min:3', 'max:32'],
             'admin_max_failed_login_attempts' => ['required', 'integer', 'min:1', 'max:100'],
             'admin_lockout_minutes' => ['required', 'integer', 'min:1', 'max:1440'],
+            'mail_driver' => ['sometimes', 'required', 'in:smtp,365'],
+            'mail_from_address' => ['nullable', 'email'],
+            'mail_from_name' => ['nullable', 'string', 'max:255'],
+            'smtp_host' => ['nullable', 'string', 'max:255'],
+            'smtp_port' => ['nullable', 'integer', 'min:1', 'max:65535'],
+            'smtp_username' => ['nullable', 'string', 'max:255'],
+            'smtp_password' => ['nullable', 'string'],
+            'smtp_encryption' => ['nullable', 'in:tls,ssl'],
+            'office365_tenant_id' => ['nullable', 'string', 'max:255'],
+            'office365_client_id' => ['nullable', 'string', 'max:255'],
+            'office365_client_secret' => ['nullable', 'string'],
+            'office365_scopes' => ['nullable', 'string'],
+            'contingency_enabled' => ['boolean'],
+            'contingency_email_list' => ['nullable', 'string'],
+            'contingency_resend_hours' => ['sometimes', 'required', 'integer', 'min:1', 'max:168'],
         ]);
 
         foreach ([
@@ -43,12 +59,38 @@ class SystemSettingsController extends Controller
             'pos_password_require_digit',
             'pos_password_require_symbol',
             'sync_paused',
+            'contingency_enabled',
         ] as $boolField) {
             $validated[$boolField] = $request->boolean($boolField);
         }
 
+        if (! empty($validated['office365_scopes'])) {
+            $validated['office365_scopes'] = json_decode($validated['office365_scopes'], true);
+        }
+
+        foreach (['smtp_password', 'office365_client_secret'] as $secret) {
+            if (($validated[$secret] ?? '') === '') {
+                unset($validated[$secret]);
+            }
+        }
+
+        if (array_key_exists('contingency_email_list', $validated)) {
+            $emails = array_values(array_filter(array_map('trim', preg_split('/[\r\n,;]+/', (string) $validated['contingency_email_list']))));
+            $invalid = array_filter($emails, fn ($e) => filter_var($e, FILTER_VALIDATE_EMAIL) === false);
+            if ($invalid !== []) {
+                throw ValidationException::withMessages([
+                    'contingency_email_list' => 'Correos no válidos: '.implode(', ', $invalid),
+                ]);
+            }
+            $validated['contingency_email_list'] = $emails;
+        }
+
         $params = SystemParameter::query()->firstOrFail();
         $params->update($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json(['status' => 'Parámetros guardados correctamente.']);
+        }
 
         return redirect()
             ->route('admin.system-settings.edit')

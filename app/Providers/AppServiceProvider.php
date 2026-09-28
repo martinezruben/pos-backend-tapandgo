@@ -18,6 +18,7 @@ use App\Models\Subfamily;
 use App\Models\SystemParameter;
 use App\Models\User;
 use App\Observers\AuditsModelChanges;
+use App\Observers\LocationContingencyObserver;
 use App\Services\NcfService;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -78,6 +79,9 @@ class AppServiceProvider extends ServiceProvider
 
         // NCF: notificar admin cuando rango esté bajo
         Event::listen(NcfRangeLow::class, SendNcfRangeLowNotification::class);
+
+        // Contingencia: notificaciones cuando localidad entra/sale de contingencia
+        Location::observe(LocationContingencyObserver::class);
 
         // Auditoría del panel: cambios en modelos clave + login/logout del admin
         AuditsModelChanges::track([

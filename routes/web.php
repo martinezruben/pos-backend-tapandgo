@@ -8,7 +8,10 @@ use App\Http\Controllers\Admin\CashClosingController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DeviceLastSyncController;
 use App\Http\Controllers\Admin\LocationPairingTokenController;
+use App\Http\Controllers\Admin\MailTestController;
 use App\Http\Controllers\Admin\ProductExcelController;
+use App\Http\Controllers\Admin\ReportsController;
+use App\Http\Controllers\Admin\ReportsExportController;
 use App\Http\Controllers\Admin\RoleRbacMatrixController;
 use App\Http\Controllers\Admin\ScreenCrudController;
 use App\Http\Controllers\Admin\SystemSettingsController;
@@ -61,6 +64,30 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
 
         Route::get('/system-settings', [SystemSettingsController::class, 'edit'])->name('system-settings.edit');
         Route::put('/system-settings', [SystemSettingsController::class, 'update'])->name('system-settings.update');
+
+        Route::post('/mail/validate-smtp', [MailTestController::class, 'validateSmtp'])->name('mail.validate-smtp');
+        Route::post('/mail/validate-office365', [MailTestController::class, 'validateOffice365'])->name('mail.validate-office365');
+        Route::post('/mail/test', [MailTestController::class, 'sendTest'])->name('mail.test');
+
+        // Reportes prioritarios
+        Route::get('/reports/products-best-sellers', [ReportsController::class, 'productsBestSellers'])->name('reports.products-best-sellers');
+        Route::get('/reports/payment-methods', [ReportsController::class, 'paymentMethodsReport'])->name('reports.payment-methods');
+        Route::get('/reports/users-performance', [ReportsController::class, 'usersPerformanceReport'])->name('reports.users-performance');
+
+        // Exportar reportes Excel
+        Route::post('/reports/products-best-sellers/export', [ReportsExportController::class, 'productsBestSellers'])->name('reports.products-best-sellers.export');
+        Route::post('/reports/payment-methods/export', [ReportsExportController::class, 'paymentMethods'])->name('reports.payment-methods.export');
+        Route::post('/reports/users-performance/export', [ReportsExportController::class, 'usersPerformance'])->name('reports.users-performance.export');
+
+        // Exportar reportes CSV
+        Route::post('/reports/products-best-sellers/export-csv', [ReportsExportController::class, 'productsBestSellersCSV'])->name('reports.products-best-sellers.export-csv');
+        Route::post('/reports/payment-methods/export-csv', [ReportsExportController::class, 'paymentMethodsCSV'])->name('reports.payment-methods.export-csv');
+        Route::post('/reports/users-performance/export-csv', [ReportsExportController::class, 'usersPerformanceCSV'])->name('reports.users-performance.export-csv');
+
+        // Exportar reportes PDF
+        Route::post('/reports/products-best-sellers/export-pdf', [ReportsExportController::class, 'productsBestSellersPDF'])->name('reports.products-best-sellers.export-pdf');
+        Route::post('/reports/payment-methods/export-pdf', [ReportsExportController::class, 'paymentMethodsPDF'])->name('reports.payment-methods.export-pdf');
+        Route::post('/reports/users-performance/export-pdf', [ReportsExportController::class, 'usersPerformancePDF'])->name('reports.users-performance.export-pdf');
 
         Route::get('/screens/{screen}', [ScreenCrudController::class, 'index'])->name('screens.index');
         Route::get('/screens/{screen}/create', [ScreenCrudController::class, 'create'])->name('screens.create');
