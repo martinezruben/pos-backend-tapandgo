@@ -2,7 +2,9 @@ import { money } from './format';
 
 // Cantidad de etiquetas del eje X según el ancho: en móvil no se amontonan las 30 fechas
 function tickAmountFor(el, count) {
-    const byWidth = Math.max(3, Math.floor((el.clientWidth || 320) / 70));
+    // Descuenta el espacio de los ejes Y (~120px) y deja ~85px por fecha
+    const plotWidth = Math.max(160, (el.clientWidth || 320) - 120);
+    const byWidth = Math.max(2, Math.floor(plotWidth / 85));
     return Math.max(1, Math.min(count - 1, byWidth));
 }
 
