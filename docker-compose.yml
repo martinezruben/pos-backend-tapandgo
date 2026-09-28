@@ -53,9 +53,29 @@ services:
     networks:
       - kopagnet
 
+  # HTTPS opcional: docker compose --profile https up -d (ver documentation/docker/INSTALL_GUIDE.md)
+  caddy:
+    image: caddy:2
+    container_name: kopagpos-caddy
+    profiles: ["https"]
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment:
+      DOMAIN: ${DOMAIN:-}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    networks:
+      - kopagnet
+
 networks:
   kopagnet:
     driver: bridge
 
 volumes:
   db_data:
+  caddy_data:
