@@ -73,6 +73,11 @@ preflight() {
 # -----------------------------------------------------------------------------
 # Genera .env si no existe (MySQL, puerto 8082, APP_KEY generado)
 # -----------------------------------------------------------------------------
+# Contraseña aleatoria para la BD (el .env de producción no debe usar valores por defecto)
+random_secret() {
+    openssl rand -hex 16 2>/dev/null || php -r 'echo bin2hex(random_bytes(16));'
+}
+
 ensure_env() {
     if [ -f .env ]; then
         ok ".env ya existe"
@@ -80,9 +85,10 @@ ensure_env() {
         log "Generando .env inicial..."
         cat > .env <<EOF
 APP_NAME=Tap&Go
-APP_ENV=local
+APP_ENV=production
 APP_KEY=$(php -r 'echo "base64:".base64_encode(random_bytes(32));' 2>/dev/null || echo "base64:$(openssl rand -base64 32)")
-APP_DEBUG=true
+APP_DEBUG=false
+# Con HTTPS delante (proxy o nginx con TLS): APP_URL=https://tu-dominio y SESSION_SECURE_COOKIE=true
 APP_URL=http://localhost
 
 APP_TIMEZONE=America/Santo_Domingo
@@ -95,8 +101,9 @@ DB_HOST=mysql
 DB_PORT=3306
 DB_DATABASE=${MYSQL_DATABASE:-kopagpos}
 DB_USERNAME=${MYSQL_USER:-kopagpos}
-DB_PASSWORD=${MYSQL_PASSWORD:-secret}
+DB_PASSWORD=${MYSQL_PASSWORD:-$(random_secret)}
 DB_SOCKET=
+MYSQL_ROOT_PASSWORD=$(random_secret)
 
 SESSION_DRIVER=database
 SESSION_LIFETIME=120
@@ -188,11 +195,10 @@ health_check() {
     fi
 
     echo ""
-    log "=== Credenciales (valor por defecto en .env) ==="
+    log "=== Accesos ==="
     echo "  App:        http://localhost:${APP_PORT}/admin/login"
-    echo "  phpMyAdmin: http://localhost:${PMA_PORT}"
-    echo "  MySQL:      localhost:${DB_PORT}"
-    echo "  DB user:    ${DB_USERNAME:-kopagpos}  / pass: ${DB_PASSWORD:-secret}"
+    echo "  phpMyAdmin: http://localhost:${PMA_PORT}  (solo desde el servidor; usuario y clave de la BD en .env)"
+    echo "  MySQL:      127.0.0.1:${DB_PORT}  (solo desde el servidor)"
 }
 
 # -----------------------------------------------------------------------------
@@ -219,7 +225,8 @@ case "${1:-up}" in
         compose exec app sh
         ;;
     db)
-        compose exec mysql mysql -u"${DB_USERNAME:-kopagpos}" -p"${DB_PASSWORD:-secret}" "${DB_DATABASE:-kopagpos}"
+        # Credenciales desde el propio contenedor de MySQL (vienen del .env)
+        compose exec mysql sh -c 'mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE"'
         ;;
     rebuild)
         compose build --no-cache
