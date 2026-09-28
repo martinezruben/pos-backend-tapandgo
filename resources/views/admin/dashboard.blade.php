@@ -1,5 +1,79 @@
 <x-admin.layouts.app :title="'Dashboard'">
     <div class="space-y-4 pb-6">
+        {{-- Alertas: contingencias, dispositivos, licencias, sincronizaciones, anulaciones --}}
+        @php
+            $hasAlerts = ! empty($alerts['contingencies'])
+                || ! empty($alerts['devicesNoSync'])
+                || ! empty($alerts['licensesExpiring'])
+                || ($alerts['syncFailures24h']['count'] ?? 0) > 0
+                || ($voided['today']['count'] ?? 0) > 0;
+        @endphp
+        @if ($hasAlerts)
+            <div class="space-y-2 rounded-xl border border-amber-200/90 bg-amber-50/50 p-4 shadow-sm">
+                <h3 class="text-sm font-semibold text-amber-900">Alertas operativas</h3>
+                <div class="space-y-1.5">
+                    @if (! empty($alerts['contingencies']))
+                        <div class="flex items-start gap-2 text-[11px]">
+                            <span class="shrink-0 text-amber-600">🏢</span>
+                            <div>
+                                <p class="font-medium text-amber-900">{{ count($alerts['contingencies']) }} localidad(es) en contingencia</p>
+                                <ul class="mt-0.5 space-y-0.5 pl-2">
+                                    @foreach ($alerts['contingencies'] as $loc)
+                                        <li class="text-amber-700">{{ $loc['name'] }} — hace {{ $loc['since'] }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    @endif
+                    @if (! empty($alerts['devicesNoSync']))
+                        <div class="flex items-start gap-2 text-[11px]">
+                            <span class="shrink-0 text-amber-600">📱</span>
+                            <div>
+                                <p class="font-medium text-amber-900">{{ count($alerts['devicesNoSync']) }} dispositivo(s) sin sincronizar {{ $alerts['devicesNoSync'][0]['hours_ago'] ?? '?' }} horas</p>
+                                <ul class="mt-0.5 space-y-0.5 pl-2">
+                                    @foreach ($alerts['devicesNoSync'] as $dev)
+                                        <li class="text-amber-700">{{ $dev['name'] }} ({{ $dev['location'] }}) — hace {{ $dev['hours_ago'] }} h</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    @endif
+                    @if (! empty($alerts['licensesExpiring']))
+                        <div class="flex items-start gap-2 text-[11px]">
+                            <span class="shrink-0 text-amber-600">🔑</span>
+                            <div>
+                                <p class="font-medium text-amber-900">{{ count($alerts['licensesExpiring']) }} licencia(s) próxima(s) a vencer</p>
+                                <ul class="mt-0.5 space-y-0.5 pl-2">
+                                    @foreach ($alerts['licensesExpiring'] as $lic)
+                                        <li class="text-amber-700">{{ $lic['device'] }} ({{ $lic['location'] }}) — {{ $lic['expires_in'] }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    @endif
+                    @if (($alerts['syncFailures24h']['count'] ?? 0) > 0)
+                        <div class="flex items-start gap-2 text-[11px]">
+                            <span class="shrink-0 text-amber-600">❌</span>
+                            <p class="text-amber-900">
+                                <span class="font-medium">{{ $alerts['syncFailures24h']['count'] }} sincronización(es) fallida(s)</span> en 24 h
+                                ({{ $alerts['syncFailures24h']['count'] }}/{{ $alerts['syncFailures24h']['total'] }} sync logs)
+                            </p>
+                        </div>
+                    @endif
+                    @if (($voided['today']['count'] ?? 0) > 0)
+                        <div class="flex items-start gap-2 text-[11px]">
+                            <span class="shrink-0 text-amber-600">⚠️</span>
+                            <p class="text-amber-900">
+                                <span class="font-medium">{{ $voided['today']['count'] }} transacción(es) anulada(s) hoy</span>
+                                ({{ $voided['today']['count'] }}/{{ $voided['week']['count'] }} últimos 7 días)
+                                · ${{ number_format($voided['today']['total'], 2) }} (hoy) / ${{ number_format($voided['week']['total'], 2) }} (semana)
+                            </p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        @endif
+
         {{-- KPIs --}}
         <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
             @foreach ($kpis as $card)
