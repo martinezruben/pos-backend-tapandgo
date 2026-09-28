@@ -105,6 +105,7 @@ class ReportsExportController extends Controller
         $validator = Validator::make($request->all(), [
             'date_from' => ['required', 'date'],
             'date_to' => ['required', 'date'],
+            'location_id' => ['nullable', 'uuid', 'exists:locations,id'],
         ]);
 
         if ($validator->fails()) {
@@ -297,6 +298,7 @@ class ReportsExportController extends Controller
         $validator = Validator::make($request->all(), [
             'date_from' => ['required', 'date'],
             'date_to' => ['required', 'date'],
+            'location_id' => ['nullable', 'uuid', 'exists:locations,id'],
         ]);
 
         if ($validator->fails()) {
@@ -416,6 +418,7 @@ class ReportsExportController extends Controller
         $validator = Validator::make($request->all(), [
             'date_from' => ['required', 'date'],
             'date_to' => ['required', 'date'],
+            'location_id' => ['nullable', 'uuid', 'exists:locations,id'],
         ]);
 
         if ($validator->fails()) {

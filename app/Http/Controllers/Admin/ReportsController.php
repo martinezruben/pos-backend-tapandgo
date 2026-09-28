@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Location;
 use App\Services\ReportService;
 use App\Support\AdminRbac;
 use Carbon\Carbon;
@@ -32,6 +33,7 @@ class ReportsController extends Controller
             'dateFrom' => $dateFrom->format('Y-m-d'),
             'dateTo' => $dateTo->format('Y-m-d'),
             'locationId' => $locationId,
+            'locations' => Location::query()->orderBy('name')->get(['id', 'name', 'is_active']),
         ]);
     }
 
@@ -50,6 +52,7 @@ class ReportsController extends Controller
             'dateFrom' => $dateFrom->format('Y-m-d'),
             'dateTo' => $dateTo->format('Y-m-d'),
             'locationId' => $locationId,
+            'locations' => Location::query()->orderBy('name')->get(['id', 'name', 'is_active']),
         ]);
     }
 
@@ -67,6 +70,7 @@ class ReportsController extends Controller
             'dateFrom' => $dateFrom->format('Y-m-d'),
             'dateTo' => $dateTo->format('Y-m-d'),
             'locationId' => $locationId,
+            'locations' => Location::query()->orderBy('name')->get(['id', 'name', 'is_active']),
         ]);
     }
 

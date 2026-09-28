@@ -299,6 +299,17 @@ class ReportsTest extends TestCase
             ->assertViewHas('methods', fn ($rows) => (float) $rows->sum('total_amount') === 50.0);
         $this->actingAs($admin, 'admin')->get('/admin/reports/payment-methods?location_id='.$north->id)
             ->assertViewHas('methods', fn ($rows) => (float) $rows->sum('total_amount') === 30.0);
+
+        $csv = $this->actingAs($admin, 'admin')
+            ->post('/admin/reports/payment-methods/export-csv', [
+                'date_from' => now()->subMonth()->toDateString(),
+                'date_to' => now()->toDateString(),
+                'location_id' => $north->id,
+            ])
+            ->assertOk()
+            ->streamedContent();
+        $this->assertStringContainsString('30', $csv);
+        $this->assertStringNotContainsString('50', $csv);
     }
 
     public function test_invalid_dates_fall_back_to_last_month(): void
