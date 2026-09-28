@@ -8,9 +8,9 @@ use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\TransactionPayment;
-use App\Models\PaymentMethod;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
@@ -18,16 +18,25 @@ class ReportsTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const PERMISSIONS = [
+        'products_best_sellers.view',
+        'payment_methods_report.view',
+        'users_performance_report.view',
+    ];
+
     protected function setUp(): void
     {
         parent::setUp();
-        Permission::firstOrCreate(['name' => 'reports.view', 'guard_name' => 'admin']);
+        foreach (self::PERMISSIONS as $name) {
+            Permission::firstOrCreate(['name' => $name, 'guard_name' => 'admin']);
+        }
     }
 
     protected function createAdminUser()
     {
         $admin = AdminUser::factory()->create();
-        $admin->givePermissionTo('reports.view');
+        $admin->givePermissionTo(self::PERMISSIONS);
+
         return $admin;
     }
 
@@ -151,9 +160,70 @@ class ReportsTest extends TestCase
         $location = Location::factory()->create();
 
         $response = $this->actingAs($admin, 'admin')
-            ->get('/admin/reports/users-performance?location_id=' . $location->id)
+            ->get('/admin/reports/users-performance?location_id='.$location->id)
             ->assertOk();
 
         $this->assertStringContainsString($location->id, $response->content());
+    }
+
+    public function test_report_pages_require_permission()
+    {
+        $admin = AdminUser::factory()->create();
+
+        $this->actingAs($admin, 'admin')->get('/admin/reports/products-best-sellers')->assertForbidden();
+        $this->actingAs($admin, 'admin')->get('/admin/reports/payment-methods')->assertForbidden();
+        $this->actingAs($admin, 'admin')->get('/admin/reports/users-performance')->assertForbidden();
+        $this->actingAs($admin, 'admin')
+            ->post('/admin/reports/products-best-sellers/export-csv', ['date_from' => '2026-01-01', 'date_to' => '2026-12-31'])
+            ->assertForbidden();
+    }
+
+    public function test_generic_screen_route_redirects_to_report_page()
+    {
+        $admin = $this->createAdminUser();
+
+        $this->actingAs($admin, 'admin')
+            ->get('/admin/screens/products-best-sellers')
+            ->assertRedirect(route('admin.reports.products-best-sellers'));
+    }
+
+    public static function exportProvider(): array
+    {
+        $out = [];
+        foreach (['products-best-sellers', 'payment-methods', 'users-performance'] as $report) {
+            $out["$report excel"] = [$report, 'export', 'spreadsheetml'];
+            $out["$report csv"] = [$report, 'export-csv', 'text/csv'];
+            $out["$report pdf"] = [$report, 'export-pdf', 'application/pdf'];
+        }
+
+        return $out;
+    }
+
+    #[DataProvider('exportProvider')]
+    public function test_exports_download_file(string $report, string $action, string $contentType)
+    {
+        $admin = $this->createAdminUser();
+        $user = User::factory()->create(['full_name' => 'Ana <b>Test</b>']);
+        $transaction = Transaction::factory()->create(['user_id' => $user->id, 'occurred_at' => now()->subDay()]);
+        TransactionItem::factory()->create(['transaction_id' => $transaction->id]);
+        TransactionPayment::factory()->create(['transaction_id' => $transaction->id, 'created_at' => now()->subDay()]);
+
+        $response = $this->actingAs($admin, 'admin')->post("/admin/reports/$report/$action", [
+            'date_from' => now()->subWeek()->toDateString(),
+            'date_to' => now()->toDateString(),
+        ]);
+
+        $response->assertOk();
+        $this->assertStringContainsString($contentType, $response->headers->get('Content-Type'));
+        $this->assertNotEmpty($response->streamedContent());
+    }
+
+    public function test_export_validates_dates()
+    {
+        $admin = $this->createAdminUser();
+
+        $this->actingAs($admin, 'admin')
+            ->postJson('/admin/reports/payment-methods/export-pdf', [])
+            ->assertStatus(422);
     }
 }

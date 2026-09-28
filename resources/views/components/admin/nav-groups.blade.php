@@ -32,9 +32,9 @@
                     @php($screen = config("admin_screens.$key"))
                     @continue(!$screen || $key === 'dashboard' || ! empty($screen['exclude_from_nav']))
                     @if(\App\Support\AdminRbac::canAccessScreen($admin, $key))
-                        @php($active = $currentScreen === $key)
+                        @php($active = $currentScreen === $key || (! empty($screen['route']) && request()->routeIs($screen['route'].'*')))
                         <a
-                            href="{{ route('admin.screens.index', $key) }}"
+                            href="{{ ! empty($screen['route']) ? route($screen['route']) : route('admin.screens.index', $key) }}"
                             class="{{ $navLinkClasses($active) }}"
                             @if($active) aria-current="page" @endif
                         >

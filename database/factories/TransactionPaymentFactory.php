@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\TransactionPayment;
 use App\Models\Transaction;
+use App\Models\TransactionPayment;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TransactionPaymentFactory extends Factory

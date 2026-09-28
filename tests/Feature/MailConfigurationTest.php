@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\SystemParameter;
+use App\Services\MailConfigurationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -108,7 +109,7 @@ class MailConfigurationTest extends TestCase
 
     public function test_mail_configuration_service_validates_smtp()
     {
-        $service = new \App\Services\MailConfigurationService();
+        $service = new MailConfigurationService;
         $result = $service->validateSmtpConnection();
 
         $this->assertIsArray($result);
@@ -119,12 +120,11 @@ class MailConfigurationTest extends TestCase
 
     public function test_mail_configuration_service_validates_office365()
     {
-        $service = new \App\Services\MailConfigurationService();
+        $service = new MailConfigurationService;
         $result = $service->validateOffice365Connection();
 
         $this->assertIsArray($result);
         $this->assertArrayHasKey('success', $result);
         $this->assertArrayHasKey('message', $result);
     }
-
 }

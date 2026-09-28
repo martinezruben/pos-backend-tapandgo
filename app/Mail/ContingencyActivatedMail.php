@@ -13,9 +13,7 @@ class ContingencyActivatedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public Location $location)
-    {
-    }
+    public function __construct(public Location $location) {}
 
     public function envelope(): Envelope
     {

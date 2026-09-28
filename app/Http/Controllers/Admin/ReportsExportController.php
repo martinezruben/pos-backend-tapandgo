@@ -195,7 +195,7 @@ class ReportsExportController extends Controller
 
         $users = $this->reportService->getUsersPerformanceReport($dateFrom, $dateTo, $validated['location_id'] ?? null);
 
-        $filename = 'desempen-usuarios-'.$dateFrom->format('Y-m-d').'_'.$dateTo->format('Y-m-d').'_'.now()->format('His').'.xlsx';
+        $filename = 'desempeno-usuarios-'.$dateFrom->format('Y-m-d').'_'.$dateTo->format('Y-m-d').'_'.now()->format('His').'.xlsx';
 
         return response()->streamDownload(function () use ($users, $dateFrom, $dateTo): void {
             $spreadsheet = new Spreadsheet;
@@ -350,7 +350,7 @@ class ReportsExportController extends Controller
 
         $users = $this->reportService->getUsersPerformanceReport($dateFrom, $dateTo, $validated['location_id'] ?? null);
 
-        $filename = 'desempen-usuarios-'.$dateFrom->format('Y-m-d').'_'.$dateTo->format('Y-m-d').'.csv';
+        $filename = 'desempeno-usuarios-'.$dateFrom->format('Y-m-d').'_'.$dateTo->format('Y-m-d').'.csv';
 
         return response()->streamDownload(function () use ($users): void {
             $output = fopen('php://output', 'w');
@@ -395,7 +395,7 @@ class ReportsExportController extends Controller
 
         $html = $this->renderProductsPDF($products, $dateFrom, $dateTo);
 
-        $dompdf = new Dompdf();
+        $dompdf = new Dompdf;
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
@@ -430,7 +430,7 @@ class ReportsExportController extends Controller
 
         $html = $this->renderPaymentMethodsPDF($methods, $dateFrom, $dateTo);
 
-        $dompdf = new Dompdf();
+        $dompdf = new Dompdf;
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
@@ -466,12 +466,12 @@ class ReportsExportController extends Controller
 
         $html = $this->renderUsersPerformancePDF($users, $dateFrom, $dateTo);
 
-        $dompdf = new Dompdf();
+        $dompdf = new Dompdf;
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
 
-        $filename = 'desempen-usuarios-'.$dateFrom->format('Y-m-d').'_'.$dateTo->format('Y-m-d').'.pdf';
+        $filename = 'desempeno-usuarios-'.$dateFrom->format('Y-m-d').'_'.$dateTo->format('Y-m-d').'.pdf';
 
         return response()->streamDownload(function () use ($dompdf): void {
             echo $dompdf->output();
@@ -508,10 +508,10 @@ class ReportsExportController extends Controller
                         <th>Precio Promedio</th>
                         <th>IVA (%)</th>
                     </tr>
-                    '.collect($products)->map(fn($p) => '
+                    '.collect($products)->map(fn ($p) => '
                     <tr>
-                        <td>'.$p->name.'</td>
-                        <td>'.$p->sku.'</td>
+                        <td>'.e($p->name).'</td>
+                        <td>'.e($p->sku).'</td>
                         <td class="currency">'.$p->sold_qty.'</td>
                         <td class="currency">$'.number_format($p->total_revenue, 2).'</td>
                         <td class="currency">$'.number_format($p->avg_price, 2).'</td>
@@ -557,9 +557,9 @@ class ReportsExportController extends Controller
                         <th>Monto Total</th>
                         <th>% del Total</th>
                     </tr>
-                    '.collect($methods)->map(fn($m) => '
+                    '.collect($methods)->map(fn ($m) => '
                     <tr>
-                        <td>'.$m['name'].'</td>
+                        <td>'.e($m['name']).'</td>
                         <td class="currency">'.$m['total_transactions'].'</td>
                         <td class="currency">$'.number_format($m['total_amount'], 2).'</td>
                         <td class="currency">'.number_format($m['percentage'], 2).'%</td>
@@ -605,14 +605,14 @@ class ReportsExportController extends Controller
                         <th>Ticket Promedio</th>
                         <th>Última Actividad</th>
                     </tr>
-                    '.collect($users)->map(fn($u) => '
+                    '.collect($users)->map(fn ($u) => '
                     <tr>
-                        <td>'.$u['full_name'].'</td>
-                        <td>'.$u['username'].'</td>
+                        <td>'.e($u['full_name']).'</td>
+                        <td>'.e($u['username']).'</td>
                         <td class="currency">'.$u['transaction_count'].'</td>
                         <td class="currency">$'.number_format($u['total_sales'], 2).'</td>
                         <td class="currency">$'.number_format($u['avg_transaction'], 2).'</td>
-                        <td>'.$u['last_activity'].'</td>
+                        <td>'.e($u['last_activity']).'</td>
                     </tr>
                     ')->implode('').'
                     <tr class="total-row">

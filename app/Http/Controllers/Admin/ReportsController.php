@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\ReportService;
+use App\Support\AdminRbac;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -19,6 +20,8 @@ class ReportsController extends Controller
 
     public function productsBestSellers(Request $request): View
     {
+        $this->authorizeView('products-best-sellers');
+
         $dateFrom = $request->input('date_from') ? Carbon::parse($request->input('date_from')) : now()->subMonth();
         $dateTo = $request->input('date_to') ? Carbon::parse($request->input('date_to')) : now();
         $locationId = $request->input('location_id');
@@ -35,6 +38,8 @@ class ReportsController extends Controller
 
     public function paymentMethodsReport(Request $request): View
     {
+        $this->authorizeView('payment-methods-report');
+
         $dateFrom = $request->input('date_from') ? Carbon::parse($request->input('date_from')) : now()->subMonth();
         $dateTo = $request->input('date_to') ? Carbon::parse($request->input('date_to')) : now();
 
@@ -49,6 +54,8 @@ class ReportsController extends Controller
 
     public function usersPerformanceReport(Request $request): View
     {
+        $this->authorizeView('users-performance-report');
+
         $dateFrom = $request->input('date_from') ? Carbon::parse($request->input('date_from')) : now()->subMonth();
         $dateTo = $request->input('date_to') ? Carbon::parse($request->input('date_to')) : now();
         $locationId = $request->input('location_id');
@@ -61,5 +68,11 @@ class ReportsController extends Controller
             'dateTo' => $dateTo->format('Y-m-d'),
             'locationId' => $locationId,
         ]);
+    }
+
+    private function authorizeView(string $screen): void
+    {
+        $user = auth('admin')->user();
+        abort_unless($user && $user->can(AdminRbac::permissionsForScreen($screen)['view']), 403);
     }
 }

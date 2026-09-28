@@ -18,9 +18,7 @@ class ScheduleContingencyReminderJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(public Location $location)
-    {
-    }
+    public function __construct(public Location $location) {}
 
     public function handle(): void
     {
@@ -68,7 +66,7 @@ class ScheduleContingencyReminderJob implements ShouldQueue
             'location_name' => $this->location->name,
             'event' => 'reminder_sent',
             'sent_to' => json_encode($emailList),
-            'message' => "Contingency reminder sent to " . count($emailList) . " email(s)",
+            'message' => 'Contingency reminder sent to '.count($emailList).' email(s)',
         ]);
 
         // Schedule next reminder if still in contingency

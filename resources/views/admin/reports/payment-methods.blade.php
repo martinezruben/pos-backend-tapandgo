@@ -25,13 +25,13 @@
                         Filtrar
                     </button>
                     <button type="button" onclick="exportReport('excel')" class="rounded-lg bg-green-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-green-700" title="Exportar a Excel">
-                        📊 Excel
+                        Excel
                     </button>
                     <button type="button" onclick="exportReport('csv')" class="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700" title="Exportar a CSV">
-                        📄 CSV
+                        CSV
                     </button>
                     <button type="button" onclick="exportReport('pdf')" class="rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-700" title="Exportar a PDF">
-                        🔴 PDF
+                        PDF
                     </button>
                 </div>
             </form>
@@ -87,32 +87,31 @@
 
     <script>
         function exportReport(format) {
-            const form = document.getElementById('filter-form');
-            const formData = new FormData(form);
-            const params = new URLSearchParams(formData);
-
+            const params = new URLSearchParams(new FormData(document.getElementById('filter-form')));
             const urls = {
-                excel: '/admin/reports/payment-methods/export',
-                csv: '/admin/reports/payment-methods/export-csv',
-                pdf: '/admin/reports/payment-methods/export-pdf'
+                excel: @js(route('admin.reports.payment-methods.export')),
+                csv: @js(route('admin.reports.payment-methods.export-csv')),
+                pdf: @js(route('admin.reports.payment-methods.export-pdf')),
             };
-
-            const extensions = {
-                excel: 'xlsx',
-                csv: 'csv',
-                pdf: 'pdf'
-            };
+            const extensions = { excel: 'xlsx', csv: 'csv', pdf: 'pdf' };
 
             fetch(urls[format], {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
                 },
-                body: params.toString()
+                body: params.toString(),
             })
-            .then(response => response.blob())
-            .then(blob => {
+            .then(async (response) => {
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    throw new Error(data.message || `HTTP ${response.status}`);
+                }
+                return response.blob();
+            })
+            .then((blob) => {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -122,7 +121,7 @@
                 a.remove();
                 window.URL.revokeObjectURL(url);
             })
-            .catch(error => alert('Error al exportar: ' + error));
+            .catch((error) => alert('Error al exportar: ' + error.message));
         }
     </script>
 </x-admin.layouts.app>

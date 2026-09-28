@@ -18,9 +18,7 @@ class SendContingencyNotificationJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(public Location $location)
-    {
-    }
+    public function __construct(public Location $location) {}
 
     public function handle(): void
     {
@@ -54,7 +52,7 @@ class SendContingencyNotificationJob implements ShouldQueue
             'location_name' => $this->location->name,
             'event' => 'activated',
             'sent_to' => json_encode($emailList),
-            'message' => "Contingency activated notification sent to " . count($emailList) . " email(s)",
+            'message' => 'Contingency activated notification sent to '.count($emailList).' email(s)',
         ]);
 
         ScheduleContingencyReminderJob::dispatch($this->location)->delay(

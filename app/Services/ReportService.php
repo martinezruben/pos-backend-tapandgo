@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Location;
-use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\User;
 use Carbon\Carbon;
