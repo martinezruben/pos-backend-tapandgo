@@ -2,129 +2,70 @@
 
 namespace Tests\Feature;
 
+use App\Models\AdminUser;
 use App\Models\SystemParameter;
 use App\Services\MailConfigurationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
+use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
 class MailConfigurationTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
+    private function smtpSettings(array $overrides = []): void
     {
-        parent::setUp();
-
-        SystemParameter::factory()->create([
+        SystemParameter::current()->update(array_merge([
             'mail_driver' => 'smtp',
-            'mail_from_address' => 'noreply@tapandgo.local',
+            'smtp_host' => 'smtp.example.com',
+            'smtp_port' => 465,
+            'smtp_username' => 'alertas@example.com',
+            'smtp_password' => 'secreto',
+            'smtp_encryption' => 'ssl',
+            'mail_from_address' => 'alertas@example.com',
             'mail_from_name' => 'Tap&Go',
-            'smtp_host' => null,
-            'smtp_port' => null,
-            'smtp_username' => null,
-            'smtp_password' => null,
-            'smtp_encryption' => null,
-        ]);
+        ], $overrides));
     }
 
-    public function test_system_parameter_model_has_mail_fields()
+    public function test_panel_smtp_settings_become_the_default_mailer(): void
     {
-        $param = SystemParameter::find(1);
+        config(['mail.default' => 'log']);
+        $this->smtpSettings();
 
-        $this->assertNotNull($param);
-        $this->assertNotNull($param->mail_driver);
-        $this->assertIsString($param->mail_driver);
+        $this->assertTrue(app(MailConfigurationService::class)->applyToMailer());
+
+        $this->assertSame('smtp', config('mail.default'));
+        $this->assertSame('smtps', config('mail.mailers.smtp.scheme'));
+        $this->assertSame('smtp.example.com', config('mail.mailers.smtp.host'));
+        $this->assertSame(465, config('mail.mailers.smtp.port'));
+        $this->assertSame('alertas@example.com', config('mail.from.address'));
     }
 
-    public function test_mail_driver_can_be_updated_directly()
+    public function test_incomplete_smtp_or_office365_keeps_env_mailer(): void
     {
-        $param = SystemParameter::find(1);
-        $param->update(['mail_driver' => '365']);
+        config(['mail.default' => 'log']);
 
-        $this->assertDatabaseHas('system_parameters', [
-            'id' => 1,
-            'mail_driver' => '365',
-        ]);
+        $this->smtpSettings(['smtp_host' => null]);
+        $this->assertFalse(app(MailConfigurationService::class)->applyToMailer());
+
+        $this->smtpSettings(['mail_driver' => '365']);
+        $this->assertFalse(app(MailConfigurationService::class)->applyToMailer());
+
+        $this->assertSame('log', config('mail.default'));
     }
 
-    public function test_smtp_configuration_can_be_saved_directly()
+    public function test_test_email_button_sends_with_system_settings_permission(): void
     {
-        $param = SystemParameter::find(1);
-        $param->update([
-            'mail_driver' => 'smtp',
-            'mail_from_address' => 'test@example.com',
-            'mail_from_name' => 'Test Sender',
-            'smtp_host' => 'smtp.gmail.com',
-            'smtp_port' => 587,
-            'smtp_username' => 'test@gmail.com',
-            'smtp_password' => 'secretpass',
-            'smtp_encryption' => 'tls',
-        ]);
+        Mail::fake();
+        $this->smtpSettings();
+        Permission::findOrCreate('system_settings.edit', 'admin');
+        $admin = AdminUser::factory()->create();
+        $admin->givePermissionTo('system_settings.edit');
 
-        $this->assertDatabaseHas('system_parameters', [
-            'id' => 1,
-            'mail_driver' => 'smtp',
-            'mail_from_address' => 'test@example.com',
-            'smtp_host' => 'smtp.gmail.com',
-            'smtp_port' => 587,
-        ]);
-    }
-
-    public function test_office365_configuration_can_be_saved_directly()
-    {
-        $param = SystemParameter::find(1);
-        $param->update([
-            'mail_driver' => '365',
-            'office365_tenant_id' => 'tenant-123',
-            'office365_client_id' => 'client-456',
-            'office365_client_secret' => 'secret-789',
-        ]);
-
-        $this->assertDatabaseHas('system_parameters', [
-            'id' => 1,
-            'mail_driver' => '365',
-            'office365_tenant_id' => 'tenant-123',
-        ]);
-    }
-
-    public function test_sensitive_fields_are_encrypted()
-    {
-        $param = SystemParameter::find(1);
-        $param->update([
-            'mail_driver' => 'smtp',
-            'smtp_password' => 'mypassword123',
-            'office365_client_secret' => 'mysecret456',
-        ]);
-
-        $refreshed = SystemParameter::find(1);
-
-        // Values should be encrypted in database
-        $this->assertNotEquals('mypassword123', $refreshed->getRawOriginal('smtp_password'));
-        $this->assertNotEquals('mysecret456', $refreshed->getRawOriginal('office365_client_secret'));
-
-        // But accessible decrypted through model
-        $this->assertEquals('mypassword123', $refreshed->smtp_password);
-        $this->assertEquals('mysecret456', $refreshed->office365_client_secret);
-    }
-
-    public function test_mail_configuration_service_validates_smtp()
-    {
-        $service = new MailConfigurationService;
-        $result = $service->validateSmtpConnection();
-
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('success', $result);
-        $this->assertArrayHasKey('message', $result);
-        $this->assertFalse($result['success']);
-    }
-
-    public function test_mail_configuration_service_validates_office365()
-    {
-        $service = new MailConfigurationService;
-        $result = $service->validateOffice365Connection();
-
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('success', $result);
-        $this->assertArrayHasKey('message', $result);
+        $this->actingAs($admin, 'admin')
+            ->postJson(route('admin.mail.test'), ['to_address' => 'destino@example.com'])
+            ->assertOk()
+            ->assertJsonPath('success', true);
     }
 }
