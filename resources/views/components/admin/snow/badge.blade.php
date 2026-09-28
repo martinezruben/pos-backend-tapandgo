@@ -59,6 +59,11 @@
             $variant = ['bg' => 'bg-snow-50', 'ink' => 'text-snow-700', 'dot' => 'bg-snow-400', 'text' => is_scalar($raw) || $raw === null ? (string) $raw : '—'];
         }
 
+        // Valores enumerados guardados en inglés se muestran en español (config/admin_labels.php)
+        if (in_array($field, ['status', 'payment_method', 'role', 'operation'], true)) {
+            $variant['text'] = \App\Support\AdminGridCell::valueLabel($field, $raw);
+        }
+
         $variant['text'] = \Illuminate\Support\Str::lower($variant['text']);
     }
 @endphp

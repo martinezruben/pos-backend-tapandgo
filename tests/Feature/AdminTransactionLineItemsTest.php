@@ -114,7 +114,7 @@ class AdminTransactionLineItemsTest extends TestCase
         $response->assertOk()
             ->assertJsonPath('external_id', 'EXT-1')
             ->assertJsonPath('items.0.product_name', 'Item A')
-            ->assertJsonPath('payments.0.payment_method', 'CASH');
+            ->assertJsonPath('payments.0.payment_method', 'Efectivo');
     }
 
     public function test_admin_without_permission_gets_forbidden(): void

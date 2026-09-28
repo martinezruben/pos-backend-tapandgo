@@ -287,4 +287,28 @@ class AdminDashboardTest extends TestCase
             ->assertViewHas('selectedLocation', null)
             ->assertViewHas('kpis', fn (array $kpis): bool => $kpis[0]['value'] === '$40.00');
     }
+
+    public function test_dashboard_figures_are_cached_per_location_for_a_minute(): void
+    {
+        $location = Location::factory()->create();
+        $admin = $this->adminWithDashboard();
+        Transaction::factory()->create(['location_id' => $location->id, 'status' => 'PAID', 'total' => 100, 'occurred_at' => now()]);
+
+        $this->actingAs($admin, 'admin')->get(route('admin.dashboard'))
+            ->assertViewHas('kpis', fn (array $k): bool => $k[0]['value'] === '$100.00')
+            ->assertSee('Actualizado');
+
+        // Una venta nueva no aparece hasta que vence la caché
+        Transaction::factory()->create(['location_id' => $location->id, 'status' => 'PAID', 'total' => 50, 'occurred_at' => now()]);
+        $this->actingAs($admin, 'admin')->get(route('admin.dashboard'))
+            ->assertViewHas('kpis', fn (array $k): bool => $k[0]['value'] === '$100.00');
+
+        // Otra localidad usa su propia entrada de caché
+        $this->actingAs($admin, 'admin')->get(route('admin.dashboard', ['location_id' => $location->id]))
+            ->assertViewHas('kpis', fn (array $k): bool => $k[0]['value'] === '$150.00');
+
+        $this->travel(61)->seconds();
+        $this->actingAs($admin, 'admin')->get(route('admin.dashboard'))
+            ->assertViewHas('kpis', fn (array $k): bool => $k[0]['value'] === '$150.00');
+    }
 }

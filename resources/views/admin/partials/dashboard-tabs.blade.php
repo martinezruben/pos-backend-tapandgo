@@ -25,6 +25,10 @@
     @endif
 
     <form method="GET" action="{{ url()->current() }}" class="flex items-center gap-2">
+        @isset($generatedAt)
+            {{-- Las cifras se reutilizan hasta 60 s (DashboardController::CACHE_SECONDS) --}}
+            <span class="hidden shrink-0 text-[10px] text-slate-400 md:inline" title="Las cifras se recalculan cada minuto">Actualizado {{ $generatedAt }}</span>
+        @endisset
         <label for="dash-location" class="shrink-0 text-[10px] font-semibold uppercase tracking-wider text-slate-500">Localidad</label>
         <select
             id="dash-location"

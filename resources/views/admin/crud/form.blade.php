@@ -75,11 +75,7 @@
                 @endif
                 <div class="{{ in_array($field, ['last_error_message', 'error_message'], true) ? 'md:col-span-2' : '' }}">
                     <label class="snow-label" for="f-{{ $field }}">
-                        @if(!empty($cfg['foreign_labels'][$field]))
-                            {{ \App\Support\AdminGridCell::headerLabel($field, $cfg) }}
-                        @else
-                            {{ $cfg['labels'][$field] ?? str_replace('_', ' ', $field) }}
-                        @endif
+                        {{ \App\Support\AdminGridCell::headerLabel($field, $cfg) }}
                     </label>
                     @if(str_starts_with($field, 'is_'))
                         <select id="f-{{ $field }}" name="{{ $field }}" class="snow-input">

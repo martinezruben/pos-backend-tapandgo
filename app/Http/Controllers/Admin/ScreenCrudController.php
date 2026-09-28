@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -440,6 +441,14 @@ class ScreenCrudController extends Controller
             }
         }
 
+        // Columnas NOT NULL sin valor por defecto: obligatorias en el formulario, para
+        // responder con un mensaje de validación y no con un error de base de datos
+        foreach ($this->requiredColumns($cfg['model']) as $column) {
+            if ($column !== 'password' && ($rules[$column][0] ?? null) === 'nullable') {
+                $rules[$column][0] = 'required';
+            }
+        }
+
         if ($screen === 'licenses') {
             $rules['valid_from'] = ['required', 'date'];
             $rules['valid_to'] = ['required', 'date', 'after_or_equal:valid_from'];
@@ -479,7 +488,7 @@ class ScreenCrudController extends Controller
         }
 
         // Etiquetas de la pantalla como nombres de atributo en los mensajes de error
-        $data = $request->validate($rules, [], $cfg['labels'] ?? []);
+        $data = $request->validate($rules, [], AdminGridCell::validationAttributes($cfg));
 
         if ($screen === 'families') {
             $rules['description'] = ['nullable', 'string', 'max:255'];
@@ -544,6 +553,20 @@ class ScreenCrudController extends Controller
      *
      * @param  array<string, mixed>  $data
      */
+    /**
+     * @param  class-string<Model>  $modelClass
+     * @return list<string>
+     */
+    private function requiredColumns(string $modelClass): array
+    {
+        $model = new $modelClass;
+
+        return collect(Schema::getColumns($model->getTable()))
+            ->filter(fn (array $c) => ! $c['nullable'] && $c['default'] === null && ! $c['auto_increment'] && $c['name'] !== $model->getKeyName())
+            ->pluck('name')
+            ->all();
+    }
+
     private function validatePromotionBusinessRules(Request $request, array $data): void
     {
         $fail = function (string $field, string $message): void {
