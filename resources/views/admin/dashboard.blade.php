@@ -1,96 +1,10 @@
-<x-admin.layouts.app :title="'Dashboard'">
+<x-admin.layouts.app :title="'Dashboard comercial'">
     <div class="space-y-4 pb-6">
-        {{-- Alertas: contingencias, dispositivos, licencias, sincronizaciones, anulaciones --}}
-        @php
-            $hasAlerts = ! empty($alerts['contingencies'])
-                || ! empty($alerts['devicesNoSync'])
-                || ! empty($alerts['licensesExpiring'])
-                || ($alerts['syncFailures24h']['count'] ?? 0) > 0
-                || ($voided['today']['count'] ?? 0) > 0;
-        @endphp
-        @if ($hasAlerts)
-            <div class="space-y-2 rounded-xl border border-amber-200/90 bg-amber-50/50 p-4 shadow-sm">
-                <h3 class="text-sm font-semibold text-amber-900">Alertas operativas</h3>
-                <div class="space-y-1.5">
-                    @if (! empty($alerts['contingencies']))
-                        <div class="flex items-start gap-2 text-[11px]">
-                            <span class="shrink-0 text-amber-600">🏢</span>
-                            <div>
-                                <p class="font-medium text-amber-900">{{ count($alerts['contingencies']) }} localidad(es) en contingencia</p>
-                                <ul class="mt-0.5 space-y-0.5 pl-2">
-                                    @foreach ($alerts['contingencies'] as $loc)
-                                        <li class="text-amber-700">{{ $loc['name'] }} — hace {{ $loc['since'] }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        </div>
-                    @endif
-                    @if (! empty($alerts['devicesNoSync']))
-                        <div class="flex items-start gap-2 text-[11px]">
-                            <span class="shrink-0 text-amber-600">📱</span>
-                            <div>
-                                <p class="font-medium text-amber-900">{{ count($alerts['devicesNoSync']) }} dispositivo(s) sin sincronizar {{ $alerts['devicesNoSync'][0]['hours_ago'] ?? '?' }} horas</p>
-                                <ul class="mt-0.5 space-y-0.5 pl-2">
-                                    @foreach ($alerts['devicesNoSync'] as $dev)
-                                        <li class="text-amber-700">{{ $dev['name'] }} ({{ $dev['location'] }}) — hace {{ $dev['hours_ago'] }} h</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        </div>
-                    @endif
-                    @if (! empty($alerts['licensesExpiring']))
-                        <div class="flex items-start gap-2 text-[11px]">
-                            <span class="shrink-0 text-amber-600">🔑</span>
-                            <div>
-                                <p class="font-medium text-amber-900">{{ count($alerts['licensesExpiring']) }} licencia(s) próxima(s) a vencer</p>
-                                <ul class="mt-0.5 space-y-0.5 pl-2">
-                                    @foreach ($alerts['licensesExpiring'] as $lic)
-                                        <li class="text-amber-700">{{ $lic['device'] }} ({{ $lic['location'] }}) — {{ $lic['expires_in'] }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        </div>
-                    @endif
-                    @if (($alerts['syncFailures24h']['count'] ?? 0) > 0)
-                        <div class="flex items-start gap-2 text-[11px]">
-                            <span class="shrink-0 text-amber-600">❌</span>
-                            <p class="text-amber-900">
-                                <span class="font-medium">{{ $alerts['syncFailures24h']['count'] }} sincronización(es) fallida(s)</span> en 24 h
-                                ({{ $alerts['syncFailures24h']['count'] }}/{{ $alerts['syncFailures24h']['total'] }} sync logs)
-                            </p>
-                        </div>
-                    @endif
-                    @if (($voided['today']['count'] ?? 0) > 0)
-                        <div class="flex items-start gap-2 text-[11px]">
-                            <span class="shrink-0 text-amber-600">⚠️</span>
-                            <p class="text-amber-900">
-                                <span class="font-medium">{{ $voided['today']['count'] }} transacción(es) anulada(s) hoy</span>
-                                ({{ $voided['today']['count'] }}/{{ $voided['week']['count'] }} últimos 7 días)
-                                · ${{ number_format($voided['today']['total'], 2) }} (hoy) / ${{ number_format($voided['week']['total'], 2) }} (semana)
-                            </p>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        @endif
+        @include('admin.partials.dashboard-tabs')
 
-        {{-- KPIs --}}
         <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
             @foreach ($kpis as $card)
-                <div class="snow-card rounded-xl border border-slate-200/90 bg-white p-3.5 shadow-hope-card transition hover:shadow-[0_8px_30px_-8px_rgba(15,23,42,0.12)]">
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="min-w-0">
-                            <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400">{{ $card['label'] }}</p>
-                            <p class="mt-1.5 text-lg font-bold tabular-nums leading-tight tracking-tight text-slate-900">{{ $card['value'] }}</p>
-                            @if (! empty($card['sub']))
-                                <p class="mt-0.5 text-[9px] leading-tight text-slate-500">{{ $card['sub'] }}</p>
-                            @endif
-                        </div>
-                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-500">
-                            <x-admin.snow.icon :name="$card['icon']" class="h-4.5 w-4.5" />
-                        </span>
-                    </div>
-                </div>
+                @include('admin.partials.dashboard-kpi-card', ['card' => $card])
             @endforeach
         </div>
 
@@ -112,29 +26,8 @@
                 </div>
             </div>
 
-            {{-- Resumen + ventas por familia (donut) --}}
+            {{-- Ventas por familia y por método de pago (donuts) --}}
             <div class="space-y-4">
-                <div class="relative flex items-center justify-between gap-3 overflow-hidden rounded-xl border border-slate-200/80 bg-gradient-to-br from-primary-600 via-primary-600 to-sky-600 p-3 text-white shadow-hope-card">
-                    <div class="pointer-events-none absolute -right-4 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-white/10 blur-2xl"></div>
-                    <div class="relative min-w-0 flex-1">
-                        <p class="text-[9px] font-bold uppercase tracking-widest text-primary-100/90">Ventas (30 días)</p>
-                        <p class="mt-1 text-2xl font-bold tabular-nums leading-tight tracking-tight">
-                            ${{ number_format($chartPayload['summary']['sales30d'] ?? 0, 2) }}
-                        </p>
-                    </div>
-                    <div class="relative flex max-w-[55%] shrink-0 flex-col items-end justify-center gap-1 text-right">
-                        @if (($chartPayload['summary']['syncOkPct'] ?? null) !== null)
-                            <div class="inline-flex max-w-full flex-wrap items-center justify-end gap-1 rounded-full bg-white/15 px-2 py-1 text-[9px] font-semibold leading-tight text-white backdrop-blur-sm sm:text-[10px]">
-                                <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-300"></span>
-                                <span class="text-left sm:text-right">Sync OK (7d): {{ $chartPayload['summary']['syncOkPct'] }}%</span>
-                                <span class="text-primary-100/90">({{ $chartPayload['summary']['syncSuccess7d'] }}/{{ $chartPayload['summary']['syncSuccess7d'] + $chartPayload['summary']['syncFailed7d'] }})</span>
-                            </div>
-                        @else
-                            <p class="max-w-full text-[9px] leading-snug text-primary-100/90 sm:text-[10px]">Sin registros de sincronización recientes.</p>
-                        @endif
-                    </div>
-                </div>
-
                 <div class="snow-card flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white p-4 shadow-hope-card xl:h-[330px]">
                     <div class="mb-2 shrink-0">
                         <h3 class="text-sm font-semibold text-slate-900">Ventas por familia</h3>
@@ -150,120 +43,6 @@
                     </div>
                     <div data-chart="payment-donut" class="w-full min-h-[190px] flex-1 xl:min-h-0"></div>
                 </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div class="snow-card flex max-h-[min(408px,85vh)] flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white p-3 shadow-hope-card lg:min-h-[380px] xl:h-[408px] xl:max-h-none">
-                <div class="shrink-0">
-                    <h3 class="text-sm font-semibold text-slate-900">Actividad reciente</h3>
-                    <p class="text-[10px] text-slate-500">Sync y API</p>
-                </div>
-                <ul class="mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-gutter:stable]">
-                    @forelse ($activity as $row)
-                        @php
-                            $strip = match ($row['tone']) {
-                                'emerald' => 'border-l-emerald-500',
-                                'rose' => 'border-l-rose-500',
-                                'sky' => 'border-l-sky-500',
-                                default => 'border-l-amber-500',
-                            };
-                            $wash = match ($row['tone']) {
-                                'emerald' => 'from-emerald-50/70',
-                                'rose' => 'from-rose-50/70',
-                                'sky' => 'from-sky-50/70',
-                                default => 'from-amber-50/70',
-                            };
-                            $iconGrad = match ($row['tone']) {
-                                'emerald' => 'from-emerald-500 to-teal-600 shadow-emerald-500/25',
-                                'rose' => 'from-rose-500 to-rose-700 shadow-rose-500/25',
-                                'sky' => 'from-sky-500 to-blue-600 shadow-sky-500/25',
-                                default => 'from-amber-500 to-orange-600 shadow-amber-500/25',
-                            };
-                            $pulse = match ($row['tone']) {
-                                'emerald' => 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]',
-                                'rose' => 'bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.7)]',
-                                'sky' => 'bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.7)]',
-                                default => 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.7)]',
-                            };
-                            $dirBadge = match ($row['direction']) {
-                                'Pull' => 'border-sky-200/90 bg-sky-50/90 text-sky-900 ring-sky-100',
-                                'Push' => 'border-violet-200/90 bg-violet-50/90 text-violet-900 ring-violet-100',
-                                default => 'border-slate-200/90 bg-slate-100/90 text-slate-800 ring-slate-100',
-                            };
-                            $statusLabel = match ($row['tone']) {
-                                'emerald' => 'Correcto',
-                                'rose' => 'Fallo',
-                                'sky' => 'OK',
-                                default => 'Aviso',
-                            };
-                        @endphp
-                        <li
-                            class="animate-act-in"
-                            style="animation-delay: {{ min($loop->index * 45, 360) }}ms"
-                        >
-                            <div
-                                class="group relative flex gap-2 overflow-hidden rounded-xl border border-slate-200/70 bg-gradient-to-r {{ $wash }} to-white pl-2 shadow-sm ring-1 ring-slate-100/80 transition duration-200 hover:border-slate-300/70 hover:shadow-md hover:ring-slate-200/90 {{ $strip }} border-l-[3px]"
-                            >
-                                <span
-                                    class="pointer-events-none absolute -right-6 top-1/2 h-16 w-16 -translate-y-1/2 rounded-full bg-gradient-to-br from-white/0 to-white/40 opacity-0 blur-2xl transition duration-300 group-hover:opacity-100"
-                                    aria-hidden="true"
-                                ></span>
-                                <div
-                                    class="relative mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br {{ $iconGrad }} text-white shadow-lg ring-2 ring-white/90"
-                                >
-                                    @if ($row['direction'] === 'Pull')
-                                        <span class="text-base font-bold leading-none drop-shadow-sm">↓</span>
-                                    @elseif ($row['direction'] === 'Push')
-                                        <span class="text-base font-bold leading-none drop-shadow-sm">↑</span>
-                                    @else
-                                        <span class="px-0.5 text-[8px] font-bold uppercase tracking-wider drop-shadow-sm">API</span>
-                                    @endif
-                                </div>
-                                <div class="relative min-w-0 flex-1 py-1.5 pr-2">
-                                    <div class="flex items-start justify-between gap-2">
-                                        <p class="truncate text-[11px] font-semibold leading-tight tracking-tight text-slate-900">
-                                            {{ $row['location'] }}
-                                        </p>
-                                        <span class="inline-flex shrink-0 items-center gap-0.5 text-[9px] font-medium tabular-nums text-slate-400">
-                                            <x-admin.snow.icon name="clock" class="h-3 w-3 text-slate-300" />
-                                            {{ $row['time_human'] }}
-                                        </span>
-                                    </div>
-                                    <div class="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                                        <span class="inline-flex min-w-0 max-w-full items-center gap-1 text-[10px] text-slate-600">
-                                            <x-admin.snow.icon name="device-phone-mobile" class="h-3 w-3 shrink-0 text-slate-400" />
-                                            <span class="truncate">{{ $row['device'] }}</span>
-                                        </span>
-                                        <span
-                                            class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide ring-1 {{ $dirBadge }}"
-                                        >
-                                            {{ $row['direction'] }}
-                                        </span>
-                                        <span class="inline-flex items-center gap-1">
-                                            <span class="h-1.5 w-1.5 rounded-full {{ $pulse }}"></span>
-                                            <span class="text-[9px] font-medium text-slate-400">{{ $statusLabel }}</span>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    @empty
-                        <li class="flex list-none flex-col items-center justify-center gap-2 py-10 text-center">
-                            <div
-                                class="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 text-slate-300 shadow-inner ring-1 ring-slate-200/80"
-                            >
-                                <x-admin.snow.icon name="arrow-path" class="h-5 w-5" />
-                            </div>
-                            <p class="max-w-[12rem] text-[11px] leading-snug text-slate-500">Sin actividad reciente en sync ni API.</p>
-                        </li>
-                    @endforelse
-                </ul>
-            </div>
-            <div class="snow-card rounded-xl border border-slate-200/90 bg-white p-4 shadow-hope-card">
-                <h3 class="text-sm font-semibold text-slate-900">Sincronizaciones por día</h3>
-                <p class="text-[10px] text-slate-500">Correctas vs fallidas (14 días)</p>
-                <div data-chart="sync-stacked" class="mt-2 min-h-[300px] w-full"></div>
             </div>
         </div>
 

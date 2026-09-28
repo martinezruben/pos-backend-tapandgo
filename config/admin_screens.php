@@ -23,7 +23,8 @@ use App\Models\User;
 
 return [
     // Sin modelo: `rbac` lo expone en la matriz de permisos solo con `dashboard.view`
-    'dashboard' => ['label' => 'Dashboard', 'icon' => 'chart-bar', 'readonly' => true, 'rbac' => true],
+    'dashboard' => ['label' => 'Dashboard comercial', 'icon' => 'chart-bar', 'readonly' => true, 'rbac' => true],
+    'dashboard-technical' => ['label' => 'Dashboard técnico', 'icon' => 'wrench-screwdriver', 'readonly' => true, 'rbac' => true, 'exclude_from_nav' => true],
     'locations' => [
         'model' => Location::class,
         'label' => 'Localidades',

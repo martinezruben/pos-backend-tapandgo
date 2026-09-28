@@ -293,20 +293,19 @@ function mountSyncStacked(ApexCharts, el, syncByDay) {
 }
 
 async function init() {
+    // Cada dashboard (comercial / técnico) trae solo los gráficos que muestra
     const data = readPayload();
-    if (!data?.salesTrend) {
+    if (!data) {
         return;
     }
 
     const { default: ApexCharts } = await import('apexcharts');
 
-    const full = data.salesTrend;
-    const periodEl = document.getElementById('dash-sales-period');
-    const initialPeriod = periodEl?.value === '7d' ? '7d' : '30d';
-    const initial = sliceTrend(full, initialPeriod);
-
     const salesEl = document.querySelector('[data-chart="sales-area"]');
-    if (salesEl) {
+    if (salesEl && data.salesTrend) {
+        const full = data.salesTrend;
+        const periodEl = document.getElementById('dash-sales-period');
+        const initial = sliceTrend(full, periodEl?.value === '7d' ? '7d' : '30d');
         mountSalesArea(ApexCharts, salesEl, initial, (period) => sliceTrend(full, period));
     }
 

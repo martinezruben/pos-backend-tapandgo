@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\ApiRequestLog;
 use App\Models\Device;
 use App\Models\License;
 use App\Models\Location;
 use App\Models\Product;
+use App\Models\SyncLog;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Services\DashboardService;
@@ -106,14 +108,81 @@ class DashboardServiceTest extends TestCase
 
     public function test_sync_failures_last_24h(): void
     {
-        // Test básico: el método devuelve la estructura correcta
-        $service = new DashboardService;
-        $failures = $service->getSyncFailuresLast24h();
+        SyncLog::factory()->create(['status' => 'FAILED', 'started_at' => now()->subHours(2)]);
+        SyncLog::factory()->create(['status' => 'FAILED', 'started_at' => now()->subHours(5)]);
+        SyncLog::factory()->create(['status' => 'SUCCESS', 'started_at' => now()->subHour()]);
+        SyncLog::factory()->create(['status' => 'FAILED', 'started_at' => now()->subDays(2)]);
 
-        $this->assertArrayHasKey('count', $failures);
-        $this->assertArrayHasKey('total', $failures);
-        $this->assertIsInt($failures['count']);
-        $this->assertIsInt($failures['total']);
+        $failures = (new DashboardService)->getSyncFailuresLast24h();
+
+        $this->assertSame(['count' => 2, 'total' => 3], $failures);
+    }
+
+    public function test_kpis_ignore_sales_outside_the_periods(): void
+    {
+        $this->travelTo(now()->setTime(12, 0));
+
+        Transaction::factory()->create(['status' => 'PAID', 'total' => 10, 'occurred_at' => now()->startOfDay()]);
+        Transaction::factory()->create(['status' => 'PAID', 'total' => 20, 'occurred_at' => now()->startOfDay()->subSecond()]);
+        Transaction::factory()->create(['status' => 'PAID', 'total' => 40, 'occurred_at' => now()->subDays(29)->startOfDay()]);
+        Transaction::factory()->create(['status' => 'PAID', 'total' => 1000, 'occurred_at' => now()->subDays(60)]);
+        Transaction::factory()->create(['status' => 'PAID', 'total' => 5000, 'occurred_at' => now()->addDays(2)]);
+        Transaction::factory()->create(['status' => 'VOIDED', 'total' => 300, 'occurred_at' => now()]);
+
+        $kpis = (new DashboardService)->getKpis();
+
+        $this->assertSame(10.0, $kpis['salesToday']);
+        $this->assertSame(1, $kpis['txToday']);
+        $this->assertSame(20.0, $kpis['salesYesterday']);
+        $this->assertSame(30.0, $kpis['sales7d']);
+        $this->assertSame(70.0, $kpis['sales30d']);
+    }
+
+    public function test_week_comparison_uses_calendar_weeks(): void
+    {
+        // Miércoles: la semana en curso empieza el lunes
+        $this->travelTo(now()->startOfWeek()->addDays(2)->setTime(12, 0));
+
+        Transaction::factory()->create(['status' => 'PAID', 'total' => 100, 'occurred_at' => now()->startOfWeek()]);
+        Transaction::factory()->create(['status' => 'PAID', 'total' => 50, 'occurred_at' => now()->startOfWeek()->subSecond()]);
+        Transaction::factory()->create(['status' => 'PAID', 'total' => 25, 'occurred_at' => now()->startOfWeek()->subWeek()]);
+        Transaction::factory()->create(['status' => 'PAID', 'total' => 999, 'occurred_at' => now()->startOfWeek()->subWeek()->subSecond()]);
+
+        $kpis = (new DashboardService)->getKpis();
+
+        $this->assertSame(100.0, $kpis['salesThisWeek']);
+        $this->assertSame(75.0, $kpis['salesLastWeek']);
+        $this->assertSame(33.3, $kpis['weekDeltaPct']);
+    }
+
+    public function test_recent_activity_merges_sync_and_api_logs(): void
+    {
+        $location = Location::factory()->create(['name' => 'Sucursal Norte']);
+        $device = Device::factory()->create(['location_id' => $location->id, 'name' => 'Caja 1']);
+
+        SyncLog::factory()->create([
+            'location_id' => $location->id,
+            'device_id' => $device->id,
+            'operation' => 'PUSH',
+            'status' => 'FAILED',
+            'started_at' => now()->subMinutes(10),
+        ]);
+        ApiRequestLog::create([
+            'location_id' => $location->id,
+            'device_id' => $device->id,
+            'method' => 'GET',
+            'path' => 'api/sync/pull',
+            'response_status' => 200,
+        ]);
+
+        $activity = (new DashboardService)->getRecentActivity(8);
+
+        $this->assertCount(2, $activity);
+        // Más reciente primero: la llamada al API se creó ahora
+        $this->assertSame(['Sucursal Norte', 'Caja 1', 'Pull', 'sky'], [
+            $activity[0]['location'], $activity[0]['device'], $activity[0]['direction'], $activity[0]['tone'],
+        ]);
+        $this->assertSame(['Push', 'rose'], [$activity[1]['direction'], $activity[1]['tone']]);
     }
 
     public function test_voided_transactions(): void
