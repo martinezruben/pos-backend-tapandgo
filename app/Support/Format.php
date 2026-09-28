@@ -32,4 +32,10 @@ class Format
     {
         return number_format((float) $value, $decimals).'%';
     }
+
+    /** Fecha y hora local: 28/09/2026 14:05 (con segundos para logs). */
+    public static function dateTime(?\DateTimeInterface $value, bool $seconds = false): string
+    {
+        return $value === null ? '—' : $value->format($seconds ? 'd/m/Y H:i:s' : 'd/m/Y H:i');
+    }
 }

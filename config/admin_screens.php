@@ -83,10 +83,10 @@ return [
         'fields' => ['id', 'device_id', 'location_name', 'valid_from', 'valid_to', 'status'],
         'select_options' => [
             'status' => [
-                'ACTIVE' => 'ACTIVE (Activa)',
-                'INACTIVE' => 'INACTIVE (Inactiva)',
-                'EXPIRED' => 'EXPIRED (Caducada)',
-                'REVOKED' => 'REVOKED (Revocada)',
+                'ACTIVE' => 'Activa',
+                'INACTIVE' => 'Inactiva',
+                'EXPIRED' => 'Vencida',
+                'REVOKED' => 'Revocada',
             ],
         ],
         'foreign_labels' => [
@@ -120,7 +120,7 @@ return [
                 'status' => [
                     'label' => 'Estado',
                     'type' => 'select',
-                    'options' => ['' => 'Todos', 'ACTIVE' => 'ACTIVE', 'EXPIRED' => 'EXPIRED', 'REVOKED' => 'REVOKED'],
+                    'options' => ['' => 'Todos', 'ACTIVE' => 'Activa', 'EXPIRED' => 'Vencida', 'REVOKED' => 'Revocada'],
                     'apply' => ['type' => 'column', 'column' => 'status'],
                 ],
             ],
@@ -490,7 +490,7 @@ return [
                 'status' => [
                     'label' => 'Estado',
                     'type' => 'select',
-                    'options' => ['' => 'Todos', 'PENDING' => 'PENDING', 'PAID' => 'PAID', 'VOIDED' => 'VOIDED'],
+                    'options' => ['' => 'Todos', 'PENDING' => 'Pendiente', 'PAID' => 'Cobrada', 'VOIDED' => 'Anulada'],
                     'apply' => ['type' => 'column', 'column' => 'status'],
                 ],
             ],
@@ -634,13 +634,13 @@ return [
                 'status' => [
                     'label' => 'Estado',
                     'type' => 'select',
-                    'options' => ['' => 'Todos', 'SUCCESS' => 'SUCCESS', 'FAILED' => 'FAILED'],
+                    'options' => ['' => 'Todos', 'SUCCESS' => 'Correcta', 'FAILED' => 'Fallida'],
                     'apply' => ['type' => 'column', 'column' => 'status'],
                 ],
                 'operation' => [
                     'label' => 'Operación',
                     'type' => 'select',
-                    'options' => ['' => 'Todos', 'PUSH' => 'PUSH', 'PULL' => 'PULL'],
+                    'options' => ['' => 'Todos', 'PUSH' => 'Envío', 'PULL' => 'Descarga'],
                     'apply' => ['type' => 'column', 'column' => 'operation'],
                 ],
             ],

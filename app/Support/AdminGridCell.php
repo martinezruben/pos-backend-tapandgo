@@ -8,6 +8,7 @@ use App\Models\ApiRequestLog;
 use App\Models\Device;
 use App\Models\Family;
 use App\Models\Location;
+use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Shift;
 use App\Models\Subfamily;
@@ -109,7 +110,7 @@ class AdminGridCell
                 return '—';
             }
             if ($raw instanceof \DateTimeInterface) {
-                return $raw->format('Y-m-d H:i:s');
+                return Format::dateTime($raw);
             }
 
             return (string) $raw;
@@ -123,7 +124,7 @@ class AdminGridCell
 
         if ($item instanceof AdminAuditLog) {
             if ($field === 'created_at' && $item->created_at !== null) {
-                return $item->created_at->format('Y-m-d H:i:s');
+                return Format::dateTime($item->created_at, true);
             }
             if ($field === 'changes' && is_array($item->changes)) {
                 $parts = [];
@@ -139,7 +140,7 @@ class AdminGridCell
             if (in_array($field, ['created_at', 'updated_at'], true) && $item->{$field} !== null) {
                 $v = $item->{$field};
 
-                return $v instanceof \DateTimeInterface ? $v->format('Y-m-d H:i:s') : '—';
+                return $v instanceof \DateTimeInterface ? Format::dateTime($v, true) : '—';
             }
             if ($field === 'parameters' && $item->parameters !== null) {
                 return Str::limit((string) $item->parameters, 140);
@@ -155,7 +156,7 @@ class AdminGridCell
             $raw = $item->{$field};
 
             if ($raw instanceof \DateTimeInterface) {
-                return $raw->format('Y-m-d H:i:s');
+                return Format::dateTime($raw);
             }
 
             if (is_scalar($raw) || $raw === null) {
@@ -226,7 +227,7 @@ class AdminGridCell
         $raw = $item->{$field};
 
         if ($raw instanceof \DateTimeInterface) {
-            return $raw->format('Y-m-d H:i:s');
+            return Format::dateTime($raw);
         }
 
         if (is_numeric($raw) && in_array($field, $cfg['grid']['money'] ?? [], true)) {
@@ -249,7 +250,44 @@ class AdminGridCell
             return $cfg['labels'][$field];
         }
 
-        return Str::title(str_replace('_', ' ', $field));
+        // Etiquetas comunes en español (config/admin_labels.php) antes del nombre técnico
+        return config("admin_labels.fields.$field") ?? Str::ucfirst(str_replace('_', ' ', $field));
+    }
+
+    /**
+     * Nombres de atributo para los mensajes de validación: las mismas etiquetas
+     * que ve el usuario en el formulario.
+     *
+     * @return array<string, string>
+     */
+    public static function validationAttributes(array $cfg): array
+    {
+        $fields = array_unique(array_merge($cfg['fields'] ?? [], array_keys($cfg['labels'] ?? [])));
+
+        return collect($fields)->mapWithKeys(fn (string $f) => [$f => self::headerLabel($f, $cfg)])->all();
+    }
+
+    /**
+     * Texto visible de un valor enumerado guardado en inglés (PAID → Cobrada).
+     * Métodos de pago creados en el panel se muestran por su nombre.
+     */
+    public static function valueLabel(string $field, mixed $raw): string
+    {
+        if (! is_scalar($raw)) {
+            return '—';
+        }
+        $raw = (string) $raw;
+        $known = config("admin_labels.values.$field.".strtoupper($raw));
+        if ($known !== null) {
+            return $known;
+        }
+        if ($field === 'payment_method') {
+            static $names = [];
+
+            return $names[$raw] ??= PaymentMethod::labelsFor([$raw])[$raw] ?? $raw;
+        }
+
+        return $raw;
     }
 
     /**
