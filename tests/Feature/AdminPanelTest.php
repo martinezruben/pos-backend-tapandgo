@@ -38,4 +38,16 @@ class AdminPanelTest extends TestCase
 
         $this->get(route('admin.dashboard'))->assertOk();
     }
+
+    public function test_login_hides_database_diagnostic_in_production(): void
+    {
+        $this->get('/admin/login')->assertOk()->assertSee('Sin administradores activos');
+
+        $this->app['env'] = 'production';
+
+        $this->get('/admin/login')
+            ->assertOk()
+            ->assertDontSee('Sin administradores activos')
+            ->assertDontSee('Base de datos conectada');
+    }
 }
