@@ -148,6 +148,15 @@ class DashboardController extends Controller
         $topProducts = $this->topProductsBySales(30, 5);
         $paymentMix = $this->salesByPaymentMethod(30);
 
+        // Alertas y problemas
+        $alerts = [
+            'contingencies' => $this->locationsInContingency(),
+            'devicesNoSync' => $this->devicesNotSyncedSince(4),
+            'licensesExpiring' => $this->licensesExpiringWithin(7),
+            'syncFailures24h' => $this->syncFailuresLast24h(),
+        ];
+        $voided = $this->voidedTransactions();
+
         $chartPayload = [
             'salesTrend' => $salesTrend,
             'familyMix' => $familyMix,
@@ -167,6 +176,8 @@ class DashboardController extends Controller
             'topLocations' => $topLocations,
             'topProducts' => $topProducts,
             'activity' => $activity,
+            'alerts' => $alerts,
+            'voided' => $voided,
         ]);
     }
 
@@ -497,5 +508,130 @@ class DashboardController extends Controller
             'sqlite' => "strftime('%Y-%m-%d', {$column})",
             default => "DATE({$column})",
         };
+    }
+
+    /**
+     * Localidades en contingencia ahora.
+     *
+     * @return list<array{name: string, since: string}>
+     */
+    private function locationsInContingency(): array
+    {
+        return Location::query()
+            ->where('is_active', true)
+            ->whereNotNull('contingency_started_at')
+            ->orderBy('contingency_started_at')
+            ->get(['name', 'contingency_started_at'])
+            ->map(fn ($loc) => [
+                'name' => $loc->name,
+                'since' => $loc->contingency_started_at->diffForHumans(locale: 'es'),
+            ])
+            ->all();
+    }
+
+    /**
+     * Dispositivos habilitados que hace más de X horas no sincronizan.
+     *
+     * @return list<array{name: string, location: string, hours_ago: int}>
+     */
+    private function devicesNotSyncedSince(int $hours = 4): array
+    {
+        $since = now()->subHours($hours);
+
+        return Device::query()
+            ->where('is_enabled', true)
+            ->where(function ($q) use ($since) {
+                $q->whereNull('last_sync_at')->orWhere('last_sync_at', '<', $since);
+            })
+            ->with('location:id,name')
+            ->orderByRaw('COALESCE(last_sync_at, created_at) ASC')
+            ->get(['id', 'name', 'location_id', 'last_sync_at', 'created_at'])
+            ->map(function ($dev) {
+                $last = $dev->last_sync_at ?? $dev->created_at;
+
+                return [
+                    'name' => $dev->name ?: $dev->id,
+                    'location' => $dev->location?->name ?? '—',
+                    'hours_ago' => (int) ceil($last->diffInMinutes(now()) / 60),
+                ];
+            })
+            ->all();
+    }
+
+    /**
+     * Licencias que vencen en los próximos N días.
+     *
+     * @return list<array{device: string, location: string, expires_in: string}>
+     */
+    private function licensesExpiringWithin(int $days = 7): array
+    {
+        $until = now()->addDays($days)->endOfDay();
+
+        return License::query()
+            ->where('status', 'ACTIVE')
+            ->whereBetween('valid_to', [now(), $until])
+            ->with(['device:id,name,location_id', 'device.location:id,name'])
+            ->orderBy('valid_to')
+            ->get()
+            ->map(fn ($lic) => [
+                'device' => $lic->device?->name ?: $lic->device_id,
+                'location' => $lic->device?->location?->name ?? '—',
+                'expires_in' => $lic->valid_to->diffForHumans(locale: 'es'),
+            ])
+            ->all();
+    }
+
+    /**
+     * Sincronizaciones fallidas en las últimas 24h.
+     *
+     * @return array{count: int, total: int}
+     */
+    private function syncFailuresLast24h(): array
+    {
+        $since = now()->subDay();
+
+        $result = SyncLog::query()
+            ->where('started_at', '>=', $since)
+            ->selectRaw('COUNT(*) as total, SUM(CASE WHEN status = "FAILED" THEN 1 ELSE 0 END) as failed')
+            ->first();
+
+        return [
+            'count' => (int) ($result->failed ?? 0),
+            'total' => (int) ($result->total ?? 0),
+        ];
+    }
+
+    /**
+     * Transacciones anuladas hoy y en los últimos 7 días.
+     *
+     * @return array{today: array{count: int, total: float}, week: array{count: int, total: float}}
+     */
+    private function voidedTransactions(): array
+    {
+        $today = now()->toDateString();
+        $weekStart = now()->subDays(6)->startOfDay();
+
+        $todayRow = Transaction::query()
+            ->where('status', 'VOIDED')
+            ->whereDate('occurred_at', $today)
+            ->selectRaw('COUNT(*) as count, COALESCE(SUM(total), 0) as total')
+            ->first();
+
+        $weekRow = Transaction::query()
+            ->where('status', 'VOIDED')
+            ->where('occurred_at', '>=', $weekStart)
+            ->selectRaw('COUNT(*) as count, COALESCE(SUM(total), 0) as total')
+            ->first();
+
+        return [
+            'today' => [
+                'count' => (int) ($todayRow->count ?? 0),
+                'total' => (float) ($todayRow->total ?? 0),
+            ],
+            'week' => [
+                'count' => (int) ($weekRow->count ?? 0),
+                'total' => (float) ($weekRow->total ?? 0),
+            ],
+        ];
     }
 }
