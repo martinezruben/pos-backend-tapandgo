@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\User;
 use Carbon\Carbon;
@@ -50,9 +51,10 @@ class ReportService
             ->get();
 
         $grandTotal = $totals->sum('total_amount') ?: 1;
+        $labels = PaymentMethod::labelsFor($totals->pluck('name'));
 
         $totals = $totals->map(fn ($item) => [
-            'name' => $item->name,
+            'name' => $labels[$item->name] ?? $item->name,
             'total_transactions' => $item->total_transactions,
             'total_amount' => $item->total_amount,
             'percentage' => ($item->total_amount / $grandTotal) * 100,

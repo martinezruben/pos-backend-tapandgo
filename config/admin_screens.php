@@ -22,7 +22,8 @@ use App\Models\TransactionPayment;
 use App\Models\User;
 
 return [
-    'dashboard' => ['label' => 'Dashboard', 'icon' => 'chart-bar'],
+    // Sin modelo: `rbac` lo expone en la matriz de permisos solo con `dashboard.view`
+    'dashboard' => ['label' => 'Dashboard', 'icon' => 'chart-bar', 'readonly' => true, 'rbac' => true],
     'locations' => [
         'model' => Location::class,
         'label' => 'Localidades',

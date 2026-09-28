@@ -7,9 +7,11 @@ use App\Models\ApiRequestLog;
 use App\Models\Device;
 use App\Models\License;
 use App\Models\Location;
+use App\Models\PaymentMethod;
 use App\Models\SyncLog;
 use App\Models\Transaction;
 use App\Models\TransactionPayment;
+use App\Support\AdminRbac;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -18,6 +20,12 @@ class DashboardController extends Controller
 {
     public function __invoke(): View
     {
+        // Es la página de inicio tras el login: sin permiso se muestra una
+        // bienvenida sin cifras en lugar de un 403.
+        if (! auth('admin')->user()?->can(AdminRbac::permissionsForScreen('dashboard')['view'])) {
+            return view('admin.dashboard-welcome');
+        }
+
         $today = now()->toDateString();
         $start30 = now()->subDays(29)->startOfDay();
         $start7 = now()->subDays(6)->startOfDay();
@@ -199,14 +207,19 @@ class DashboardController extends Controller
             return [];
         }
 
-        $sumTop = (float) $rows->sum('total');
+        // Participación sobre todo lo vendido en el periodo, no sobre el top
+        $periodTotal = (float) DB::table('transaction_items')
+            ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
+            ->where('transactions.status', 'PAID')
+            ->where('transactions.occurred_at', '>=', $since)
+            ->sum('transaction_items.line_total');
 
         return $rows
             ->map(fn ($row): array => [
                 'name' => (string) $row->name,
                 'qty' => (float) $row->qty,
                 'total' => (float) $row->total,
-                'pct' => $sumTop > 0 ? round(100 * (float) $row->total / $sumTop, 1) : 0.0,
+                'pct' => $periodTotal > 0 ? round(100 * (float) $row->total / $periodTotal, 1) : 0.0,
             ])
             ->all();
     }
@@ -227,7 +240,7 @@ class DashboardController extends Controller
             ->orderByDesc('total')
             ->get();
 
-        $methodLabels = ['CASH' => 'Efectivo', 'CARD' => 'Tarjeta', 'TRANSFER' => 'Transferencia', 'OTHER' => 'Otro'];
+        $methodLabels = PaymentMethod::labelsFor($rows->pluck('payment_method'));
 
         return [
             'labels' => $rows->pluck('payment_method')->map(fn ($m) => $methodLabels[$m] ?? $m)->values()->all(),
@@ -272,31 +285,48 @@ class DashboardController extends Controller
     }
 
     /**
+     * Top 5 familias + «Otros» + «Sin familia» (líneas cuyo producto no tiene
+     * subfamilia o ya no existe), para que el donut cuadre con lo vendido.
+     *
      * @return array{labels: list<string>, series: list<float>}
      */
     private function salesByFamily(int $days): array
     {
         $since = now()->subDays($days)->startOfDay();
+        $top = 5;
 
         $rows = DB::table('transaction_items')
             ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
-            ->join('products', 'transaction_items.product_id', '=', 'products.id')
-            ->join('subfamilies', 'products.subfamily_id', '=', 'subfamilies.id')
-            ->join('families', 'subfamilies.family_id', '=', 'families.id')
+            ->leftJoin('products', 'transaction_items.product_id', '=', 'products.id')
+            ->leftJoin('subfamilies', 'products.subfamily_id', '=', 'subfamilies.id')
+            ->leftJoin('families', 'subfamilies.family_id', '=', 'families.id')
             ->where('transactions.status', 'PAID')
             ->where('transactions.occurred_at', '>=', $since)
-            ->selectRaw('families.name as name, SUM(transaction_items.line_total) as total')
-            ->groupBy('families.id', 'families.name')
-            ->orderByDesc('total')
-            ->limit(6)
+            ->selectRaw('families.id as id, MAX(families.name) as name, SUM(transaction_items.line_total) as total')
+            ->groupBy('families.id')
             ->get();
 
-        if ($rows->isEmpty()) {
-            return ['labels' => [], 'series' => []];
+        $unassigned = (float) $rows->whereNull('id')->sum('total');
+        $families = $rows->whereNotNull('id')
+            ->sort(fn ($a, $b) => [(float) $b->total, (string) $a->name] <=> [(float) $a->total, (string) $b->name])
+            ->values();
+
+        $labels = [];
+        $series = [];
+        foreach ($families->take($top) as $row) {
+            $labels[] = (string) $row->name;
+            $series[] = (float) $row->total;
         }
 
-        $labels = $rows->pluck('name')->map(fn ($n) => (string) $n)->all();
-        $series = $rows->pluck('total')->map(fn ($v) => (float) $v)->all();
+        $others = (float) $families->slice($top)->sum('total');
+        if ($others > 0) {
+            $labels[] = 'Otros';
+            $series[] = $others;
+        }
+        if ($unassigned > 0) {
+            $labels[] = 'Sin familia';
+            $series[] = $unassigned;
+        }
 
         return [
             'labels' => $labels,
@@ -364,7 +394,11 @@ class DashboardController extends Controller
             return [];
         }
 
-        $sumTop = (float) $totals->sum('total');
+        // Participación sobre todas las ventas del periodo, no sobre el top
+        $periodTotal = (float) Transaction::query()
+            ->where('status', 'PAID')
+            ->where('occurred_at', '>=', $since)
+            ->sum('total');
         $locationIds = $totals->pluck('location_id')->all();
         $names = Location::query()->whereIn('id', $locationIds)->pluck('name', 'id');
 
@@ -374,7 +408,7 @@ class DashboardController extends Controller
             $out[] = [
                 'name' => (string) ($names[$row->location_id] ?? '—'),
                 'total' => $t,
-                'pct' => $sumTop > 0 ? round(100 * $t / $sumTop, 1) : 0.0,
+                'pct' => $periodTotal > 0 ? round(100 * $t / $periodTotal, 1) : 0.0,
             ];
         }
 

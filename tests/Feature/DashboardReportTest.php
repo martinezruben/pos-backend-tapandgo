@@ -122,6 +122,7 @@ class DashboardReportTest extends TestCase
         // Panel: KPI "Ventas hoy" del dashboard admin también en local
         Permission::firstOrCreate(['name' => 'dashboard.view', 'guard_name' => 'admin']);
         $admin = AdminUser::factory()->create();
+        $admin->givePermissionTo('dashboard.view');
         $this->actingAs($admin, 'admin')
             ->get(route('admin.dashboard'))
             ->assertOk()
