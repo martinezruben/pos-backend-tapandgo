@@ -1,5 +1,4 @@
-const currency = (v) =>
-    new Intl.NumberFormat('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
+import { money } from './format';
 
 function readPayload() {
     const el = document.getElementById('dashboard-chart-data');
@@ -29,7 +28,7 @@ function sliceTrend(full, period) {
 }
 
 function mountSalesArea(ApexCharts, el, initial, onPeriodChange) {
-    const fmtMoney = (v) => `$${currency(v)}`;
+    const fmtMoney = (v) => money(v);
 
     const chart = new ApexCharts(el, {
         chart: {
@@ -149,7 +148,7 @@ function mountFamilyDonut(ApexCharts, el, familyMix, palette) {
                         value: {
                             fontSize: '16px',
                             fontWeight: 600,
-                            formatter: (v) => (empty ? '—' : `$${currency(parseFloat(v))}`),
+                            formatter: (v) => (empty ? '—' : money(parseFloat(v))),
                         },
                         total: {
                             show: !empty,
@@ -157,7 +156,7 @@ function mountFamilyDonut(ApexCharts, el, familyMix, palette) {
                             formatter: (w) => {
                                 const sum = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
 
-                                return `$${currency(sum)}`;
+                                return money(sum);
                             },
                         },
                     },
@@ -173,7 +172,7 @@ function mountFamilyDonut(ApexCharts, el, familyMix, palette) {
         },
         tooltip: {
             y: {
-                formatter: (v) => `$${currency(v)}`,
+                formatter: (v) => money(v),
             },
         },
         states: {

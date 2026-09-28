@@ -66,8 +66,8 @@
                         @forelse ($topProducts as $p)
                             <tr class="hover:bg-slate-50/80">
                                 <td class="px-4 py-2.5 font-medium text-slate-800">{{ $p['name'] }}</td>
-                                <td class="px-4 py-2.5 tabular-nums text-slate-700">{{ number_format($p['qty'], 0, ',', '.') }}</td>
-                                <td class="px-4 py-2.5 tabular-nums text-slate-700">${{ number_format($p['total'], 2) }}</td>
+                                <td class="px-4 py-2.5 tabular-nums text-slate-700">{{ \App\Support\Format::number($p['qty']) }}</td>
+                                <td class="px-4 py-2.5 tabular-nums text-slate-700">{{ \App\Support\Format::money($p['total']) }}</td>
                                 <td class="px-4 py-2.5">
                                     <div class="flex items-center gap-2">
                                         <div class="h-2 min-w-[120px] flex-1 overflow-hidden rounded-full bg-slate-100">
@@ -76,7 +76,7 @@
                                                 style="width: {{ $p['pct'] }}%"
                                             ></div>
                                         </div>
-                                        <span class="w-10 shrink-0 text-right text-[10px] tabular-nums text-slate-500">{{ number_format($p['pct'], 1, ',', '') }}%</span>
+                                        <span class="w-10 shrink-0 text-right text-[10px] tabular-nums text-slate-500">{{ \App\Support\Format::percent($p['pct']) }}</span>
                                     </div>
                                 </td>
                             </tr>
@@ -110,7 +110,7 @@
                         @forelse ($topLocations as $loc)
                             <tr class="hover:bg-slate-50/80">
                                 <td class="px-4 py-2.5 font-medium text-slate-800">{{ $loc['name'] }}</td>
-                                <td class="px-4 py-2.5 tabular-nums text-slate-700">${{ number_format($loc['total'], 2) }}</td>
+                                <td class="px-4 py-2.5 tabular-nums text-slate-700">{{ \App\Support\Format::money($loc['total']) }}</td>
                                 <td class="px-4 py-2.5">
                                     <div class="flex items-center gap-2">
                                         <div class="h-2 min-w-[120px] flex-1 overflow-hidden rounded-full bg-slate-100">
@@ -119,7 +119,7 @@
                                                 style="width: {{ $loc['pct'] }}%"
                                             ></div>
                                         </div>
-                                        <span class="w-10 shrink-0 text-right text-[10px] tabular-nums text-slate-500">{{ number_format($loc['pct'], 1, ',', '') }}%</span>
+                                        <span class="w-10 shrink-0 text-right text-[10px] tabular-nums text-slate-500">{{ \App\Support\Format::percent($loc['pct']) }}</span>
                                     </div>
                                 </td>
                             </tr>

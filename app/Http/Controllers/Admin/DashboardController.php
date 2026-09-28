@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Location;
 use App\Services\DashboardService;
 use App\Support\AdminRbac;
+use App\Support\Format;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -36,7 +37,7 @@ class DashboardController extends Controller
         $kpis = [
             [
                 'label' => 'Ventas hoy',
-                'value' => '$'.number_format($k['salesToday'], 2),
+                'value' => Format::money($k['salesToday']),
                 'icon' => 'banknotes',
             ],
             [
@@ -46,37 +47,37 @@ class DashboardController extends Controller
             ],
             [
                 'label' => 'Ticket promedio hoy',
-                'value' => $k['txToday'] > 0 ? '$'.number_format($k['avgTicketToday'], 2) : '—',
+                'value' => $k['txToday'] > 0 ? Format::money($k['avgTicketToday']) : '—',
                 'sub' => $this->deltaLabel($k['avgTicketToday'], $k['avgTicketYesterday']),
                 'icon' => 'credit-card',
             ],
             [
                 'label' => 'Ventas semana vs. anterior',
-                'value' => $k['weekDeltaPct'] === null ? '—' : ($k['weekDeltaPct'] >= 0 ? '+' : '').number_format($k['weekDeltaPct'], 1).'%',
-                'sub' => '$'.number_format($k['salesThisWeek'], 2).' vs $'.number_format($k['salesLastWeek'], 2),
+                'value' => $k['weekDeltaPct'] === null ? '—' : ($k['weekDeltaPct'] >= 0 ? '+' : '').Format::percent($k['weekDeltaPct']),
+                'sub' => Format::money($k['salesThisWeek']).' vs '.Format::money($k['salesLastWeek']),
                 'icon' => $k['weekDeltaPct'] !== null && $k['weekDeltaPct'] < 0 ? 'arrow-trending-down' : 'arrow-trending-up',
             ],
             [
                 'label' => 'Ventas (7 días)',
-                'value' => '$'.number_format($k['sales7d'], 2),
+                'value' => Format::money($k['sales7d']),
                 'icon' => 'chart-bar',
             ],
             [
                 'label' => 'Ventas (30 días)',
-                'value' => '$'.number_format($k['sales30d'], 2),
+                'value' => Format::money($k['sales30d']),
                 'icon' => 'chart-bar',
             ],
             [
                 'label' => 'Anulaciones hoy',
                 'value' => (string) $voided['today']['count'],
-                'sub' => '$'.number_format($voided['today']['total'], 2),
+                'sub' => Format::money($voided['today']['total']),
                 'icon' => 'x-circle',
                 'tone' => $voided['today']['count'] > 0 ? 'warn' : null,
             ],
             [
                 'label' => 'Anulaciones (7 días)',
                 'value' => (string) $voided['week']['count'],
-                'sub' => '$'.number_format($voided['week']['total'], 2),
+                'sub' => Format::money($voided['week']['total']),
                 'icon' => 'x-circle',
             ],
         ];
