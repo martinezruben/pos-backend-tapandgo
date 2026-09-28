@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\DeviceLastSyncController;
 use App\Http\Controllers\Admin\LocationPairingTokenController;
 use App\Http\Controllers\Admin\MailTestController;
 use App\Http\Controllers\Admin\ProductExcelController;
+use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\RoleRbacMatrixController;
 use App\Http\Controllers\Admin\ScreenCrudController;
 use App\Http\Controllers\Admin\SystemSettingsController;
@@ -66,6 +67,11 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::post('/mail/validate-smtp', [MailTestController::class, 'validateSmtp'])->name('mail.validate-smtp');
         Route::post('/mail/validate-office365', [MailTestController::class, 'validateOffice365'])->name('mail.validate-office365');
         Route::post('/mail/test', [MailTestController::class, 'sendTest'])->name('mail.test');
+
+        // Reportes prioritarios
+        Route::get('/reports/products-best-sellers', [ReportsController::class, 'productsBestSellers'])->name('reports.products-best-sellers');
+        Route::get('/reports/payment-methods', [ReportsController::class, 'paymentMethodsReport'])->name('reports.payment-methods');
+        Route::get('/reports/users-performance', [ReportsController::class, 'usersPerformanceReport'])->name('reports.users-performance');
 
         Route::get('/screens/{screen}', [ScreenCrudController::class, 'index'])->name('screens.index');
         Route::get('/screens/{screen}/create', [ScreenCrudController::class, 'create'])->name('screens.create');

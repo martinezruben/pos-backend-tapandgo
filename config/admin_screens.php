@@ -958,4 +958,155 @@ return [
             'default_sort' => ['key' => 'occurred_at', 'direction' => 'desc'],
         ],
     ],
+
+    // ============================================================================
+    // REPORTES PRIORITARIOS
+    // ============================================================================
+
+    'products-best-sellers' => [
+        'model' => Product::class,
+        'label' => 'Productos Más Vendidos',
+        'icon' => 'chart-bar',
+        'readonly' => true,
+        'labels' => [
+            'name' => 'Producto',
+            'sku' => 'SKU',
+            'sold_qty' => 'Cantidad Vendida',
+            'total_revenue' => 'Ingresos Totales',
+            'avg_price' => 'Precio Promedio',
+            'tax_rate' => 'IVA (%)',
+        ],
+        'fields' => ['name', 'sku', 'sold_qty', 'total_revenue', 'avg_price', 'tax_rate'],
+        'foreign_labels' => [
+            'sold_qty' => ['virtual' => true, 'header' => 'Cantidad Vendida'],
+            'total_revenue' => ['virtual' => true, 'header' => 'Ingresos Totales'],
+            'avg_price' => ['virtual' => true, 'header' => 'Precio Promedio'],
+        ],
+        'grid' => [
+            'visible_limit' => 20,
+            'filters' => [
+                'date_from' => [
+                    'label' => 'Desde',
+                    'type' => 'date',
+                    'apply' => ['type' => 'date_from', 'column' => 'transactions.occurred_at'],
+                ],
+                'date_to' => [
+                    'label' => 'Hasta',
+                    'type' => 'date',
+                    'apply' => ['type' => 'date_to', 'column' => 'transactions.occurred_at'],
+                ],
+                'location_id' => [
+                    'label' => 'Localidad',
+                    'type' => 'select',
+                    'model' => Location::class,
+                    'order_by' => 'name',
+                    'label_column' => 'name',
+                    'apply' => ['type' => 'column', 'column' => 'transactions.location_id'],
+                ],
+            ],
+            'columns' => [
+                ['field' => 'name', 'label' => 'Producto', 'sortable' => true],
+                ['field' => 'sku', 'label' => 'SKU', 'sortable' => true, 'width' => '100px'],
+                ['field' => 'sold_qty', 'label' => 'Cantidad', 'sortable' => true, 'width' => '100px'],
+                ['field' => 'total_revenue', 'label' => 'Ingresos', 'sortable' => true, 'width' => '120px', 'render' => fn ($v) => '$' . number_format($v, 2)],
+                ['field' => 'avg_price', 'label' => 'Precio Prom.', 'sortable' => true, 'width' => '120px', 'render' => fn ($v) => '$' . number_format($v, 2)],
+                ['field' => 'tax_rate', 'label' => 'IVA (%)', 'sortable' => true, 'width' => '80px'],
+            ],
+            'default_sort' => ['key' => 'sold_qty', 'direction' => 'desc'],
+        ],
+    ],
+
+    'payment-methods-report' => [
+        'model' => PaymentMethod::class,
+        'label' => 'Ingresos por Método de Pago',
+        'icon' => 'credit-card',
+        'readonly' => true,
+        'labels' => [
+            'name' => 'Método de Pago',
+            'total_transactions' => 'Transacciones',
+            'total_amount' => 'Monto Total',
+            'percentage' => '% del Total',
+        ],
+        'fields' => ['name', 'total_transactions', 'total_amount', 'percentage'],
+        'foreign_labels' => [
+            'total_transactions' => ['virtual' => true, 'header' => 'Transacciones'],
+            'total_amount' => ['virtual' => true, 'header' => 'Monto Total'],
+            'percentage' => ['virtual' => true, 'header' => '% del Total'],
+        ],
+        'grid' => [
+            'filters' => [
+                'date_from' => [
+                    'label' => 'Desde',
+                    'type' => 'date',
+                    'apply' => ['type' => 'date_from', 'column' => 'transaction_payments.created_at'],
+                ],
+                'date_to' => [
+                    'label' => 'Hasta',
+                    'type' => 'date',
+                    'apply' => ['type' => 'date_to', 'column' => 'transaction_payments.created_at'],
+                ],
+            ],
+            'columns' => [
+                ['field' => 'name', 'label' => 'Método de Pago', 'sortable' => true],
+                ['field' => 'total_transactions', 'label' => 'Transacciones', 'sortable' => true, 'width' => '120px'],
+                ['field' => 'total_amount', 'label' => 'Monto Total', 'sortable' => true, 'width' => '150px', 'render' => fn ($v) => '$' . number_format($v, 2)],
+                ['field' => 'percentage', 'label' => '% del Total', 'sortable' => true, 'width' => '100px', 'render' => fn ($v) => number_format($v, 2) . '%'],
+            ],
+            'default_sort' => ['key' => 'total_amount', 'direction' => 'desc'],
+        ],
+    ],
+
+    'users-performance-report' => [
+        'model' => User::class,
+        'label' => 'Desempeño de Usuarios',
+        'icon' => 'users',
+        'readonly' => true,
+        'labels' => [
+            'username' => 'Usuario',
+            'full_name' => 'Nombre Completo',
+            'transaction_count' => 'Transacciones',
+            'total_sales' => 'Ingresos Totales',
+            'avg_transaction' => 'Ticket Promedio',
+            'last_activity' => 'Última Actividad',
+        ],
+        'fields' => ['username', 'full_name', 'transaction_count', 'total_sales', 'avg_transaction', 'last_activity'],
+        'foreign_labels' => [
+            'transaction_count' => ['virtual' => true, 'header' => 'Transacciones'],
+            'total_sales' => ['virtual' => true, 'header' => 'Ingresos Totales'],
+            'avg_transaction' => ['virtual' => true, 'header' => 'Ticket Promedio'],
+            'last_activity' => ['virtual' => true, 'header' => 'Última Actividad'],
+        ],
+        'grid' => [
+            'visible_limit' => 15,
+            'filters' => [
+                'date_from' => [
+                    'label' => 'Desde',
+                    'type' => 'date',
+                    'apply' => ['type' => 'date_from', 'column' => 'transactions.occurred_at'],
+                ],
+                'date_to' => [
+                    'label' => 'Hasta',
+                    'type' => 'date',
+                    'apply' => ['type' => 'date_to', 'column' => 'transactions.occurred_at'],
+                ],
+                'location_id' => [
+                    'label' => 'Localidad',
+                    'type' => 'select',
+                    'model' => Location::class,
+                    'order_by' => 'name',
+                    'label_column' => 'name',
+                    'apply' => ['type' => 'column', 'column' => 'transactions.location_id'],
+                ],
+            ],
+            'columns' => [
+                ['field' => 'full_name', 'label' => 'Nombre Completo', 'sortable' => true],
+                ['field' => 'username', 'label' => 'Usuario', 'sortable' => true, 'width' => '100px'],
+                ['field' => 'transaction_count', 'label' => 'Transacciones', 'sortable' => true, 'width' => '120px'],
+                ['field' => 'total_sales', 'label' => 'Ingresos', 'sortable' => true, 'width' => '150px', 'render' => fn ($v) => '$' . number_format($v, 2)],
+                ['field' => 'avg_transaction', 'label' => 'Ticket Prom.', 'sortable' => true, 'width' => '120px', 'render' => fn ($v) => '$' . number_format($v, 2)],
+                ['field' => 'last_activity', 'label' => 'Última Actividad', 'sortable' => true, 'width' => '150px'],
+            ],
+            'default_sort' => ['key' => 'total_sales', 'direction' => 'desc'],
+        ],
+    ],
 ];

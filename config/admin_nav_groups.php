@@ -36,6 +36,13 @@ return [
     [
         'key' => 'reports',
         'label' => 'Reportes',
-        'screens' => ['ncf-report', 'transactions-report', 'cierre-caja'],
+        'screens' => [
+            'products-best-sellers',
+            'payment-methods-report',
+            'users-performance-report',
+            'ncf-report',
+            'transactions-report',
+            'cierre-caja',
+        ],
     ],
 ];
