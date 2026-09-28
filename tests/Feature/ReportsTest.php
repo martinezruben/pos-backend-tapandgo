@@ -226,4 +226,86 @@ class ReportsTest extends TestCase
             ->postJson('/admin/reports/payment-methods/export-pdf', [])
             ->assertStatus(422);
     }
+
+    /** Venta con una línea y un pago, para los reportes. */
+    private function sale(string $status, float $total, \DateTimeInterface $at, ?Location $location = null, string $method = 'CASH'): Transaction
+    {
+        $location ??= Location::factory()->create();
+        $product = Product::factory()->create(['name' => 'Prod '.$status.' '.$total]);
+        $tx = Transaction::factory()->create([
+            'location_id' => $location->id,
+            'status' => $status,
+            'total' => $total,
+            'occurred_at' => $at,
+        ]);
+        TransactionItem::factory()->create([
+            'transaction_id' => $tx->id,
+            'product_id' => $product->id,
+            'qty' => 1,
+            'unit_price' => $total,
+            'line_total' => $total,
+        ]);
+        TransactionPayment::factory()->create(['transaction_id' => $tx->id, 'payment_method' => $method, 'amount' => $total]);
+
+        return $tx;
+    }
+
+    public function test_reports_only_count_paid_sales(): void
+    {
+        $this->sale('PAID', 100, now()->subDay());
+        $this->sale('VOIDED', 500, now()->subDay());
+        $this->sale('PENDING', 70, now()->subDay());
+        $admin = $this->createAdminUser();
+
+        $this->actingAs($admin, 'admin')->get('/admin/reports/products-best-sellers')
+            ->assertViewHas('products', fn ($rows) => (float) $rows->sum('total_revenue') === 100.0);
+        $this->actingAs($admin, 'admin')->get('/admin/reports/payment-methods')
+            ->assertViewHas('methods', fn ($rows) => (float) $rows->sum('total_amount') === 100.0
+                && (int) $rows->sum('total_transactions') === 1);
+        $this->actingAs($admin, 'admin')->get('/admin/reports/users-performance')
+            ->assertViewHas('users', fn ($rows) => (float) $rows->sum('total_sales') === 100.0);
+    }
+
+    public function test_date_to_includes_the_whole_last_day(): void
+    {
+        $this->travelTo(now()->setTime(12, 0));
+        $this->sale('PAID', 40, now()->setTime(21, 30));
+        $this->sale('PAID', 60, now()->subDays(3));
+        $range = ['date_from' => now()->subDays(3)->toDateString(), 'date_to' => now()->toDateString()];
+        $admin = $this->createAdminUser();
+
+        $this->actingAs($admin, 'admin')->get('/admin/reports/products-best-sellers?'.http_build_query($range))
+            ->assertViewHas('products', fn ($rows) => (float) $rows->sum('total_revenue') === 100.0);
+
+        $csv = $this->actingAs($admin, 'admin')
+            ->post('/admin/reports/payment-methods/export-csv', $range)
+            ->assertOk()
+            ->streamedContent();
+        $this->assertStringContainsString('100', $csv);
+    }
+
+    public function test_payment_report_uses_sale_date_and_location(): void
+    {
+        $north = Location::factory()->create();
+        $south = Location::factory()->create();
+        // Venta de hace 40 días sincronizada hoy: queda fuera del último mes
+        $old = $this->sale('PAID', 900, now()->subDays(40), $north);
+        TransactionPayment::where('transaction_id', $old->id)->update(['created_at' => now()]);
+        $this->sale('PAID', 30, now()->subDay(), $north, 'CARD');
+        $this->sale('PAID', 20, now()->subDay(), $south, 'CARD');
+        $admin = $this->createAdminUser();
+
+        $this->actingAs($admin, 'admin')->get('/admin/reports/payment-methods')
+            ->assertViewHas('methods', fn ($rows) => (float) $rows->sum('total_amount') === 50.0);
+        $this->actingAs($admin, 'admin')->get('/admin/reports/payment-methods?location_id='.$north->id)
+            ->assertViewHas('methods', fn ($rows) => (float) $rows->sum('total_amount') === 30.0);
+    }
+
+    public function test_invalid_dates_fall_back_to_last_month(): void
+    {
+        $this->actingAs($this->createAdminUser(), 'admin')
+            ->get('/admin/reports/products-best-sellers?date_from=nope&date_to=2026-13-45')
+            ->assertOk()
+            ->assertViewHas('dateTo', now()->toDateString());
+    }
 }

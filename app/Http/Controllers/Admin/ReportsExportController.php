@@ -40,8 +40,8 @@ class ReportsExportController extends Controller
         }
 
         $validated = $validator->validated();
-        $dateFrom = Carbon::parse($validated['date_from']);
-        $dateTo = Carbon::parse($validated['date_to']);
+        $dateFrom = Carbon::parse($validated['date_from'])->startOfDay();
+        $dateTo = Carbon::parse($validated['date_to'])->endOfDay();
 
         if ($dateFrom->gt($dateTo)) {
             return response()->json(['message' => 'La fecha inicial no puede ser posterior a la final.'], 422);
@@ -112,14 +112,14 @@ class ReportsExportController extends Controller
         }
 
         $validated = $validator->validated();
-        $dateFrom = Carbon::parse($validated['date_from']);
-        $dateTo = Carbon::parse($validated['date_to']);
+        $dateFrom = Carbon::parse($validated['date_from'])->startOfDay();
+        $dateTo = Carbon::parse($validated['date_to'])->endOfDay();
 
         if ($dateFrom->gt($dateTo)) {
             return response()->json(['message' => 'La fecha inicial no puede ser posterior a la final.'], 422);
         }
 
-        $methods = $this->reportService->getPaymentMethodsReport($dateFrom, $dateTo);
+        $methods = $this->reportService->getPaymentMethodsReport($dateFrom, $dateTo, $validated['location_id'] ?? null);
 
         $filename = 'pagos-metodo-'.$dateFrom->format('Y-m-d').'_'.$dateTo->format('Y-m-d').'_'.now()->format('His').'.xlsx';
 
@@ -186,8 +186,8 @@ class ReportsExportController extends Controller
         }
 
         $validated = $validator->validated();
-        $dateFrom = Carbon::parse($validated['date_from']);
-        $dateTo = Carbon::parse($validated['date_to']);
+        $dateFrom = Carbon::parse($validated['date_from'])->startOfDay();
+        $dateTo = Carbon::parse($validated['date_to'])->endOfDay();
 
         if ($dateFrom->gt($dateTo)) {
             return response()->json(['message' => 'La fecha inicial no puede ser posterior a la final.'], 422);
@@ -262,8 +262,8 @@ class ReportsExportController extends Controller
         }
 
         $validated = $validator->validated();
-        $dateFrom = Carbon::parse($validated['date_from']);
-        $dateTo = Carbon::parse($validated['date_to']);
+        $dateFrom = Carbon::parse($validated['date_from'])->startOfDay();
+        $dateTo = Carbon::parse($validated['date_to'])->endOfDay();
 
         $products = $this->reportService->getProductsBestSellers($dateFrom, $dateTo, $validated['location_id'] ?? null);
 
@@ -304,10 +304,10 @@ class ReportsExportController extends Controller
         }
 
         $validated = $validator->validated();
-        $dateFrom = Carbon::parse($validated['date_from']);
-        $dateTo = Carbon::parse($validated['date_to']);
+        $dateFrom = Carbon::parse($validated['date_from'])->startOfDay();
+        $dateTo = Carbon::parse($validated['date_to'])->endOfDay();
 
-        $methods = $this->reportService->getPaymentMethodsReport($dateFrom, $dateTo);
+        $methods = $this->reportService->getPaymentMethodsReport($dateFrom, $dateTo, $validated['location_id'] ?? null);
 
         $filename = 'pagos-metodo-'.$dateFrom->format('Y-m-d').'_'.$dateTo->format('Y-m-d').'.csv';
 
@@ -345,8 +345,8 @@ class ReportsExportController extends Controller
         }
 
         $validated = $validator->validated();
-        $dateFrom = Carbon::parse($validated['date_from']);
-        $dateTo = Carbon::parse($validated['date_to']);
+        $dateFrom = Carbon::parse($validated['date_from'])->startOfDay();
+        $dateTo = Carbon::parse($validated['date_to'])->endOfDay();
 
         $users = $this->reportService->getUsersPerformanceReport($dateFrom, $dateTo, $validated['location_id'] ?? null);
 
@@ -388,8 +388,8 @@ class ReportsExportController extends Controller
         }
 
         $validated = $validator->validated();
-        $dateFrom = Carbon::parse($validated['date_from']);
-        $dateTo = Carbon::parse($validated['date_to']);
+        $dateFrom = Carbon::parse($validated['date_from'])->startOfDay();
+        $dateTo = Carbon::parse($validated['date_to'])->endOfDay();
 
         $products = $this->reportService->getProductsBestSellers($dateFrom, $dateTo, $validated['location_id'] ?? null);
 
@@ -423,10 +423,10 @@ class ReportsExportController extends Controller
         }
 
         $validated = $validator->validated();
-        $dateFrom = Carbon::parse($validated['date_from']);
-        $dateTo = Carbon::parse($validated['date_to']);
+        $dateFrom = Carbon::parse($validated['date_from'])->startOfDay();
+        $dateTo = Carbon::parse($validated['date_to'])->endOfDay();
 
-        $methods = $this->reportService->getPaymentMethodsReport($dateFrom, $dateTo);
+        $methods = $this->reportService->getPaymentMethodsReport($dateFrom, $dateTo, $validated['location_id'] ?? null);
 
         $html = $this->renderPaymentMethodsPDF($methods, $dateFrom, $dateTo);
 
@@ -459,8 +459,8 @@ class ReportsExportController extends Controller
         }
 
         $validated = $validator->validated();
-        $dateFrom = Carbon::parse($validated['date_from']);
-        $dateTo = Carbon::parse($validated['date_to']);
+        $dateFrom = Carbon::parse($validated['date_from'])->startOfDay();
+        $dateTo = Carbon::parse($validated['date_to'])->endOfDay();
 
         $users = $this->reportService->getUsersPerformanceReport($dateFrom, $dateTo, $validated['location_id'] ?? null);
 
