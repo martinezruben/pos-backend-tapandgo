@@ -478,7 +478,8 @@ class ScreenCrudController extends Controller
             $rules['family_id'] = ['nullable', 'uuid', Rule::exists('families', 'id')];
         }
 
-        $data = $request->validate($rules);
+        // Etiquetas de la pantalla como nombres de atributo en los mensajes de error
+        $data = $request->validate($rules, [], $cfg['labels'] ?? []);
 
         if ($screen === 'families') {
             $rules['description'] = ['nullable', 'string', 'max:255'];

@@ -56,7 +56,7 @@
     {{-- Main --}}
     <div class="flex min-w-0 flex-1 flex-col">
         <header class="snow-topbar sticky top-0 z-30 px-3 py-0 sm:px-4">
-            <div class="flex h-14 flex-col justify-center gap-1.5 sm:h-14 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+            <div class="flex h-14 items-center justify-between gap-2 sm:gap-3">
                 <div class="min-w-0 flex items-center gap-2">
                     <nav class="flex min-w-0 items-center gap-1.5 text-[12.5px]" aria-label="Miga de pan">
                         <a href="{{ route('admin.dashboard') }}" class="shrink-0 font-medium text-slate-500 hover:text-primary-600">Panel</a>
@@ -64,7 +64,7 @@
                         <span class="truncate font-semibold text-slate-800">{{ $title }}</span>
                     </nav>
                 </div>
-                <div class="flex items-center gap-1.5 sm:gap-2">
+                <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
                     <div class="relative hidden min-w-0 flex-1 items-center gap-1.5 rounded-md border border-slate-200 bg-snow-50 px-2 sm:flex sm:h-8 sm:max-w-[220px] md:max-w-xs">
                         <span class="pointer-events-none flex h-2.5 w-2.5 shrink-0 items-center justify-center rounded-full border-[1.5px] border-slate-400"></span>
                         <input type="search" placeholder="Buscar en el panel" class="w-full border-0 bg-transparent p-0 text-[12px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-0" disabled aria-disabled="true">

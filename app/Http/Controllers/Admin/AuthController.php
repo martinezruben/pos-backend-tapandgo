@@ -13,8 +13,11 @@ class AuthController extends Controller
 {
     public function create()
     {
-        $adminUserCount = AdminUser::query()->where('is_active', true)->count();
-        $dbStatus = $adminUserCount > 0 ? 'OK' : 'EMPTY';
+        // Diagnóstico solo fuera de producción: la página de login es pública y
+        // no debe revelar si la instalación tiene administradores
+        $dbStatus = app()->isProduction()
+            ? null
+            : (AdminUser::query()->where('is_active', true)->exists() ? 'OK' : 'EMPTY');
 
         return view('admin.auth.login', compact('dbStatus'));
     }

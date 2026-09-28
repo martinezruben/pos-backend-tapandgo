@@ -1,133 +1,60 @@
-<x-admin.layouts.app title="Desempeño de Usuarios">
-    <div class="snow-card overflow-hidden">
-        <div class="border-b border-slate-100 bg-slate-50/80 px-3 py-2 sm:px-4">
-            <h1 class="text-sm font-semibold text-slate-900">Desempeño de Usuarios</h1>
-            <p class="mt-0.5 text-[10px] text-slate-500">
-                Análisis de desempeño y productividad de cajeros y operadores
-            </p>
-        </div>
+<x-admin.layouts.app :title="'Rendimiento de usuarios'">
+    <div class="space-y-4 pb-6">
+        @include('admin.reports.partials.filters', [
+            'route' => 'admin.reports.users-performance',
+            'exports' => [
+                'excel' => route('admin.reports.users-performance.export'),
+                'csv' => route('admin.reports.users-performance.export-csv'),
+                'pdf' => route('admin.reports.users-performance.export-pdf'),
+            ],
+            'fileName' => 'rendimiento-de-usuarios',
+        ])
 
-        <div class="space-y-4 p-3 sm:p-4">
-            <!-- Filtros -->
-            <form id="filter-form" method="GET" class="space-y-3">
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                    <div class="flex flex-col gap-0.5">
-                        <label for="date_from" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Desde</label>
-                        <input type="date" name="date_from" id="date_from" value="{{ $dateFrom }}" class="snow-input text-xs">
-                    </div>
-                    <div class="flex flex-col gap-0.5">
-                        <label for="date_to" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Hasta</label>
-                        <input type="date" name="date_to" id="date_to" value="{{ $dateTo }}" class="snow-input text-xs">
-                    </div>
-                    <div class="flex flex-col gap-0.5">
-                        <label for="location_id" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Localidad</label>
-                        <select name="location_id" id="location_id" class="snow-input text-xs">
-                            <option value="">Todas</option>
-                            @foreach(\App\Models\Location::orderBy('name')->get() as $location)
-                                <option value="{{ $location->id }}" @selected($locationId === $location->id)>{{ $location->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <div class="flex gap-2">
-                    <button type="submit" class="rounded-lg bg-primary-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-primary-700">
-                        Filtrar
-                    </button>
-                    <button type="button" onclick="exportReport('excel')" class="rounded-lg bg-green-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-green-700" title="Exportar a Excel">
-                        Excel
-                    </button>
-                    <button type="button" onclick="exportReport('csv')" class="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700" title="Exportar a CSV">
-                        CSV
-                    </button>
-                    <button type="button" onclick="exportReport('pdf')" class="rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-700" title="Exportar a PDF">
-                        PDF
-                    </button>
-                </div>
-            </form>
-
-            <!-- Tabla -->
-            <div class="overflow-x-auto rounded-lg border border-slate-100">
-                <table class="w-full text-xs">
-                    <thead class="bg-slate-50 border-b border-slate-100">
+        <div class="snow-card overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-hope-card">
+            <div class="border-b border-slate-100 px-4 py-3">
+                <h3 class="text-sm font-semibold text-slate-900">Rendimiento de usuarios</h3>
+                <p class="text-[10px] text-slate-500">Ventas cobradas (PAID) del periodo por usuario del POS</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-100 text-left text-[11px]">
+                    <thead class="snow-table-head">
                         <tr>
-                            <th class="px-3 py-2 text-left font-semibold text-slate-700">Nombre Completo</th>
-                            <th class="px-3 py-2 text-left font-semibold text-slate-700">Usuario</th>
-                            <th class="px-3 py-2 text-right font-semibold text-slate-700">Transacciones</th>
-                            <th class="px-3 py-2 text-right font-semibold text-slate-700">Ingresos Totales</th>
-                            <th class="px-3 py-2 text-right font-semibold text-slate-700">Ticket Promedio</th>
-                            <th class="px-3 py-2 text-left font-semibold text-slate-700">Última Actividad</th>
+                            <th class="px-4 py-2 font-semibold">Nombre</th>
+                            <th class="px-4 py-2 font-semibold">Usuario</th>
+                            <th class="px-4 py-2 text-right font-semibold">Transacciones</th>
+                            <th class="px-4 py-2 text-right font-semibold">Ventas</th>
+                            <th class="px-4 py-2 text-right font-semibold">Ticket promedio</th>
+                            <th class="px-4 py-2 font-semibold">Última venta</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @forelse($users as $user)
-                            <tr class="hover:bg-slate-50 transition">
-                                <td class="px-3 py-2 font-medium text-slate-900">{{ $user['full_name'] }}</td>
-                                <td class="px-3 py-2 text-slate-600 font-mono text-[10px]">{{ $user['username'] }}</td>
-                                <td class="px-3 py-2 text-right text-slate-600">{{ $user['transaction_count'] }}</td>
-                                <td class="px-3 py-2 text-right font-semibold text-green-600">${{ number_format($user['total_sales'], 2) }}</td>
-                                <td class="px-3 py-2 text-right text-slate-600">${{ number_format($user['avg_transaction'], 2) }}</td>
-                                <td class="px-3 py-2 text-[9px] text-slate-500">{{ $user['last_activity'] }}</td>
+                    <tbody class="divide-y divide-slate-50">
+                        @forelse ($users as $user)
+                            <tr class="hover:bg-slate-50/80">
+                                <td class="px-4 py-2.5 font-medium text-slate-800">{{ $user['full_name'] }}</td>
+                                <td class="whitespace-nowrap px-4 py-2.5 font-mono text-[10px] text-slate-500">{{ $user['username'] }}</td>
+                                <td class="px-4 py-2.5 text-right tabular-nums text-slate-700">{{ \App\Support\Format::number($user['transaction_count']) }}</td>
+                                <td class="px-4 py-2.5 text-right font-semibold tabular-nums text-slate-900">{{ \App\Support\Format::money($user['total_sales']) }}</td>
+                                <td class="px-4 py-2.5 text-right tabular-nums text-slate-700">{{ \App\Support\Format::money($user['avg_transaction']) }}</td>
+                                <td class="whitespace-nowrap px-4 py-2.5 text-[10px] text-slate-500">{{ $user['last_activity'] }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-3 py-4 text-center text-[10px] text-slate-500">
-                                    No hay datos para el período seleccionado
-                                </td>
+                                <td colspan="6" class="px-4 py-6 text-center text-[11px] text-slate-400">No hay ventas en el periodo seleccionado.</td>
                             </tr>
                         @endforelse
                     </tbody>
+                    @if ($users->isNotEmpty())
+                        <tfoot class="border-t border-slate-200 bg-slate-50/80">
+                            <tr>
+                                <td class="px-4 py-2.5 font-semibold text-slate-700" colspan="2">Total · {{ $users->count() }} usuarios</td>
+                                <td class="px-4 py-2.5 text-right font-semibold tabular-nums text-slate-900">{{ \App\Support\Format::number($users->sum('transaction_count')) }}</td>
+                                <td class="px-4 py-2.5 text-right font-semibold tabular-nums text-slate-900">{{ \App\Support\Format::money($users->sum('total_sales')) }}</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    @endif
                 </table>
             </div>
-
-            @if($users->count() > 0)
-                <div class="border-t border-slate-100 pt-3">
-                    <p class="text-[9px] text-slate-600">
-                        <strong>Total de usuarios:</strong> {{ $users->count() }} |
-                        <strong>Total de transacciones:</strong> {{ $users->sum('transaction_count') }} |
-                        <strong>Ingresos totales:</strong> ${{ number_format($users->sum('total_sales'), 2) }}
-                    </p>
-                </div>
-            @endif
         </div>
     </div>
-
-    <script>
-        function exportReport(format) {
-            const params = new URLSearchParams(new FormData(document.getElementById('filter-form')));
-            const urls = {
-                excel: @js(route('admin.reports.users-performance.export')),
-                csv: @js(route('admin.reports.users-performance.export-csv')),
-                pdf: @js(route('admin.reports.users-performance.export-pdf')),
-            };
-            const extensions = { excel: 'xlsx', csv: 'csv', pdf: 'pdf' };
-
-            fetch(urls[format], {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json',
-                },
-                body: params.toString(),
-            })
-            .then(async (response) => {
-                if (!response.ok) {
-                    const data = await response.json().catch(() => ({}));
-                    throw new Error(data.message || `HTTP ${response.status}`);
-                }
-                return response.blob();
-            })
-            .then((blob) => {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `desempeno-usuarios.${extensions[format]}`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url);
-            })
-            .catch((error) => alert('Error al exportar: ' + error.message));
-        }
-    </script>
 </x-admin.layouts.app>

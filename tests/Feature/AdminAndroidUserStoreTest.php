@@ -6,6 +6,7 @@ use App\Models\AdminUser;
 use App\Models\Location;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -75,7 +76,7 @@ class AdminAndroidUserStoreTest extends TestCase
 
         $u = User::query()->where('username', 'cajero_demo')->first();
         $this->assertNotNull($u);
-        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('password12', $u->password));
+        $this->assertTrue(Hash::check('password12', $u->password));
         $this->assertSame(User::pinSha384FromPlain('password12'), $u->pin_sha384);
     }
 
@@ -133,5 +134,27 @@ class AdminAndroidUserStoreTest extends TestCase
         $this->assertNotNull($u);
         $this->assertSame($location->id, $u->location_id);
         $this->assertTrue($u->locations()->where('locations.id', $location->id)->exists());
+    }
+
+    public function test_validation_messages_are_in_spanish_with_field_labels(): void
+    {
+        $this->actingAs($this->adminWithAndroidUsersEdit(), 'admin')
+            ->post(route('admin.screens.store', 'android-users'), [
+                'username' => '',
+                'full_name' => 'Test',
+                'role' => 'CASHIER',
+                'is_active' => '1',
+                'password' => 'password12',
+            ])
+            ->assertSessionHasErrors(['username' => 'El campo Usuario es obligatorio.']);
+    }
+
+    public function test_pagination_is_in_spanish(): void
+    {
+        $this->actingAs($this->adminWithAndroidUsersEdit(), 'admin')
+            ->get(route('admin.screens.index', 'android-users'))
+            ->assertOk()
+            ->assertDontSee('Showing')
+            ->assertSee('Mostrando');
     }
 }

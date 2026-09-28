@@ -57,7 +57,7 @@
                             @else
                                 <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-800 ring-1 ring-amber-200">
                                     <svg class="h-2.5 w-2.5 shrink-0 fill-current" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/></svg>
-                                    Base de datos EMPTY
+                                    Sin administradores activos
                                 </span>
                             @endif
                         @endif

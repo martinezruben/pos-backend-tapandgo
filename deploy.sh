@@ -86,7 +86,7 @@ APP_DEBUG=true
 APP_URL=http://localhost
 
 APP_TIMEZONE=America/Santo_Domingo
-APP_LOCALE=en
+APP_LOCALE=es
 APP_FALLBACK_LOCALE=en
 APP_FAKER_LOCALE=en_US
 

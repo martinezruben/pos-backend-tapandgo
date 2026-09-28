@@ -1,5 +1,12 @@
-const currency = (v) =>
-    new Intl.NumberFormat('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
+import { money } from './format';
+
+// Cantidad de etiquetas del eje X según el ancho: en móvil no se amontonan las 30 fechas
+function tickAmountFor(el, count) {
+    // Descuenta el espacio de los ejes Y (~120px) y deja ~85px por fecha
+    const plotWidth = Math.max(160, (el.clientWidth || 320) - 120);
+    const byWidth = Math.max(2, Math.floor(plotWidth / 85));
+    return Math.max(1, Math.min(count - 1, byWidth));
+}
 
 function readPayload() {
     const el = document.getElementById('dashboard-chart-data');
@@ -29,7 +36,7 @@ function sliceTrend(full, period) {
 }
 
 function mountSalesArea(ApexCharts, el, initial, onPeriodChange) {
-    const fmtMoney = (v) => `$${currency(v)}`;
+    const fmtMoney = (v) => money(v);
 
     const chart = new ApexCharts(el, {
         chart: {
@@ -61,8 +68,11 @@ function mountSalesArea(ApexCharts, el, initial, onPeriodChange) {
         ],
         xaxis: {
             categories: initial.labels,
+            tickAmount: tickAmountFor(el, initial.labels.length),
             labels: {
                 style: { colors: '#64748b', fontSize: '10px' },
+                rotate: 0,
+                hideOverlappingLabels: true,
             },
             axisBorder: { show: false },
             axisTicks: { show: false },
@@ -113,7 +123,7 @@ function mountSalesArea(ApexCharts, el, initial, onPeriodChange) {
             const period = select.value;
             const t = onPeriodChange(period);
             chart.updateOptions({
-                xaxis: { categories: t.labels },
+                xaxis: { categories: t.labels, tickAmount: tickAmountFor(el, t.labels.length) },
                 series: [
                     { name: 'Ventas', data: t.sales },
                     { name: 'Transacciones', data: t.transactions, yAxisIndex: 1 },
@@ -149,7 +159,7 @@ function mountFamilyDonut(ApexCharts, el, familyMix, palette) {
                         value: {
                             fontSize: '16px',
                             fontWeight: 600,
-                            formatter: (v) => (empty ? '—' : `$${currency(parseFloat(v))}`),
+                            formatter: (v) => (empty ? '—' : money(parseFloat(v))),
                         },
                         total: {
                             show: !empty,
@@ -157,7 +167,7 @@ function mountFamilyDonut(ApexCharts, el, familyMix, palette) {
                             formatter: (w) => {
                                 const sum = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
 
-                                return `$${currency(sum)}`;
+                                return money(sum);
                             },
                         },
                     },
@@ -173,7 +183,7 @@ function mountFamilyDonut(ApexCharts, el, familyMix, palette) {
         },
         tooltip: {
             y: {
-                formatter: (v) => `$${currency(v)}`,
+                formatter: (v) => money(v),
             },
         },
         states: {
@@ -256,6 +266,7 @@ function mountSyncStacked(ApexCharts, el, syncByDay) {
         xaxis: {
             type: 'category',
             categories: categories.length ? categories : Array.from({ length: n }, (_, i) => String(i + 1)),
+            tickAmount: tickAmountFor(el, n),
             labels: {
                 style: { colors: '#64748b', fontSize: '9px' },
                 rotate: -35,

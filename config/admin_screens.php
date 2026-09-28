@@ -365,6 +365,8 @@ return [
             'subfamily_id' => ['relation' => 'subfamily', 'attribute' => 'admin_label', 'header' => 'Subfamilia'],
         ],
         'grid' => [
+            // Columnas de importe: se muestran como $1,234.56
+            'money' => ['price'],
             'filters' => [
                 'subfamily_id' => [
                     'label' => 'Subfamilia',
@@ -413,6 +415,8 @@ return [
             'user_id' => ['relation' => 'user', 'attribute' => 'full_name', 'fallback_attribute' => 'username', 'header' => 'Usuario'],
         ],
         'grid' => [
+            // Columnas de importe: se muestran como $1,234.56
+            'money' => ['opening_balance', 'closing_balance'],
             'filters' => [
                 'location_id' => [
                     'label' => 'Localidad',
@@ -462,6 +466,8 @@ return [
             'items_count' => ['virtual' => true, 'header' => 'Líneas'],
         ],
         'grid' => [
+            // Columnas de importe: se muestran como $1,234.56
+            'money' => ['total'],
             'visible_limit' => 12,
             'filters' => [
                 'location_id' => [
@@ -503,6 +509,8 @@ return [
             'product_id' => ['relation' => 'product', 'attribute' => 'name', 'fallback_attribute' => 'sku', 'header' => 'Producto'],
         ],
         'grid' => [
+            // Columnas de importe: se muestran como $1,234.56
+            'money' => ['unit_price', 'discount', 'tax', 'line_total'],
             'filters' => [
                 'transaction_id' => [
                     'label' => 'Transacción',
@@ -536,6 +544,8 @@ return [
             'transaction_id' => ['relation' => 'transaction', 'attribute' => 'external_id', 'header' => 'Transacción'],
         ],
         'grid' => [
+            // Columnas de importe: se muestran como $1,234.56
+            'money' => ['amount'],
             'filters' => [
                 'transaction_id' => [
                     'label' => 'Transacción',
@@ -935,6 +945,8 @@ return [
             'items_count' => ['virtual' => true, 'header' => 'Líneas'],
         ],
         'grid' => [
+            // Columnas de importe: se muestran como $1,234.56
+            'money' => ['total'],
             'visible_limit' => 10,
             'filters' => [
                 'date_from' => [

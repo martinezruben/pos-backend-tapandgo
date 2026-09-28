@@ -229,6 +229,10 @@ class AdminGridCell
             return $raw->format('Y-m-d H:i:s');
         }
 
+        if (is_numeric($raw) && in_array($field, $cfg['grid']['money'] ?? [], true)) {
+            return Format::money($raw);
+        }
+
         if (is_scalar($raw) || $raw === null) {
             return $raw === null ? '—' : (string) $raw;
         }
