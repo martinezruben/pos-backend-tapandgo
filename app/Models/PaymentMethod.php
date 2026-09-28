@@ -29,4 +29,24 @@ class PaymentMethod extends Model
             'is_enabled' => 'boolean',
         ];
     }
+
+    /** Nombres para las categorías legacy que el POS enviaba antes de la tabla. */
+    private const LEGACY_LABELS = ['CASH' => 'Efectivo', 'CARD' => 'Tarjeta', 'TRANSFER' => 'Transferencia', 'OTHER' => 'Otro'];
+
+    /**
+     * Nombre visible de cada valor de `transaction_payments.payment_method`, que
+     * puede ser un ID de esta tabla (incluidos borrados) o una categoría legacy.
+     *
+     * @param  iterable<string>  $codes
+     * @return array<string, string>
+     */
+    public static function labelsFor(iterable $codes): array
+    {
+        $codes = collect($codes)->filter()->map(fn ($c) => (string) $c)->unique()->values();
+        $names = static::withTrashed()->whereIn('id', $codes->all())->pluck('name', 'id');
+
+        return $codes
+            ->mapWithKeys(fn (string $c) => [$c => $names[$c] ?? self::LEGACY_LABELS[$c] ?? $c])
+            ->all();
+    }
 }

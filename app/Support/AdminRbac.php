@@ -30,7 +30,16 @@ class AdminRbac
     }
 
     /**
-     * Todos los nombres de permiso CRUD definidos por las pantallas en `admin_screens` (excepto dashboard).
+     * Pantalla sujeta a RBAC: tiene modelo CRUD o se marca `'rbac' => true`
+     * (pantallas sin modelo como el dashboard, que solo exponen `.view`).
+     */
+    private static function isManaged(mixed $cfg): bool
+    {
+        return is_array($cfg) && (! empty($cfg['model']) || ! empty($cfg['rbac']));
+    }
+
+    /**
+     * Todos los nombres de permiso CRUD definidos por las pantallas en `admin_screens`.
      *
      * @return list<string>
      */
@@ -38,24 +47,23 @@ class AdminRbac
     {
         $names = [];
         foreach (array_keys(config('admin_screens', [])) as $screen) {
-            if ($screen === 'dashboard') {
-                continue;
-            }
             $cfg = config("admin_screens.$screen");
-            if (! is_array($cfg) || empty($cfg['model'])) {
+            if (! self::isManaged($cfg)) {
                 continue;
             }
             $p = self::permissionsForScreen($screen);
             $names[] = $p['view'];
-            $names[] = $p['edit'];
-            $names[] = $p['delete'];
+            if (! empty($cfg['model'])) {
+                $names[] = $p['edit'];
+                $names[] = $p['delete'];
+            }
         }
 
         return array_values(array_unique($names));
     }
 
     /**
-     * Pantallas con modelo (excl. dashboard), ordenadas por etiqueta, para la matriz RBAC.
+     * Pantallas sujetas a RBAC, ordenadas por etiqueta, para la matriz RBAC.
      *
      * @return list<array{key: string, label: string, readonly: bool}>
      */
@@ -63,11 +71,8 @@ class AdminRbac
     {
         $out = [];
         foreach (array_keys(config('admin_screens', [])) as $screen) {
-            if ($screen === 'dashboard') {
-                continue;
-            }
             $cfg = config("admin_screens.$screen");
-            if (! is_array($cfg) || empty($cfg['model'])) {
+            if (! self::isManaged($cfg)) {
                 continue;
             }
             $out[] = [
@@ -89,11 +94,11 @@ class AdminRbac
     public static function managedPermissionNamesForScreen(string $screen): array
     {
         $cfg = config("admin_screens.$screen");
-        if (! is_array($cfg) || empty($cfg['model'])) {
+        if (! self::isManaged($cfg)) {
             return [];
         }
         $p = self::permissionsForScreen($screen);
-        if (! empty($cfg['readonly'])) {
+        if (! empty($cfg['readonly']) || empty($cfg['model'])) {
             return [$p['view']];
         }
 
@@ -121,7 +126,7 @@ class AdminRbac
             return false;
         }
         $cfg = config("admin_screens.$screen");
-        if (! is_array($cfg) || empty($cfg['model'])) {
+        if (! self::isManaged($cfg)) {
             return true;
         }
         $p = self::permissionsForScreen($screen);

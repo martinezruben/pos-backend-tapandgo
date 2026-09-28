@@ -197,7 +197,7 @@
         <div class="snow-card rounded-xl border border-slate-200/90 bg-white shadow-hope-card">
             <div class="border-b border-slate-100 px-4 py-3">
                 <h3 class="text-sm font-semibold text-slate-900">Top productos por ventas</h3>
-                <p class="text-[10px] text-slate-500">Últimos 30 días · transacciones PAID</p>
+                <p class="text-[10px] text-slate-500">Últimos 30 días · transacciones PAID · participación sobre el total vendido</p>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-slate-100 text-left text-[11px]">
@@ -241,7 +241,7 @@
         <div class="snow-card rounded-xl border border-slate-200/90 bg-white shadow-hope-card">
             <div class="border-b border-slate-100 px-4 py-3">
                 <h3 class="text-sm font-semibold text-slate-900">Top localidades por ventas</h3>
-                <p class="text-[10px] text-slate-500">Últimos 30 días · transacciones PAID</p>
+                <p class="text-[10px] text-slate-500">Últimos 30 días · transacciones PAID · participación sobre el total vendido</p>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-slate-100 text-left text-[11px]">
