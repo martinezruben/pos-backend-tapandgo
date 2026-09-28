@@ -10,6 +10,7 @@ use App\Support\Format;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 /**
@@ -18,6 +19,9 @@ use Illuminate\View\View;
  */
 class DashboardController extends Controller
 {
+    /** Segundos que se reutilizan las cifras de cada dashboard. */
+    private const CACHE_SECONDS = 60;
+
     public function commercial(Request $request): View|RedirectResponse
     {
         // Es la página de inicio tras el login: sin permiso se lleva al técnico
@@ -29,6 +33,34 @@ class DashboardController extends Controller
         }
 
         $location = $this->selectedLocation($request);
+        $data = $this->cached('commercial', $location, fn () => $this->commercialData($location));
+
+        return view('admin.dashboard', $data + [
+            'locationOptions' => $this->locationOptions(),
+            'selectedLocation' => $location,
+        ]);
+    }
+
+    public function technical(Request $request): View|RedirectResponse
+    {
+        if (! $this->canView('dashboard-technical')) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        $location = $this->selectedLocation($request);
+        $data = $this->cached('technical', $location, fn () => $this->technicalData($location));
+
+        return view('admin.dashboard-technical', $data + [
+            'locationOptions' => $this->locationOptions(),
+            'selectedLocation' => $location,
+        ]);
+    }
+
+    /**
+     * @return array{kpis: list<array<string, mixed>>, chartPayload: array<string, mixed>, topLocations: ?array, topProducts: array}
+     */
+    private function commercialData(?Location $location): array
+    {
         $service = new DashboardService($location?->id);
 
         $k = $service->getKpis();
@@ -88,24 +120,20 @@ class DashboardController extends Controller
             'paymentMix' => $service->getSalesByPaymentMethod(30),
         ];
 
-        return view('admin.dashboard', [
+        return [
             'kpis' => $kpis,
             'chartPayload' => $chartPayload,
             // Con una localidad elegida el ranking de localidades no aporta
             'topLocations' => $location ? null : $service->getTopLocationsBySales(30, 5),
             'topProducts' => $service->getTopProductsBySales(30, 5),
-            'locationOptions' => $this->locationOptions(),
-            'selectedLocation' => $location,
-        ]);
+        ];
     }
 
-    public function technical(Request $request): View|RedirectResponse
+    /**
+     * @return array<string, mixed>
+     */
+    private function technicalData(?Location $location): array
     {
-        if (! $this->canView('dashboard-technical')) {
-            return redirect()->route('admin.dashboard');
-        }
-
-        $location = $this->selectedLocation($request);
         $service = new DashboardService($location?->id);
 
         $contingencies = $service->getLocationsInContingency();
@@ -170,7 +198,7 @@ class DashboardController extends Controller
             ],
         ];
 
-        return view('admin.dashboard-technical', [
+        return [
             'kpis' => $kpis,
             'contingencies' => $contingencies,
             'devicesNoSync' => $devicesNoSync,
@@ -179,9 +207,21 @@ class DashboardController extends Controller
             'chartPayload' => [
                 'syncByDay' => $service->getSyncSuccessFailedByDay(now()->subDays(13)->startOfDay(), now()->endOfDay()),
             ],
-            'locationOptions' => $this->locationOptions(),
-            'selectedLocation' => $location,
-        ]);
+        ];
+    }
+
+    /**
+     * Cifras del dashboard en caché por dashboard y localidad; `generatedAt`
+     * indica en pantalla a qué hora se calcularon.
+     *
+     * @param  callable(): array<string, mixed>  $build
+     * @return array<string, mixed>
+     */
+    private function cached(string $dashboard, ?Location $location, callable $build): array
+    {
+        $key = 'dashboard:'.$dashboard.':'.($location?->id ?? 'all');
+
+        return Cache::remember($key, self::CACHE_SECONDS, fn () => $build() + ['generatedAt' => now()->format('H:i')]);
     }
 
     /** Localidad del filtro `?location_id=`; un ID desconocido se ignora. */
