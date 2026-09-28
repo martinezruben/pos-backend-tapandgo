@@ -65,11 +65,21 @@
                     </nav>
                 </div>
                 <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
-                    <div class="relative hidden min-w-0 flex-1 items-center gap-1.5 rounded-md border border-slate-200 bg-snow-50 px-2 sm:flex sm:h-8 sm:max-w-[220px] md:max-w-xs">
-                        <span class="pointer-events-none flex h-2.5 w-2.5 shrink-0 items-center justify-center rounded-full border-[1.5px] border-slate-400"></span>
-                        <input type="search" placeholder="Buscar en el panel" class="w-full border-0 bg-transparent p-0 text-[12px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-0" disabled aria-disabled="true">
+                    {{-- Abre el buscador del panel (admin.partials.command-palette) --}}
+                    <button
+                        type="button"
+                        x-data
+                        x-on:click="$dispatch('open-palette')"
+                        class="hidden h-8 min-w-0 flex-1 items-center gap-1.5 rounded-md border border-slate-200 bg-snow-50 px-2 text-left transition hover:border-primary-300 sm:flex sm:w-[220px] md:w-64"
+                        aria-label="Buscar en el panel"
+                    >
+                        <svg class="h-3.5 w-3.5 shrink-0 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                        <span class="flex-1 truncate text-[12px] text-slate-400">Buscar en el panel</span>
                         <span class="hidden shrink-0 rounded border border-slate-200 px-1 font-mono text-[9.5px] text-slate-400 md:inline">⌘K</span>
-                    </div>
+                    </button>
+                    <button type="button" x-data x-on:click="$dispatch('open-palette')" class="snow-icon-btn h-8 w-8 sm:hidden" title="Buscar en el panel" aria-label="Buscar en el panel">
+                        <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                    </button>
                     <a href="{{ route('admin.2fa.show') }}" class="snow-icon-btn h-8 w-8" title="Verificación en dos pasos">
                         <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
                     </a>
@@ -94,6 +104,8 @@
             @endif
             {{ $slot }}
         </main>
+
+        @include('admin.partials.command-palette')
 
         <footer class="mt-auto border-t border-slate-200 bg-snow-50 px-3 py-2 text-[10px] text-slate-400">
             <div class="flex flex-wrap items-center justify-between gap-2">
