@@ -11,17 +11,15 @@ class LocationContingencyObserver
 {
     public function updated(Location $location): void
     {
-        $wasActive = $location->getOriginal('is_active');
-        $isNowActive = $location->is_active;
-
-        if ($wasActive === $isNowActive) {
+        // Solo reacciona al cambio de is_active hecho en ESTE guardado
+        if (! $location->wasChanged('is_active')) {
             return;
         }
 
-        if ($wasActive === false && $isNowActive === true) {
+        if ($location->is_active) {
             // Location activated - entering contingency
             $this->activateContingency($location);
-        } elseif ($wasActive === true && $isNowActive === false) {
+        } else {
             // Location deactivated - resolving contingency
             $this->resolveContingency($location);
         }
@@ -29,7 +27,9 @@ class LocationContingencyObserver
 
     private function activateContingency(Location $location): void
     {
-        $location->update([
+        // updateQuietly: sin eventos. update() dentro de updated() volvía a entrar
+        // en este observer sin fin y tumbaba el proceso.
+        $location->updateQuietly([
             'contingency_started_at' => now(),
             'contingency_reminder_sent_at' => now(),
         ]);
@@ -41,7 +41,7 @@ class LocationContingencyObserver
 
     private function resolveContingency(Location $location): void
     {
-        $location->update([
+        $location->updateQuietly([
             'contingency_started_at' => null,
             'contingency_reminder_sent_at' => null,
         ]);
