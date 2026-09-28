@@ -1,5 +1,11 @@
 import { money } from './format';
 
+// Cantidad de etiquetas del eje X según el ancho: en móvil no se amontonan las 30 fechas
+function tickAmountFor(el, count) {
+    const byWidth = Math.max(3, Math.floor((el.clientWidth || 320) / 70));
+    return Math.max(1, Math.min(count - 1, byWidth));
+}
+
 function readPayload() {
     const el = document.getElementById('dashboard-chart-data');
     if (!el?.textContent) {
@@ -60,8 +66,11 @@ function mountSalesArea(ApexCharts, el, initial, onPeriodChange) {
         ],
         xaxis: {
             categories: initial.labels,
+            tickAmount: tickAmountFor(el, initial.labels.length),
             labels: {
                 style: { colors: '#64748b', fontSize: '10px' },
+                rotate: 0,
+                hideOverlappingLabels: true,
             },
             axisBorder: { show: false },
             axisTicks: { show: false },
@@ -112,7 +121,7 @@ function mountSalesArea(ApexCharts, el, initial, onPeriodChange) {
             const period = select.value;
             const t = onPeriodChange(period);
             chart.updateOptions({
-                xaxis: { categories: t.labels },
+                xaxis: { categories: t.labels, tickAmount: tickAmountFor(el, t.labels.length) },
                 series: [
                     { name: 'Ventas', data: t.sales },
                     { name: 'Transacciones', data: t.transactions, yAxisIndex: 1 },
@@ -255,6 +264,7 @@ function mountSyncStacked(ApexCharts, el, syncByDay) {
         xaxis: {
             type: 'category',
             categories: categories.length ? categories : Array.from({ length: n }, (_, i) => String(i + 1)),
+            tickAmount: tickAmountFor(el, n),
             labels: {
                 style: { colors: '#64748b', fontSize: '9px' },
                 rotate: -35,
