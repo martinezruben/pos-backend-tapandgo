@@ -92,7 +92,7 @@
 
             const params = new URLSearchParams(formData);
 
-            fetch("{{ route('reports.users-performance.export') }}", {
+            fetch("/admin/reports/users-performance/export", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',

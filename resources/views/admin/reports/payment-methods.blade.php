@@ -86,7 +86,7 @@
 
             const params = new URLSearchParams(formData);
 
-            fetch("{{ route('reports.payment-methods.export') }}", {
+            fetch("/admin/reports/payment-methods/export", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
