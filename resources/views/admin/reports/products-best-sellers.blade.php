@@ -33,8 +33,14 @@
                     <button type="submit" class="rounded-lg bg-primary-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-primary-700">
                         Filtrar
                     </button>
-                    <button type="button" onclick="exportReport('excel')" class="rounded-lg bg-green-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-green-700">
-                        Exportar Excel
+                    <button type="button" onclick="exportReport('excel')" class="rounded-lg bg-green-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-green-700" title="Exportar a Excel">
+                        📊 Excel
+                    </button>
+                    <button type="button" onclick="exportReport('csv')" class="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700" title="Exportar a CSV">
+                        📄 CSV
+                    </button>
+                    <button type="button" onclick="exportReport('pdf')" class="rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-700" title="Exportar a PDF">
+                        🔴 PDF
                     </button>
                 </div>
             </form>
@@ -88,10 +94,21 @@
         function exportReport(format) {
             const form = document.getElementById('filter-form');
             const formData = new FormData(form);
-
             const params = new URLSearchParams(formData);
 
-            fetch("/admin/reports/products-best-sellers/export", {
+            const urls = {
+                excel: '/admin/reports/products-best-sellers/export',
+                csv: '/admin/reports/products-best-sellers/export-csv',
+                pdf: '/admin/reports/products-best-sellers/export-pdf'
+            };
+
+            const extensions = {
+                excel: 'xlsx',
+                csv: 'csv',
+                pdf: 'pdf'
+            };
+
+            fetch(urls[format], {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -104,7 +121,7 @@
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'productos-vendidos.xlsx';
+                a.download = `productos-vendidos.${extensions[format]}`;
                 document.body.appendChild(a);
                 a.click();
                 a.remove();

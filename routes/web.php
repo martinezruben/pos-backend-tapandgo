@@ -73,10 +73,20 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::get('/reports/payment-methods', [ReportsController::class, 'paymentMethodsReport'])->name('reports.payment-methods');
         Route::get('/reports/users-performance', [ReportsController::class, 'usersPerformanceReport'])->name('reports.users-performance');
 
-        // Exportar reportes
+        // Exportar reportes Excel
         Route::post('/reports/products-best-sellers/export', [\App\Http\Controllers\Admin\ReportsExportController::class, 'productsBestSellers'])->name('reports.products-best-sellers.export');
         Route::post('/reports/payment-methods/export', [\App\Http\Controllers\Admin\ReportsExportController::class, 'paymentMethods'])->name('reports.payment-methods.export');
         Route::post('/reports/users-performance/export', [\App\Http\Controllers\Admin\ReportsExportController::class, 'usersPerformance'])->name('reports.users-performance.export');
+
+        // Exportar reportes CSV
+        Route::post('/reports/products-best-sellers/export-csv', [\App\Http\Controllers\Admin\ReportsExportController::class, 'productsBestSellersCSV'])->name('reports.products-best-sellers.export-csv');
+        Route::post('/reports/payment-methods/export-csv', [\App\Http\Controllers\Admin\ReportsExportController::class, 'paymentMethodsCSV'])->name('reports.payment-methods.export-csv');
+        Route::post('/reports/users-performance/export-csv', [\App\Http\Controllers\Admin\ReportsExportController::class, 'usersPerformanceCSV'])->name('reports.users-performance.export-csv');
+
+        // Exportar reportes PDF
+        Route::post('/reports/products-best-sellers/export-pdf', [\App\Http\Controllers\Admin\ReportsExportController::class, 'productsBestSellersPDF'])->name('reports.products-best-sellers.export-pdf');
+        Route::post('/reports/payment-methods/export-pdf', [\App\Http\Controllers\Admin\ReportsExportController::class, 'paymentMethodsPDF'])->name('reports.payment-methods.export-pdf');
+        Route::post('/reports/users-performance/export-pdf', [\App\Http\Controllers\Admin\ReportsExportController::class, 'usersPerformancePDF'])->name('reports.users-performance.export-pdf');
 
         Route::get('/screens/{screen}', [ScreenCrudController::class, 'index'])->name('screens.index');
         Route::get('/screens/{screen}/create', [ScreenCrudController::class, 'create'])->name('screens.create');

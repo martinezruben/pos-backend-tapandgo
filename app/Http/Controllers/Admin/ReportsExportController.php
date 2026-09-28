@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\ReportService;
 use App\Support\AdminRbac;
 use Carbon\Carbon;
+use Dompdf\Dompdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -244,6 +245,387 @@ class ReportsExportController extends Controller
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
+    }
+
+    public function productsBestSellersCSV(Request $request): StreamedResponse|JsonResponse
+    {
+        $this->authorizeExport('products_best_sellers');
+
+        $validator = Validator::make($request->all(), [
+            'date_from' => ['required', 'date'],
+            'date_to' => ['required', 'date'],
+            'location_id' => ['nullable', 'uuid', 'exists:locations,id'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Datos no válidos.', 'errors' => $validator->errors()], 422);
+        }
+
+        $validated = $validator->validated();
+        $dateFrom = Carbon::parse($validated['date_from']);
+        $dateTo = Carbon::parse($validated['date_to']);
+
+        $products = $this->reportService->getProductsBestSellers($dateFrom, $dateTo, $validated['location_id'] ?? null);
+
+        $filename = 'productos-vendidos-'.$dateFrom->format('Y-m-d').'_'.$dateTo->format('Y-m-d').'.csv';
+
+        return response()->streamDownload(function () use ($products): void {
+            $output = fopen('php://output', 'w');
+            fputcsv($output, ['Producto', 'SKU', 'Cantidad Vendida', 'Ingresos Totales', 'Precio Promedio', 'IVA (%)']);
+
+            foreach ($products as $product) {
+                fputcsv($output, [
+                    $product->name,
+                    $product->sku,
+                    $product->sold_qty,
+                    $product->total_revenue,
+                    $product->avg_price,
+                    $product->tax_rate,
+                ]);
+            }
+
+            fclose($output);
+        }, $filename, [
+            'Content-Type' => 'text/csv',
+        ]);
+    }
+
+    public function paymentMethodsCSV(Request $request): StreamedResponse|JsonResponse
+    {
+        $this->authorizeExport('payment_methods_report');
+
+        $validator = Validator::make($request->all(), [
+            'date_from' => ['required', 'date'],
+            'date_to' => ['required', 'date'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Datos no válidos.', 'errors' => $validator->errors()], 422);
+        }
+
+        $validated = $validator->validated();
+        $dateFrom = Carbon::parse($validated['date_from']);
+        $dateTo = Carbon::parse($validated['date_to']);
+
+        $methods = $this->reportService->getPaymentMethodsReport($dateFrom, $dateTo);
+
+        $filename = 'pagos-metodo-'.$dateFrom->format('Y-m-d').'_'.$dateTo->format('Y-m-d').'.csv';
+
+        return response()->streamDownload(function () use ($methods): void {
+            $output = fopen('php://output', 'w');
+            fputcsv($output, ['Método de Pago', 'Transacciones', 'Monto Total', '% del Total']);
+
+            foreach ($methods as $method) {
+                fputcsv($output, [
+                    $method['name'],
+                    $method['total_transactions'],
+                    $method['total_amount'],
+                    number_format($method['percentage'], 2),
+                ]);
+            }
+
+            fclose($output);
+        }, $filename, [
+            'Content-Type' => 'text/csv',
+        ]);
+    }
+
+    public function usersPerformanceCSV(Request $request): StreamedResponse|JsonResponse
+    {
+        $this->authorizeExport('users_performance_report');
+
+        $validator = Validator::make($request->all(), [
+            'date_from' => ['required', 'date'],
+            'date_to' => ['required', 'date'],
+            'location_id' => ['nullable', 'uuid', 'exists:locations,id'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Datos no válidos.', 'errors' => $validator->errors()], 422);
+        }
+
+        $validated = $validator->validated();
+        $dateFrom = Carbon::parse($validated['date_from']);
+        $dateTo = Carbon::parse($validated['date_to']);
+
+        $users = $this->reportService->getUsersPerformanceReport($dateFrom, $dateTo, $validated['location_id'] ?? null);
+
+        $filename = 'desempen-usuarios-'.$dateFrom->format('Y-m-d').'_'.$dateTo->format('Y-m-d').'.csv';
+
+        return response()->streamDownload(function () use ($users): void {
+            $output = fopen('php://output', 'w');
+            fputcsv($output, ['Nombre Completo', 'Usuario', 'Transacciones', 'Ingresos Totales', 'Ticket Promedio', 'Última Actividad']);
+
+            foreach ($users as $user) {
+                fputcsv($output, [
+                    $user['full_name'],
+                    $user['username'],
+                    $user['transaction_count'],
+                    $user['total_sales'],
+                    $user['avg_transaction'],
+                    $user['last_activity'],
+                ]);
+            }
+
+            fclose($output);
+        }, $filename, [
+            'Content-Type' => 'text/csv',
+        ]);
+    }
+
+    public function productsBestSellersPDF(Request $request): StreamedResponse|JsonResponse
+    {
+        $this->authorizeExport('products_best_sellers');
+
+        $validator = Validator::make($request->all(), [
+            'date_from' => ['required', 'date'],
+            'date_to' => ['required', 'date'],
+            'location_id' => ['nullable', 'uuid', 'exists:locations,id'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Datos no válidos.', 'errors' => $validator->errors()], 422);
+        }
+
+        $validated = $validator->validated();
+        $dateFrom = Carbon::parse($validated['date_from']);
+        $dateTo = Carbon::parse($validated['date_to']);
+
+        $products = $this->reportService->getProductsBestSellers($dateFrom, $dateTo, $validated['location_id'] ?? null);
+
+        $html = $this->renderProductsPDF($products, $dateFrom, $dateTo);
+
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        $filename = 'productos-vendidos-'.$dateFrom->format('Y-m-d').'_'.$dateTo->format('Y-m-d').'.pdf';
+
+        return response()->streamDownload(function () use ($dompdf): void {
+            echo $dompdf->output();
+        }, $filename, [
+            'Content-Type' => 'application/pdf',
+        ]);
+    }
+
+    public function paymentMethodsPDF(Request $request): StreamedResponse|JsonResponse
+    {
+        $this->authorizeExport('payment_methods_report');
+
+        $validator = Validator::make($request->all(), [
+            'date_from' => ['required', 'date'],
+            'date_to' => ['required', 'date'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Datos no válidos.', 'errors' => $validator->errors()], 422);
+        }
+
+        $validated = $validator->validated();
+        $dateFrom = Carbon::parse($validated['date_from']);
+        $dateTo = Carbon::parse($validated['date_to']);
+
+        $methods = $this->reportService->getPaymentMethodsReport($dateFrom, $dateTo);
+
+        $html = $this->renderPaymentMethodsPDF($methods, $dateFrom, $dateTo);
+
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        $filename = 'pagos-metodo-'.$dateFrom->format('Y-m-d').'_'.$dateTo->format('Y-m-d').'.pdf';
+
+        return response()->streamDownload(function () use ($dompdf): void {
+            echo $dompdf->output();
+        }, $filename, [
+            'Content-Type' => 'application/pdf',
+        ]);
+    }
+
+    public function usersPerformancePDF(Request $request): StreamedResponse|JsonResponse
+    {
+        $this->authorizeExport('users_performance_report');
+
+        $validator = Validator::make($request->all(), [
+            'date_from' => ['required', 'date'],
+            'date_to' => ['required', 'date'],
+            'location_id' => ['nullable', 'uuid', 'exists:locations,id'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Datos no válidos.', 'errors' => $validator->errors()], 422);
+        }
+
+        $validated = $validator->validated();
+        $dateFrom = Carbon::parse($validated['date_from']);
+        $dateTo = Carbon::parse($validated['date_to']);
+
+        $users = $this->reportService->getUsersPerformanceReport($dateFrom, $dateTo, $validated['location_id'] ?? null);
+
+        $html = $this->renderUsersPerformancePDF($users, $dateFrom, $dateTo);
+
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        $filename = 'desempen-usuarios-'.$dateFrom->format('Y-m-d').'_'.$dateTo->format('Y-m-d').'.pdf';
+
+        return response()->streamDownload(function () use ($dompdf): void {
+            echo $dompdf->output();
+        }, $filename, [
+            'Content-Type' => 'application/pdf',
+        ]);
+    }
+
+    private function renderProductsPDF($products, $dateFrom, $dateTo): string
+    {
+        return '
+            <html>
+            <head>
+                <style>
+                    body { font-family: Arial, sans-serif; }
+                    h1 { text-align: center; }
+                    .period { text-align: center; color: #666; margin-bottom: 20px; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th { background-color: #f0f0f0; border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    td { border: 1px solid #ddd; padding: 8px; }
+                    .currency { text-align: right; }
+                    .total-row { background-color: #f9f9f9; font-weight: bold; }
+                </style>
+            </head>
+            <body>
+                <h1>Productos Más Vendidos</h1>
+                <div class="period">Período: '.$dateFrom->format('Y-m-d').' hasta '.$dateTo->format('Y-m-d').'</div>
+                <table>
+                    <tr>
+                        <th>Producto</th>
+                        <th>SKU</th>
+                        <th>Cantidad Vendida</th>
+                        <th>Ingresos Totales</th>
+                        <th>Precio Promedio</th>
+                        <th>IVA (%)</th>
+                    </tr>
+                    '.collect($products)->map(fn($p) => '
+                    <tr>
+                        <td>'.$p->name.'</td>
+                        <td>'.$p->sku.'</td>
+                        <td class="currency">'.$p->sold_qty.'</td>
+                        <td class="currency">$'.number_format($p->total_revenue, 2).'</td>
+                        <td class="currency">$'.number_format($p->avg_price, 2).'</td>
+                        <td class="currency">'.$p->tax_rate.'%</td>
+                    </tr>
+                    ')->implode('').'
+                    <tr class="total-row">
+                        <td colspan="2">TOTALES</td>
+                        <td class="currency">'.collect($products)->sum('sold_qty').'</td>
+                        <td class="currency">$'.number_format(collect($products)->sum('total_revenue'), 2).'</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+        ';
+    }
+
+    private function renderPaymentMethodsPDF($methods, $dateFrom, $dateTo): string
+    {
+        return '
+            <html>
+            <head>
+                <style>
+                    body { font-family: Arial, sans-serif; }
+                    h1 { text-align: center; }
+                    .period { text-align: center; color: #666; margin-bottom: 20px; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th { background-color: #f0f0f0; border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    td { border: 1px solid #ddd; padding: 8px; }
+                    .currency { text-align: right; }
+                    .total-row { background-color: #f9f9f9; font-weight: bold; }
+                </style>
+            </head>
+            <body>
+                <h1>Ingresos por Método de Pago</h1>
+                <div class="period">Período: '.$dateFrom->format('Y-m-d').' hasta '.$dateTo->format('Y-m-d').'</div>
+                <table>
+                    <tr>
+                        <th>Método de Pago</th>
+                        <th>Transacciones</th>
+                        <th>Monto Total</th>
+                        <th>% del Total</th>
+                    </tr>
+                    '.collect($methods)->map(fn($m) => '
+                    <tr>
+                        <td>'.$m['name'].'</td>
+                        <td class="currency">'.$m['total_transactions'].'</td>
+                        <td class="currency">$'.number_format($m['total_amount'], 2).'</td>
+                        <td class="currency">'.number_format($m['percentage'], 2).'%</td>
+                    </tr>
+                    ')->implode('').'
+                    <tr class="total-row">
+                        <td>TOTALES</td>
+                        <td class="currency">'.collect($methods)->sum('total_transactions').'</td>
+                        <td class="currency">$'.number_format(collect($methods)->sum('total_amount'), 2).'</td>
+                        <td></td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+        ';
+    }
+
+    private function renderUsersPerformancePDF($users, $dateFrom, $dateTo): string
+    {
+        return '
+            <html>
+            <head>
+                <style>
+                    body { font-family: Arial, sans-serif; }
+                    h1 { text-align: center; }
+                    .period { text-align: center; color: #666; margin-bottom: 20px; }
+                    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+                    th { background-color: #f0f0f0; border: 1px solid #ddd; padding: 6px; text-align: left; }
+                    td { border: 1px solid #ddd; padding: 6px; }
+                    .currency { text-align: right; }
+                    .total-row { background-color: #f9f9f9; font-weight: bold; }
+                </style>
+            </head>
+            <body>
+                <h1>Desempeño de Usuarios</h1>
+                <div class="period">Período: '.$dateFrom->format('Y-m-d').' hasta '.$dateTo->format('Y-m-d').'</div>
+                <table>
+                    <tr>
+                        <th>Nombre Completo</th>
+                        <th>Usuario</th>
+                        <th>Transacciones</th>
+                        <th>Ingresos Totales</th>
+                        <th>Ticket Promedio</th>
+                        <th>Última Actividad</th>
+                    </tr>
+                    '.collect($users)->map(fn($u) => '
+                    <tr>
+                        <td>'.$u['full_name'].'</td>
+                        <td>'.$u['username'].'</td>
+                        <td class="currency">'.$u['transaction_count'].'</td>
+                        <td class="currency">$'.number_format($u['total_sales'], 2).'</td>
+                        <td class="currency">$'.number_format($u['avg_transaction'], 2).'</td>
+                        <td>'.$u['last_activity'].'</td>
+                    </tr>
+                    ')->implode('').'
+                    <tr class="total-row">
+                        <td colspan="2">TOTALES</td>
+                        <td class="currency">'.collect($users)->sum('transaction_count').'</td>
+                        <td class="currency">$'.number_format(collect($users)->sum('total_sales'), 2).'</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+        ';
     }
 
     private function authorizeExport(string $screen): void
