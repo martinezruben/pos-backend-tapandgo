@@ -20,6 +20,7 @@ use App\Models\User;
 use App\Observers\AuditsModelChanges;
 use App\Observers\LocationContingencyObserver;
 use App\Services\NcfService;
+use App\Support\AdminRbac;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -27,6 +28,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Pulse\Facades\Pulse;
 use Livewire\Livewire;
@@ -52,8 +54,17 @@ class AppServiceProvider extends ServiceProvider
         Paginator::defaultView('vendor.pagination.tailwind');
         Paginator::defaultSimpleView('vendor.pagination.simple-tailwind');
 
+        // Con APP_URL en https, todos los enlaces y redirecciones salen en https
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
+
+        // Pulse muestra consultas lentas, errores y correos de usuarios: solo con
+        // el permiso pulse.view (asignable en la matriz RBAC) o super-admin
         Gate::define('viewPulse', function (?Authenticatable $user = null) {
-            return $user instanceof AdminUser && $user->is_active;
+            return $user instanceof AdminUser
+                && $user->is_active
+                && $user->can(AdminRbac::permissionsForScreen('pulse')['view']);
         });
 
         Pulse::user(function (Authenticatable $user) {

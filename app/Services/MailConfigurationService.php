@@ -4,8 +4,9 @@ namespace App\Services;
 
 use App\Models\SystemParameter;
 use Exception;
-use Swift_Mailer;
-use Swift_SmtpTransport;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
 
 class MailConfigurationService
 {
@@ -61,17 +62,15 @@ class MailConfigurationService
                 return ['success' => false, 'message' => 'Credenciales SMTP incompletas'];
             }
 
-            $transport = new Swift_SmtpTransport($config['host'], $config['port'], $config['encryption']);
-            $transport->setUsername($config['username']);
-            $transport->setPassword($config['password']);
-            $transport->setStreamOptions(['ssl' => ['allow_self_signed' => true]]);
-
-            $mailer = new Swift_Mailer($transport);
-            $mailer->getTransport()->start();
-            $mailer->getTransport()->stop();
+            // Symfony Mailer (SwiftMailer ya no existe en Laravel 13): conecta y autentica
+            $transport = new EsmtpTransport($config['host'], (int) $config['port'], $config['encryption'] === 'ssl');
+            $transport->setUsername((string) $config['username']);
+            $transport->setPassword((string) $config['password']);
+            $transport->start();
+            $transport->stop();
 
             return ['success' => true, 'message' => 'Conexión SMTP válida'];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return ['success' => false, 'message' => 'Error de conexión SMTP: '.$e->getMessage()];
         }
     }
@@ -110,32 +109,58 @@ class MailConfigurationService
         }
     }
 
+    /**
+     * Configura el mailer de Laravel con el SMTP de «Parámetros del sistema»,
+     * para que los correos (contingencia, pruebas) salgan por ahí y no por el
+     * mailer del .env. Devuelve false si el SMTP no está completo o el driver
+     * elegido es Microsoft 365, que aún no tiene envío implementado.
+     */
+    public function applyToMailer(): bool
+    {
+        if ($this->getActiveDriver() !== 'smtp') {
+            Log::warning('Correo: el driver Microsoft 365 no tiene envío implementado; se usa el mailer del .env.');
+
+            return false;
+        }
+
+        $config = $this->getSmtpConfig();
+        if (! $config['host'] || ! $config['port']) {
+            return false;
+        }
+
+        config([
+            'mail.default' => 'smtp',
+            'mail.mailers.smtp' => [
+                'transport' => 'smtp',
+                // ssl = SMTPS (465); tls o vacío = SMTP con STARTTLS si el servidor lo ofrece
+                'scheme' => $config['encryption'] === 'ssl' ? 'smtps' : 'smtp',
+                'host' => $config['host'],
+                'port' => (int) $config['port'],
+                'username' => $config['username'],
+                'password' => $config['password'],
+                'timeout' => 20,
+            ],
+            'mail.from.address' => $this->getMailFromAddress() ?: $config['username'],
+            'mail.from.name' => $this->getMailFromName() ?: config('app.name'),
+        ]);
+        Mail::purge('smtp');
+
+        return true;
+    }
+
     private function testSmtpEmail(string $toAddress): array
     {
         try {
-            $config = $this->getSmtpConfig();
-
-            if (! $config['host'] || ! $config['port'] || ! $config['username'] || ! $config['password']) {
+            if (! $this->applyToMailer()) {
                 return ['success' => false, 'message' => 'Configuración SMTP incompleta'];
             }
 
-            $transport = new Swift_SmtpTransport($config['host'], $config['port'], $config['encryption']);
-            $transport->setUsername($config['username']);
-            $transport->setPassword($config['password']);
-            $transport->setStreamOptions(['ssl' => ['allow_self_signed' => true]]);
-
-            $mailer = new Swift_Mailer($transport);
-
-            $message = (new \Swift_Message)
-                ->setSubject('Prueba de conexión - Tap&Go')
-                ->setFrom($config['username'], $this->getMailFromName())
-                ->setTo($toAddress)
-                ->setBody('Este es un correo de prueba de la configuración SMTP de Tap&Go.', 'text/plain');
-
-            $mailer->send($message);
+            Mail::raw('Este es un correo de prueba de la configuración SMTP de Tap&Go.', function ($message) use ($toAddress): void {
+                $message->to($toAddress)->subject('Prueba de conexión - Tap&Go');
+            });
 
             return ['success' => true, 'message' => "Correo de prueba enviado a {$toAddress}"];
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return ['success' => false, 'message' => 'Error al enviar correo SMTP: '.$e->getMessage()];
         }
     }
