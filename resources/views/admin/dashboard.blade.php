@@ -14,7 +14,7 @@
                 <div class="space-y-1.5">
                     @if (! empty($alerts['contingencies']))
                         <div class="flex items-start gap-2 text-[11px]">
-                            <span class="shrink-0 text-amber-600">🏢</span>
+                            <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500"></span>
                             <div>
                                 <p class="font-medium text-amber-900">{{ count($alerts['contingencies']) }} localidad(es) en contingencia</p>
                                 <ul class="mt-0.5 space-y-0.5 pl-2">
@@ -27,9 +27,9 @@
                     @endif
                     @if (! empty($alerts['devicesNoSync']))
                         <div class="flex items-start gap-2 text-[11px]">
-                            <span class="shrink-0 text-amber-600">📱</span>
+                            <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500"></span>
                             <div>
-                                <p class="font-medium text-amber-900">{{ count($alerts['devicesNoSync']) }} dispositivo(s) sin sincronizar {{ $alerts['devicesNoSync'][0]['hours_ago'] ?? '?' }} horas</p>
+                                <p class="font-medium text-amber-900">{{ count($alerts['devicesNoSync']) }} dispositivo(s) sin sincronizar hace más de 4 h</p>
                                 <ul class="mt-0.5 space-y-0.5 pl-2">
                                     @foreach ($alerts['devicesNoSync'] as $dev)
                                         <li class="text-amber-700">{{ $dev['name'] }} ({{ $dev['location'] }}) — hace {{ $dev['hours_ago'] }} h</li>
@@ -40,7 +40,7 @@
                     @endif
                     @if (! empty($alerts['licensesExpiring']))
                         <div class="flex items-start gap-2 text-[11px]">
-                            <span class="shrink-0 text-amber-600">🔑</span>
+                            <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500"></span>
                             <div>
                                 <p class="font-medium text-amber-900">{{ count($alerts['licensesExpiring']) }} licencia(s) próxima(s) a vencer</p>
                                 <ul class="mt-0.5 space-y-0.5 pl-2">
@@ -53,20 +53,20 @@
                     @endif
                     @if (($alerts['syncFailures24h']['count'] ?? 0) > 0)
                         <div class="flex items-start gap-2 text-[11px]">
-                            <span class="shrink-0 text-amber-600">❌</span>
+                            <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500"></span>
                             <p class="text-amber-900">
                                 <span class="font-medium">{{ $alerts['syncFailures24h']['count'] }} sincronización(es) fallida(s)</span> en 24 h
-                                ({{ $alerts['syncFailures24h']['count'] }}/{{ $alerts['syncFailures24h']['total'] }} sync logs)
+                                (de {{ $alerts['syncFailures24h']['total'] }} sincronizaciones)
                             </p>
                         </div>
                     @endif
                     @if (($voided['today']['count'] ?? 0) > 0)
                         <div class="flex items-start gap-2 text-[11px]">
-                            <span class="shrink-0 text-amber-600">⚠️</span>
+                            <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500"></span>
                             <p class="text-amber-900">
                                 <span class="font-medium">{{ $voided['today']['count'] }} transacción(es) anulada(s) hoy</span>
-                                ({{ $voided['today']['count'] }}/{{ $voided['week']['count'] }} últimos 7 días)
-                                · ${{ number_format($voided['today']['total'], 2) }} (hoy) / ${{ number_format($voided['week']['total'], 2) }} (semana)
+                                por ${{ number_format($voided['today']['total'], 2) }}
+                                · últimos 7 días: {{ $voided['week']['count'] }} por ${{ number_format($voided['week']['total'], 2) }}
                             </p>
                         </div>
                     @endif

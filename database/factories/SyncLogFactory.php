@@ -17,9 +17,11 @@ class SyncLogFactory extends Factory
             'location_id' => Location::factory(),
             'device_id' => Device::factory(),
             'operation' => $this->faker->randomElement(['PUSH', 'PULL']),
-            'status' => $this->faker->randomElement(['SUCCESS', 'FAILED']),
-            'started_at' => $this->faker->dateTime(),
-            'ended_at' => $this->faker->dateTime(),
+            'entity' => 'transactions',
+            'records_count' => 0,
+            'status' => 'SUCCESS',
+            'started_at' => now(),
+            'finished_at' => now(),
         ];
     }
 }

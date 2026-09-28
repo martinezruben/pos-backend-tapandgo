@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\ApiRequestLog;
 use App\Models\Device;
 use App\Models\License;
 use App\Models\Location;
@@ -22,32 +23,40 @@ class DashboardService
 
     public function getKpis(): array
     {
-        $today = now()->toDateString();
-        $start30 = now()->subDays(29)->startOfDay();
-        $start7 = now()->subDays(6)->startOfDay();
-        $start14 = now()->subDays(13)->startOfDay();
+        $todayStart = now()->startOfDay();
+        $tomorrowStart = $todayStart->copy()->addDay();
+        $yesterdayStart = $todayStart->copy()->subDay();
+        $start7 = $todayStart->copy()->subDays(6);
+        $start30 = $todayStart->copy()->subDays(29);
         $weekStart = now()->startOfWeek();
+        $lastWeekStart = $weekStart->copy()->subWeek();
 
-        // Todas las sumas de hoy, ayer, 7d, 30d en una sola consulta
+        // Una sola consulta para todos los periodos, acotada al rango más antiguo
+        // que se necesita y con rangos semiabiertos para que use el índice de occurred_at
         $summary = Transaction::query()
             ->where('status', 'PAID')
+            ->where('occurred_at', '>=', $start30->min($lastWeekStart))
+            ->where('occurred_at', '<', $tomorrowStart)
+            ->when($this->locationId, fn ($q) => $q->where('location_id', $this->locationId))
             ->selectRaw('
-                SUM(CASE WHEN DATE(occurred_at) = ? THEN total ELSE 0 END) as sales_today,
-                COUNT(CASE WHEN DATE(occurred_at) = ? THEN 1 ELSE NULL END) as tx_today,
-                SUM(CASE WHEN DATE(occurred_at) = ? THEN total ELSE 0 END) as sales_yesterday,
-                COUNT(CASE WHEN DATE(occurred_at) = ? THEN 1 ELSE NULL END) as tx_yesterday,
+                SUM(CASE WHEN occurred_at >= ? THEN total ELSE 0 END) as sales_today,
+                COUNT(CASE WHEN occurred_at >= ? THEN 1 END) as tx_today,
+                SUM(CASE WHEN occurred_at >= ? AND occurred_at < ? THEN total ELSE 0 END) as sales_yesterday,
+                COUNT(CASE WHEN occurred_at >= ? AND occurred_at < ? THEN 1 END) as tx_yesterday,
                 SUM(CASE WHEN occurred_at >= ? THEN total ELSE 0 END) as sales_7d,
                 SUM(CASE WHEN occurred_at >= ? THEN total ELSE 0 END) as sales_30d,
-                SUM(CASE WHEN occurred_at >= ? AND occurred_at < ? THEN total ELSE 0 END) as sales_this_week,
+                SUM(CASE WHEN occurred_at >= ? THEN total ELSE 0 END) as sales_this_week,
                 SUM(CASE WHEN occurred_at >= ? AND occurred_at < ? THEN total ELSE 0 END) as sales_last_week
             ', [
-                $today, $today,
-                now()->subDay()->toDateString(), now()->subDay()->toDateString(),
-                $start7, $start30,
-                $weekStart, now()->addSecond(),
-                $weekStart->copy()->subDays(7), $weekStart->copy()->subSecond(),
+                $todayStart,
+                $todayStart,
+                $yesterdayStart, $todayStart,
+                $yesterdayStart, $todayStart,
+                $start7,
+                $start30,
+                $weekStart,
+                $lastWeekStart, $weekStart,
             ])
-            ->when($this->locationId, fn ($q) => $q->where('location_id', $this->locationId))
             ->first();
 
         $salesToday = (float) ($summary->sales_today ?? 0);
@@ -322,6 +331,13 @@ class DashboardService
             ->limit($limit * 2)
             ->get();
 
+        $api = ApiRequestLog::query()
+            ->with(['location:id,name', 'device:id,name,device_fingerprint'])
+            ->when($this->locationId, fn ($q) => $q->where('location_id', $this->locationId))
+            ->orderByDesc('created_at')
+            ->limit($limit * 2)
+            ->get();
+
         $merged = collect();
 
         foreach ($sync as $log) {
@@ -333,6 +349,18 @@ class DashboardService
                 'direction' => $log->operation === 'PUSH' ? 'Push' : 'Pull',
                 'time_human' => $at ? $at->copy()->locale('es')->diffForHumans() : '—',
                 'tone' => $log->status === 'SUCCESS' ? 'emerald' : 'rose',
+            ]);
+        }
+
+        foreach ($api as $row) {
+            $at = $row->created_at;
+            $merged->push([
+                'sort' => $at ? $at->getTimestamp() : 0,
+                'location' => $row->location?->name ?? '—',
+                'device' => $row->device?->name ?: ($row->device?->device_fingerprint ?? $row->device_fingerprint ?? '—'),
+                'direction' => $this->apiSyncDirectionLabel($row->path),
+                'time_human' => $at ? $at->copy()->locale('es')->diffForHumans() : '—',
+                'tone' => $row->response_status >= 200 && $row->response_status < 400 ? 'sky' : 'amber',
             ]);
         }
 
@@ -411,7 +439,7 @@ class DashboardService
 
         $result = SyncLog::query()
             ->where('started_at', '>=', $since)
-            ->selectRaw('COUNT(*) as total, SUM(CASE WHEN status = "FAILED" THEN 1 ELSE 0 END) as failed')
+            ->selectRaw('COUNT(*) as total, SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as failed', ['FAILED'])
             ->first();
 
         return [
@@ -422,12 +450,12 @@ class DashboardService
 
     public function getVoidedTransactions(): array
     {
-        $today = now()->toDateString();
-        $weekStart = now()->subDays(6)->startOfDay();
+        $todayStart = now()->startOfDay();
+        $weekStart = $todayStart->copy()->subDays(6);
 
         $todayRow = Transaction::query()
             ->where('status', 'VOIDED')
-            ->whereDate('occurred_at', $today)
+            ->whereBetween('occurred_at', [$todayStart, $todayStart->copy()->endOfDay()])
             ->when($this->locationId, fn ($q) => $q->where('location_id', $this->locationId))
             ->selectRaw('COUNT(*) as count, COALESCE(SUM(total), 0) as total')
             ->first();
@@ -449,6 +477,22 @@ class DashboardService
                 'total' => (float) ($weekRow->total ?? 0),
             ],
         ];
+    }
+
+    /** Pull/Push según ruta; si no es sync, etiqueta corta. */
+    private function apiSyncDirectionLabel(string $path): string
+    {
+        $p = strtolower($path);
+
+        if (str_contains($p, 'sync/pull') || str_ends_with($p, '/pull')) {
+            return 'Pull';
+        }
+
+        if (str_contains($p, 'sync/push') || str_ends_with($p, '/push')) {
+            return 'Push';
+        }
+
+        return 'API';
     }
 
     private function sqlDateColumn(string $column): string
