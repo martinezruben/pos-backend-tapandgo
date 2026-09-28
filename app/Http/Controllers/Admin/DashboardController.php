@@ -3,22 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ApiRequestLog;
 use App\Models\Device;
 use App\Models\License;
 use App\Models\Location;
-use App\Models\PaymentMethod;
-use App\Models\SyncLog;
-use App\Models\Transaction;
-use App\Models\TransactionPayment;
+use App\Services\DashboardService;
 use App\Support\AdminRbac;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke(Request $request): View
     {
         // Es la página de inicio tras el login: sin permiso se muestra una
         // bienvenida sin cifras en lugar de un 403.
@@ -26,67 +21,28 @@ class DashboardController extends Controller
             return view('admin.dashboard-welcome');
         }
 
-        $today = now()->toDateString();
-        $start30 = now()->subDays(29)->startOfDay();
-        $start7 = now()->subDays(6)->startOfDay();
+        $locationId = $request->query('location_id');
+        $service = new DashboardService($locationId);
+
+        $kpisData = $service->getKpis();
+        $salesToday = $kpisData['salesToday'];
+        $txToday = $kpisData['txToday'];
+        $salesYesterday = $kpisData['salesYesterday'];
+        $txYesterday = $kpisData['txYesterday'];
+        $avgTicketToday = $kpisData['avgTicketToday'];
+        $avgTicketYesterday = $kpisData['avgTicketYesterday'];
+        $sales7d = $kpisData['sales7d'];
+        $sales30d = $kpisData['sales30d'];
+        $salesThisWeek = $kpisData['salesThisWeek'];
+        $salesLastWeek = $kpisData['salesLastWeek'];
+        $weekDeltaPct = $kpisData['weekDeltaPct'];
+        $syncSuccess7d = $kpisData['syncSuccess7d'];
+        $syncFailed7d = $kpisData['syncFailed7d'];
+        $syncOkPct = $kpisData['syncOkPct'];
+
         $start14 = now()->subDays(13)->startOfDay();
+        $start30 = now()->subDays(29)->startOfDay();
 
-        $salesToday = (float) Transaction::query()
-            ->where('status', 'PAID')
-            ->whereDate('occurred_at', $today)
-            ->sum('total');
-
-        $txToday = (int) Transaction::query()
-            ->where('status', 'PAID')
-            ->whereDate('occurred_at', $today)
-            ->count();
-
-        $salesYesterday = (float) Transaction::query()
-            ->where('status', 'PAID')
-            ->whereDate('occurred_at', now()->subDay())
-            ->sum('total');
-
-        $txYesterday = (int) Transaction::query()
-            ->where('status', 'PAID')
-            ->whereDate('occurred_at', now()->subDay())
-            ->count();
-
-        $avgTicketToday = $txToday > 0 ? $salesToday / $txToday : 0.0;
-        $avgTicketYesterday = $txYesterday > 0 ? $salesYesterday / $txYesterday : 0.0;
-
-        $sales7d = (float) Transaction::query()
-            ->where('status', 'PAID')
-            ->where('occurred_at', '>=', $start7)
-            ->sum('total');
-
-        $sales30d = (float) Transaction::query()
-            ->where('status', 'PAID')
-            ->where('occurred_at', '>=', $start30)
-            ->sum('total');
-
-        $syncLogs7d = SyncLog::query()->where('started_at', '>=', now()->subDays(7))
-            ->selectRaw('status, COUNT(*) as c')
-            ->groupBy('status')
-            ->pluck('c', 'status');
-
-        $syncSuccess7d = (int) ($syncLogs7d['SUCCESS'] ?? 0);
-        $syncFailed7d = (int) ($syncLogs7d['FAILED'] ?? 0);
-        $syncTotal7d = $syncSuccess7d + $syncFailed7d;
-        $syncOkPct = $syncTotal7d > 0 ? round(100 * $syncSuccess7d / $syncTotal7d, 1) : null;
-
-        // Comparativo de ventas: semana en curso (lunes→hoy) vs. semana anterior completa
-        $weekStart = now()->startOfWeek();
-        $salesThisWeek = (float) Transaction::query()
-            ->where('status', 'PAID')
-            ->whereBetween('occurred_at', [$weekStart, now()])
-            ->sum('total');
-        $salesLastWeek = (float) Transaction::query()
-            ->where('status', 'PAID')
-            ->whereBetween('occurred_at', [$weekStart->copy()->subDays(7), $weekStart->copy()->subSecond()])
-            ->sum('total');
-        $weekDeltaPct = $salesLastWeek > 0
-            ? round(100 * ($salesThisWeek - $salesLastWeek) / $salesLastWeek, 1)
-            : ($salesThisWeek > 0 ? 100.0 : null);
         $kpis = [
             [
                 'label' => 'Localidades activas',
@@ -140,22 +96,23 @@ class DashboardController extends Controller
             ],
         ];
 
-        $salesTrend = $this->dailySalesTrend($start30, now()->endOfDay());
-        $familyMix = $this->salesByFamily(30);
-        $syncByDay = $this->syncSuccessFailedByDay($start14, now()->endOfDay());
-        $topLocations = $this->topLocationsBySales(30, 5);
-        $activity = $this->recentActivity(8);
-        $topProducts = $this->topProductsBySales(30, 5);
-        $paymentMix = $this->salesByPaymentMethod(30);
+        // Datos para gráficos
+        $salesTrend = $service->getDailySalesTrend($start30, now()->endOfDay());
+        $familyMix = $service->getSalesByFamily(30);
+        $syncByDay = $service->getSyncSuccessFailedByDay($start14, now()->endOfDay());
+        $topLocations = $service->getTopLocationsBySales(30, 5);
+        $activity = $service->getRecentActivity(8);
+        $topProducts = $service->getTopProductsBySales(30, 5);
+        $paymentMix = $service->getSalesByPaymentMethod(30);
 
-        // Alertas y problemas
+        // Alertas
         $alerts = [
-            'contingencies' => $this->locationsInContingency(),
-            'devicesNoSync' => $this->devicesNotSyncedSince(4),
-            'licensesExpiring' => $this->licensesExpiringWithin(7),
-            'syncFailures24h' => $this->syncFailuresLast24h(),
+            'contingencies' => $service->getLocationsInContingency(),
+            'devicesNoSync' => $service->getDevicesNotSyncedSince(4),
+            'licensesExpiring' => $service->getLicensesExpiringWithin(7),
+            'syncFailures24h' => $service->getSyncFailuresLast24h(),
         ];
-        $voided = $this->voidedTransactions();
+        $voided = $service->getVoidedTransactions();
 
         $chartPayload = [
             'salesTrend' => $salesTrend,
@@ -178,6 +135,7 @@ class DashboardController extends Controller
             'activity' => $activity,
             'alerts' => $alerts,
             'voided' => $voided,
+            'locationId' => $locationId,
         ]);
     }
 
@@ -190,448 +148,5 @@ class DashboardController extends Controller
         $pct = round(100 * ($current - $previous) / $previous, 1);
 
         return 'vs. ayer: '.($pct >= 0 ? '+' : '').$pct.'%';
-    }
-
-    /**
-     * @return list<array{name: string, qty: float, total: float, pct: float}>
-     */
-    private function topProductsBySales(int $days, int $limit): array
-    {
-        $since = now()->subDays($days)->startOfDay();
-
-        $rows = DB::table('transaction_items')
-            ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
-            ->leftJoin('products', 'transaction_items.product_id', '=', 'products.id')
-            ->where('transactions.status', 'PAID')
-            ->where('transactions.occurred_at', '>=', $since)
-            ->whereNotNull('transaction_items.product_id')
-            ->selectRaw("transaction_items.product_id, MAX(COALESCE(NULLIF(products.name, ''), NULLIF(transaction_items.product_name, ''))) as name, SUM(transaction_items.qty) as qty, SUM(transaction_items.line_total) as total")
-            ->groupBy('transaction_items.product_id')
-            ->orderByDesc('total')
-            ->limit($limit * 2)
-            ->get();
-
-        // Excluir filas sin nombre resoluble (producto eliminado y línea sin nombre)
-        $rows = $rows->filter(fn ($row) => $row->name !== null && trim((string) $row->name) !== '')->take($limit);
-
-        if ($rows->isEmpty()) {
-            return [];
-        }
-
-        // Participación sobre todo lo vendido en el periodo, no sobre el top
-        $periodTotal = (float) DB::table('transaction_items')
-            ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
-            ->where('transactions.status', 'PAID')
-            ->where('transactions.occurred_at', '>=', $since)
-            ->sum('transaction_items.line_total');
-
-        return $rows
-            ->map(fn ($row): array => [
-                'name' => (string) $row->name,
-                'qty' => (float) $row->qty,
-                'total' => (float) $row->total,
-                'pct' => $periodTotal > 0 ? round(100 * (float) $row->total / $periodTotal, 1) : 0.0,
-            ])
-            ->all();
-    }
-
-    /**
-     * @return array{labels: list<string>, series: list<float>}
-     */
-    private function salesByPaymentMethod(int $days): array
-    {
-        $since = now()->subDays($days)->startOfDay();
-
-        $rows = TransactionPayment::query()
-            ->whereHas('transaction', fn ($q) => $q
-                ->where('status', 'PAID')
-                ->where('occurred_at', '>=', $since))
-            ->selectRaw('payment_method, SUM(amount) as total')
-            ->groupBy('payment_method')
-            ->orderByDesc('total')
-            ->get();
-
-        $methodLabels = PaymentMethod::labelsFor($rows->pluck('payment_method'));
-
-        return [
-            'labels' => $rows->pluck('payment_method')->map(fn ($m) => $methodLabels[$m] ?? $m)->values()->all(),
-            'series' => $rows->pluck('total')->map(fn ($v) => round((float) $v, 2))->values()->all(),
-        ];
-    }
-
-    /**
-     * @return array{labels: list<string>, sales: list<float>, transactions: list<int>}
-     */
-    private function dailySalesTrend(\DateTimeInterface $from, \DateTimeInterface $to): array
-    {
-        $dateSql = $this->sqlDateColumn('occurred_at');
-        $rows = Transaction::query()
-            ->where('status', 'PAID')
-            ->whereBetween('occurred_at', [$from, $to])
-            ->selectRaw("{$dateSql} as d, SUM(total) as sales, COUNT(*) as cnt")
-            ->groupBy(DB::raw($dateSql))
-            ->orderBy(DB::raw($dateSql))
-            ->get()
-            ->keyBy('d');
-
-        $labels = [];
-        $sales = [];
-        $transactions = [];
-        $cursor = Carbon::parse($from)->startOfDay();
-        $end = Carbon::parse($to)->endOfDay();
-        while ($cursor->lte($end)) {
-            $key = $cursor->toDateString();
-            $labels[] = $cursor->translatedFormat('d M');
-            $row = $rows->get($key);
-            $sales[] = $row ? (float) $row->sales : 0.0;
-            $transactions[] = $row ? (int) $row->cnt : 0;
-            $cursor->addDay();
-        }
-
-        return [
-            'labels' => $labels,
-            'sales' => $sales,
-            'transactions' => $transactions,
-        ];
-    }
-
-    /**
-     * Top 5 familias + «Otros» + «Sin familia» (líneas cuyo producto no tiene
-     * subfamilia o ya no existe), para que el donut cuadre con lo vendido.
-     *
-     * @return array{labels: list<string>, series: list<float>}
-     */
-    private function salesByFamily(int $days): array
-    {
-        $since = now()->subDays($days)->startOfDay();
-        $top = 5;
-
-        $rows = DB::table('transaction_items')
-            ->join('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
-            ->leftJoin('products', 'transaction_items.product_id', '=', 'products.id')
-            ->leftJoin('subfamilies', 'products.subfamily_id', '=', 'subfamilies.id')
-            ->leftJoin('families', 'subfamilies.family_id', '=', 'families.id')
-            ->where('transactions.status', 'PAID')
-            ->where('transactions.occurred_at', '>=', $since)
-            ->selectRaw('families.id as id, MAX(families.name) as name, SUM(transaction_items.line_total) as total')
-            ->groupBy('families.id')
-            ->get();
-
-        $unassigned = (float) $rows->whereNull('id')->sum('total');
-        $families = $rows->whereNotNull('id')
-            ->sort(fn ($a, $b) => [(float) $b->total, (string) $a->name] <=> [(float) $a->total, (string) $b->name])
-            ->values();
-
-        $labels = [];
-        $series = [];
-        foreach ($families->take($top) as $row) {
-            $labels[] = (string) $row->name;
-            $series[] = (float) $row->total;
-        }
-
-        $others = (float) $families->slice($top)->sum('total');
-        if ($others > 0) {
-            $labels[] = 'Otros';
-            $series[] = $others;
-        }
-        if ($unassigned > 0) {
-            $labels[] = 'Sin familia';
-            $series[] = $unassigned;
-        }
-
-        return [
-            'labels' => $labels,
-            'series' => $series,
-        ];
-    }
-
-    /**
-     * @return array{categories: list<string>, success: list<int>, failed: list<int>}
-     */
-    private function syncSuccessFailedByDay(\DateTimeInterface $from, \DateTimeInterface $to): array
-    {
-        $dateSql = $this->sqlDateColumn('started_at');
-        $raw = SyncLog::query()
-            ->whereBetween('started_at', [$from, $to])
-            ->selectRaw("{$dateSql} as d, status, COUNT(*) as c")
-            ->groupBy(DB::raw($dateSql), 'status')
-            ->get();
-
-        $byDay = [];
-        foreach ($raw as $row) {
-            // MySQL DATE() puede llegar como datetime; unificar a Y-m-d para cruzar con el bucle diario
-            $d = Carbon::parse($row->d)->toDateString();
-            $byDay[$d] ??= ['SUCCESS' => 0, 'FAILED' => 0];
-            $byDay[$d][$row->status] = (int) $row->c;
-        }
-
-        $categories = [];
-        $success = [];
-        $failed = [];
-        $cursor = Carbon::parse($from)->startOfDay();
-        $end = Carbon::parse($to)->endOfDay();
-        while ($cursor->lte($end)) {
-            $key = $cursor->toDateString();
-            $categories[] = $cursor->translatedFormat('d M');
-            $success[] = $byDay[$key]['SUCCESS'] ?? 0;
-            $failed[] = $byDay[$key]['FAILED'] ?? 0;
-            $cursor->addDay();
-        }
-
-        return [
-            'categories' => $categories,
-            'success' => $success,
-            'failed' => $failed,
-        ];
-    }
-
-    /**
-     * @return list<array{name: string, total: float, pct: float}>
-     */
-    private function topLocationsBySales(int $days, int $limit): array
-    {
-        $since = now()->subDays($days)->startOfDay();
-
-        $totals = Transaction::query()
-            ->where('status', 'PAID')
-            ->where('occurred_at', '>=', $since)
-            ->selectRaw('location_id, SUM(total) as total')
-            ->groupBy('location_id')
-            ->orderByDesc('total')
-            ->limit($limit)
-            ->get();
-
-        if ($totals->isEmpty()) {
-            return [];
-        }
-
-        // Participación sobre todas las ventas del periodo, no sobre el top
-        $periodTotal = (float) Transaction::query()
-            ->where('status', 'PAID')
-            ->where('occurred_at', '>=', $since)
-            ->sum('total');
-        $locationIds = $totals->pluck('location_id')->all();
-        $names = Location::query()->whereIn('id', $locationIds)->pluck('name', 'id');
-
-        $out = [];
-        foreach ($totals as $row) {
-            $t = (float) $row->total;
-            $out[] = [
-                'name' => (string) ($names[$row->location_id] ?? '—'),
-                'total' => $t,
-                'pct' => $periodTotal > 0 ? round(100 * $t / $periodTotal, 1) : 0.0,
-            ];
-        }
-
-        return $out;
-    }
-
-    /**
-     * Actividad reciente: más nuevo primero. `direction` = Pull/Push de datos (sync) o inferido desde la ruta (API).
-     *
-     * @return list<array{location: string, device: string, direction: string, time_human: string, tone: string}>
-     */
-    private function recentActivity(int $limit): array
-    {
-        $sync = SyncLog::query()
-            ->with(['location:id,name', 'device:id,name,device_fingerprint'])
-            ->orderByDesc('started_at')
-            ->limit($limit * 2)
-            ->get();
-
-        $api = ApiRequestLog::query()
-            ->with(['location:id,name', 'device:id,name,device_fingerprint'])
-            ->orderByDesc('created_at')
-            ->limit($limit * 2)
-            ->get();
-
-        $merged = collect();
-
-        foreach ($sync as $log) {
-            $at = $log->started_at;
-            $merged->push([
-                'sort' => $at ? $at->getTimestamp() : 0,
-                'location' => $log->location?->name ?? '—',
-                'device' => $log->device?->name ?: ($log->device?->device_fingerprint ?? '—'),
-                'direction' => $log->operation === 'PUSH' ? 'Push' : 'Pull',
-                'time_human' => $at ? $at->copy()->locale('es')->diffForHumans() : '—',
-                'tone' => $log->status === 'SUCCESS' ? 'emerald' : 'rose',
-            ]);
-        }
-
-        foreach ($api as $row) {
-            $at = $row->created_at;
-            $loc = $row->location?->name ?? '—';
-            $dev = $row->device?->name ?: ($row->device?->device_fingerprint ?? $row->device_fingerprint ?? '—');
-            $merged->push([
-                'sort' => $at ? $at->getTimestamp() : 0,
-                'location' => $loc,
-                'device' => $dev,
-                'direction' => $this->apiSyncDirectionLabel($row->path),
-                'time_human' => $at ? $at->copy()->locale('es')->diffForHumans() : '—',
-                'tone' => $row->response_status >= 200 && $row->response_status < 400 ? 'sky' : 'amber',
-            ]);
-        }
-
-        return $merged->sortByDesc('sort')
-            ->take($limit)
-            ->map(fn (array $e) => [
-                'location' => $e['location'],
-                'device' => $e['device'],
-                'direction' => $e['direction'],
-                'time_human' => $e['time_human'],
-                'tone' => $e['tone'],
-            ])
-            ->values()
-            ->all();
-    }
-
-    /** Pull/Push según ruta; si no es sync, etiqueta corta. */
-    private function apiSyncDirectionLabel(string $path): string
-    {
-        $p = strtolower($path);
-
-        if (str_contains($p, 'sync/pull') || str_ends_with($p, '/pull')) {
-            return 'Pull';
-        }
-
-        if (str_contains($p, 'sync/push') || str_ends_with($p, '/push')) {
-            return 'Push';
-        }
-
-        return 'API';
-    }
-
-    private function sqlDateColumn(string $column): string
-    {
-        return match (DB::getDriverName()) {
-            'sqlite' => "strftime('%Y-%m-%d', {$column})",
-            default => "DATE({$column})",
-        };
-    }
-
-    /**
-     * Localidades en contingencia ahora.
-     *
-     * @return list<array{name: string, since: string}>
-     */
-    private function locationsInContingency(): array
-    {
-        return Location::query()
-            ->where('is_active', true)
-            ->whereNotNull('contingency_started_at')
-            ->orderBy('contingency_started_at')
-            ->get(['name', 'contingency_started_at'])
-            ->map(fn ($loc) => [
-                'name' => $loc->name,
-                'since' => $loc->contingency_started_at->diffForHumans(locale: 'es'),
-            ])
-            ->all();
-    }
-
-    /**
-     * Dispositivos habilitados que hace más de X horas no sincronizan.
-     *
-     * @return list<array{name: string, location: string, hours_ago: int}>
-     */
-    private function devicesNotSyncedSince(int $hours = 4): array
-    {
-        $since = now()->subHours($hours);
-
-        return Device::query()
-            ->where('is_enabled', true)
-            ->where(function ($q) use ($since) {
-                $q->whereNull('last_sync_at')->orWhere('last_sync_at', '<', $since);
-            })
-            ->with('location:id,name')
-            ->orderByRaw('COALESCE(last_sync_at, created_at) ASC')
-            ->get(['id', 'name', 'location_id', 'last_sync_at', 'created_at'])
-            ->map(function ($dev) {
-                $last = $dev->last_sync_at ?? $dev->created_at;
-
-                return [
-                    'name' => $dev->name ?: $dev->id,
-                    'location' => $dev->location?->name ?? '—',
-                    'hours_ago' => (int) ceil($last->diffInMinutes(now()) / 60),
-                ];
-            })
-            ->all();
-    }
-
-    /**
-     * Licencias que vencen en los próximos N días.
-     *
-     * @return list<array{device: string, location: string, expires_in: string}>
-     */
-    private function licensesExpiringWithin(int $days = 7): array
-    {
-        $until = now()->addDays($days)->endOfDay();
-
-        return License::query()
-            ->where('status', 'ACTIVE')
-            ->whereBetween('valid_to', [now(), $until])
-            ->with(['device:id,name,location_id', 'device.location:id,name'])
-            ->orderBy('valid_to')
-            ->get()
-            ->map(fn ($lic) => [
-                'device' => $lic->device?->name ?: $lic->device_id,
-                'location' => $lic->device?->location?->name ?? '—',
-                'expires_in' => $lic->valid_to->diffForHumans(locale: 'es'),
-            ])
-            ->all();
-    }
-
-    /**
-     * Sincronizaciones fallidas en las últimas 24h.
-     *
-     * @return array{count: int, total: int}
-     */
-    private function syncFailuresLast24h(): array
-    {
-        $since = now()->subDay();
-
-        $result = SyncLog::query()
-            ->where('started_at', '>=', $since)
-            ->selectRaw('COUNT(*) as total, SUM(CASE WHEN status = "FAILED" THEN 1 ELSE 0 END) as failed')
-            ->first();
-
-        return [
-            'count' => (int) ($result->failed ?? 0),
-            'total' => (int) ($result->total ?? 0),
-        ];
-    }
-
-    /**
-     * Transacciones anuladas hoy y en los últimos 7 días.
-     *
-     * @return array{today: array{count: int, total: float}, week: array{count: int, total: float}}
-     */
-    private function voidedTransactions(): array
-    {
-        $today = now()->toDateString();
-        $weekStart = now()->subDays(6)->startOfDay();
-
-        $todayRow = Transaction::query()
-            ->where('status', 'VOIDED')
-            ->whereDate('occurred_at', $today)
-            ->selectRaw('COUNT(*) as count, COALESCE(SUM(total), 0) as total')
-            ->first();
-
-        $weekRow = Transaction::query()
-            ->where('status', 'VOIDED')
-            ->where('occurred_at', '>=', $weekStart)
-            ->selectRaw('COUNT(*) as count, COALESCE(SUM(total), 0) as total')
-            ->first();
-
-        return [
-            'today' => [
-                'count' => (int) ($todayRow->count ?? 0),
-                'total' => (float) ($todayRow->total ?? 0),
-            ],
-            'week' => [
-                'count' => (int) ($weekRow->count ?? 0),
-                'total' => (float) ($weekRow->total ?? 0),
-            ],
-        ];
     }
 }
