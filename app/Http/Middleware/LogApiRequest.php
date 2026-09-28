@@ -4,16 +4,15 @@ namespace App\Http\Middleware;
 
 use App\Models\ApiRequestLog;
 use App\Models\Device;
+use App\Support\SensitiveData;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class LogApiRequest
 {
-    private const SENSITIVE_KEYS = [
-        'password', 'token', 'plainTextToken', 'pairing_token', 'authorization',
-        'current_password', 'credit_card',
-    ];
+    /** Máximo de caracteres guardados de la respuesta. */
+    private const RESPONSE_LIMIT = 2000;
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -60,7 +59,8 @@ class LogApiRequest
         $params = $request->query();
         $body = $request->request->all();
         $merged = array_merge($params, $body);
-        $sanitized = $this->sanitizeParams($merged);
+        // Contraseñas, tokens, claves de licencia y PIN nunca se guardan en claro
+        $sanitized = SensitiveData::mask($merged);
         $parametersJson = null;
         if ($sanitized !== []) {
             $parametersJson = json_encode($sanitized, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
@@ -72,7 +72,8 @@ class LogApiRequest
         }
 
         $status = $response->getStatusCode();
-        $summary = $this->summarizeResponse($response);
+        $content = $response->getContent();
+        $summary = SensitiveData::maskJson(is_string($content) ? $content : null, self::RESPONSE_LIMIT);
 
         ApiRequestLog::create([
             'method' => strtoupper($request->method()),
@@ -86,49 +87,5 @@ class LogApiRequest
             'ip_address' => $request->ip(),
             'duration_ms' => $durationMs,
         ]);
-    }
-
-    /**
-     * @param  array<string, mixed>  $params
-     * @return array<string, mixed>
-     */
-    private function sanitizeParams(array $params): array
-    {
-        $out = [];
-        foreach ($params as $key => $value) {
-            $lower = strtolower((string) $key);
-            $masked = false;
-            foreach (self::SENSITIVE_KEYS as $sk) {
-                if (str_contains($lower, $sk)) {
-                    $out[$key] = '***';
-                    $masked = true;
-                    break;
-                }
-            }
-            if ($masked) {
-                continue;
-            }
-            if (is_array($value)) {
-                $out[$key] = $this->sanitizeParams($value);
-            } else {
-                $out[$key] = $value;
-            }
-        }
-
-        return $out;
-    }
-
-    private function summarizeResponse(Response $response): ?string
-    {
-        $content = $response->getContent();
-        if (! is_string($content) || $content === '') {
-            return null;
-        }
-
-        if (strlen($content) > 2000) {
-            return substr($content, 0, 2000).'…';
-        }
-
-        return $content;
     }
 }
