@@ -21,9 +21,9 @@ class ReportService
             'products.name',
             'products.sku',
             'products.tax_rate',
-            DB::raw('COALESCE(SUM(transaction_items.quantity), 0) as sold_qty'),
-            DB::raw('COALESCE(SUM(transaction_items.total), 0) as total_revenue'),
-            DB::raw('CASE WHEN COALESCE(SUM(transaction_items.quantity), 0) > 0 THEN COALESCE(SUM(transaction_items.total), 0) / SUM(transaction_items.quantity) ELSE 0 END as avg_price')
+            DB::raw('COALESCE(SUM(transaction_items.qty), 0) as sold_qty'),
+            DB::raw('COALESCE(SUM(transaction_items.line_total), 0) as total_revenue'),
+            DB::raw('CASE WHEN COALESCE(SUM(transaction_items.qty), 0) > 0 THEN COALESCE(SUM(transaction_items.line_total), 0) / SUM(transaction_items.qty) ELSE 0 END as avg_price')
         )
             ->leftJoin('transaction_items', 'products.id', '=', 'transaction_items.product_id')
             ->leftJoin('transactions', 'transaction_items.transaction_id', '=', 'transactions.id')
@@ -42,21 +42,18 @@ class ReportService
         $dateTo = $dateTo ?? now();
 
         $totals = DB::table('transaction_payments')
-            ->join('payment_methods', 'transaction_payments.payment_method_id', '=', 'payment_methods.id')
             ->whereBetween('transaction_payments.created_at', [$dateFrom, $dateTo])
             ->select(
-                'payment_methods.id',
-                'payment_methods.name',
+                'transaction_payments.payment_method as name',
                 DB::raw('COUNT(DISTINCT transaction_payments.id) as total_transactions'),
                 DB::raw('COALESCE(SUM(transaction_payments.amount), 0) as total_amount')
             )
-            ->groupBy('payment_methods.id', 'payment_methods.name')
+            ->groupBy('transaction_payments.payment_method')
             ->get();
 
         $grandTotal = $totals->sum('total_amount') ?: 1;
 
         $totals = $totals->map(fn ($item) => [
-            'id' => $item->id,
             'name' => $item->name,
             'total_transactions' => $item->total_transactions,
             'total_amount' => $item->total_amount,
