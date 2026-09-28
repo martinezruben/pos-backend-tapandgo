@@ -206,7 +206,7 @@ class AdminDashboardTest extends TestCase
             ->assertOk()
             ->assertSee('Anulaciones hoy')
             ->assertSee('$123.45')
-            ->assertDontSee('Sucursal Sur')
+            ->assertDontSee('En contingencia')
             ->assertDontSee('dash-contingencies');
     }
 
@@ -234,5 +234,57 @@ class AdminDashboardTest extends TestCase
             ->get(route('admin.dashboard'))
             ->assertSee('aria-label="Dashboards"', false)
             ->assertSee(route('admin.dashboard.technical'));
+    }
+
+    public function test_commercial_dashboard_filters_by_location(): void
+    {
+        $north = Location::factory()->create(['name' => 'Norte']);
+        $south = Location::factory()->create(['name' => 'Sur']);
+        Transaction::factory()->create(['location_id' => $north->id, 'status' => 'PAID', 'total' => 100, 'occurred_at' => now()]);
+        Transaction::factory()->create(['location_id' => $south->id, 'status' => 'PAID', 'total' => 250, 'occurred_at' => now()]);
+
+        $admin = $this->adminWith('dashboard.view', 'dashboard_technical.view');
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.dashboard', ['location_id' => $north->id]))
+            ->assertOk()
+            ->assertViewHas('kpis', fn (array $kpis): bool => $kpis[0]['value'] === '$100.00')
+            ->assertViewHas('topLocations', null)
+            ->assertSee('<option value="'.$north->id.'" selected', false)
+            // La pestaña técnica conserva el filtro
+            ->assertSee(route('admin.dashboard.technical', ['location_id' => $north->id]), false);
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.dashboard'))
+            ->assertViewHas('kpis', fn (array $kpis): bool => $kpis[0]['value'] === '$350.00')
+            ->assertViewHas('topLocations', fn ($top): bool => count($top) === 2);
+    }
+
+    public function test_technical_dashboard_filters_by_location(): void
+    {
+        $north = Location::factory()->create(['name' => 'Norte', 'contingency_started_at' => now()->subHour()]);
+        $south = Location::factory()->create(['name' => 'Sur', 'contingency_started_at' => now()->subHour()]);
+        $northDevice = Device::factory()->create(['location_id' => $north->id, 'name' => 'Caja Norte', 'last_sync_at' => now()->subHours(8)]);
+        Device::factory()->create(['location_id' => $south->id, 'name' => 'Caja Sur', 'last_sync_at' => now()->subHours(8)]);
+        License::factory()->create(['device_id' => $northDevice->id, 'valid_to' => now()->addDays(2)]);
+
+        $this->actingAs($this->adminWith('dashboard_technical.view'), 'admin')
+            ->get(route('admin.dashboard.technical', ['location_id' => $north->id]))
+            ->assertOk()
+            ->assertViewHas('contingencies', fn (array $c): bool => array_column($c, 'name') === ['Norte'])
+            ->assertViewHas('devicesNoSync', fn (array $d): bool => array_column($d, 'name') === ['Caja Norte'])
+            ->assertViewHas('licensesExpiring', fn (array $l): bool => count($l) === 1)
+            ->assertViewHas('kpis', fn (array $kpis): bool => $kpis[0]['value'] === '1' && $kpis[2]['value'] === '1');
+    }
+
+    public function test_unknown_location_filter_is_ignored(): void
+    {
+        Transaction::factory()->create(['status' => 'PAID', 'total' => 40, 'occurred_at' => now()]);
+
+        $this->actingAs($this->adminWithDashboard(), 'admin')
+            ->get(route('admin.dashboard', ['location_id' => 'no-existe']))
+            ->assertOk()
+            ->assertViewHas('selectedLocation', null)
+            ->assertViewHas('kpis', fn (array $kpis): bool => $kpis[0]['value'] === '$40.00');
     }
 }
