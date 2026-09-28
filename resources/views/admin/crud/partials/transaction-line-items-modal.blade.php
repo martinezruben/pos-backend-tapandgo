@@ -36,7 +36,8 @@
             </div>
             <div x-show="error && !loading" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800" x-text="error"></div>
 
-            <div x-show="!loading && !error && detail" class="space-y-4">
+            <template x-if="!loading && !error && detail">
+            <div class="space-y-4">
                 <dl class="grid grid-cols-1 gap-x-4 gap-y-2 text-[10px] sm:grid-cols-2">
                     <div class="flex flex-col gap-0.5">
                         <dt class="font-semibold uppercase tracking-wide text-slate-400">Fecha / hora</dt>
@@ -120,6 +121,7 @@
                     <p x-show="!(detail.payments && detail.payments.length)" class="mt-1 text-[10px] text-slate-500">Sin pagos.</p>
                 </div>
             </div>
+            </template>
         </div>
 
         <div class="shrink-0 border-t border-slate-100 bg-slate-50/80 px-4 py-2.5 sm:px-5">

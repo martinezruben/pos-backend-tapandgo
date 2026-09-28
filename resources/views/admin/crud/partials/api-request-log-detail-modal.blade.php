@@ -36,7 +36,8 @@
             </div>
             <div x-show="error && !loading" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800" x-text="error"></div>
 
-            <div x-show="!loading && !error && row" class="space-y-4">
+            <template x-if="!loading && !error && row">
+            <div class="space-y-4">
                     <dl class="grid grid-cols-1 gap-x-4 gap-y-2 text-[10px] sm:grid-cols-2">
                         <div class="flex flex-col gap-0.5 sm:col-span-2">
                             <dt class="font-semibold uppercase tracking-wide text-slate-400">ID</dt>
@@ -81,6 +82,7 @@
                         <pre class="max-h-[280px] overflow-auto rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-[10px] leading-relaxed text-slate-800 whitespace-pre-wrap break-words font-mono" x-text="jsonBlock(row.response_json, row.response_summary)"></pre>
                     </div>
                 </div>
+            </template>
         </div>
 
         <div class="shrink-0 border-t border-slate-100 bg-slate-50/80 px-4 py-2.5 sm:px-5">
