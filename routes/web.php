@@ -73,6 +73,11 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::get('/reports/payment-methods', [ReportsController::class, 'paymentMethodsReport'])->name('reports.payment-methods');
         Route::get('/reports/users-performance', [ReportsController::class, 'usersPerformanceReport'])->name('reports.users-performance');
 
+        // Exportar reportes
+        Route::post('/reports/products-best-sellers/export', [\App\Http\Controllers\Admin\ReportsExportController::class, 'productsBestSellers'])->name('reports.products-best-sellers.export');
+        Route::post('/reports/payment-methods/export', [\App\Http\Controllers\Admin\ReportsExportController::class, 'paymentMethods'])->name('reports.payment-methods.export');
+        Route::post('/reports/users-performance/export', [\App\Http\Controllers\Admin\ReportsExportController::class, 'usersPerformance'])->name('reports.users-performance.export');
+
         Route::get('/screens/{screen}', [ScreenCrudController::class, 'index'])->name('screens.index');
         Route::get('/screens/{screen}/create', [ScreenCrudController::class, 'create'])->name('screens.create');
         Route::post('/screens/{screen}', [ScreenCrudController::class, 'store'])->name('screens.store');

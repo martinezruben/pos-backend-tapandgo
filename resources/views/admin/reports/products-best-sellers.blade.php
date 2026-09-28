@@ -9,7 +9,7 @@
 
         <div class="space-y-4 p-3 sm:p-4">
             <!-- Filtros -->
-            <form method="GET" class="space-y-3">
+            <form id="filter-form" method="GET" class="space-y-3">
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <div class="flex flex-col gap-0.5">
                         <label for="date_from" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Desde</label>
@@ -29,9 +29,14 @@
                         </select>
                     </div>
                 </div>
-                <button type="submit" class="rounded-lg bg-primary-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-primary-700">
-                    Filtrar
-                </button>
+                <div class="flex gap-2">
+                    <button type="submit" class="rounded-lg bg-primary-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-primary-700">
+                        Filtrar
+                    </button>
+                    <button type="button" onclick="exportReport('excel')" class="rounded-lg bg-green-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-green-700">
+                        Exportar Excel
+                    </button>
+                </div>
             </form>
 
             <!-- Tabla -->
@@ -78,4 +83,34 @@
             @endif
         </div>
     </div>
+
+    <script>
+        function exportReport(format) {
+            const form = document.getElementById('filter-form');
+            const formData = new FormData(form);
+
+            const params = new URLSearchParams(formData);
+
+            fetch("{{ route('reports.products-best-sellers.export') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+                },
+                body: params.toString()
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'productos-vendidos.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => alert('Error al exportar: ' + error));
+        }
+    </script>
 </x-admin.layouts.app>
