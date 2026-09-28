@@ -91,7 +91,7 @@ class ReportService
                 'transaction_count' => $user->transaction_count,
                 'total_sales' => $user->total_sales,
                 'avg_transaction' => $user->avg_transaction,
-                'last_activity' => $user->last_activity ? $user->last_activity->diffForHumans() : 'N/A',
+                'last_activity' => is_string($user->last_activity) ? (strtotime($user->last_activity) ? now()->parse($user->last_activity)->diffForHumans() : 'N/A') : ($user->last_activity ? $user->last_activity->diffForHumans() : 'N/A'),
             ]);
 
         return $users;
