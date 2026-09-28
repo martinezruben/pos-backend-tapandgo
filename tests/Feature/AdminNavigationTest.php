@@ -38,6 +38,7 @@ class AdminNavigationTest extends TestCase
 
         $products = collect(AdminNavigation::searchEntries($admin))->firstWhere('label', 'Productos');
         $this->assertTrue($products['searchable']);
+        $this->assertSame(0, $products['searchRank']);
     }
 
     public function test_sidebar_and_palette_render_the_same_pages(): void

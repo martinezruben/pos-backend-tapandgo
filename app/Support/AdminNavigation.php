@@ -12,8 +12,11 @@ use Illuminate\Support\Facades\Gate;
  */
 class AdminNavigation
 {
+    /** Grids que el buscador ofrece primero al buscar registros. */
+    private const SEARCH_FIRST = ['products', 'transactions', 'android-users', 'locations', 'devices', 'families'];
+
     /**
-     * @return list<array{key: string, label: string, items: list<array{label: string, url: string, active: bool, searchable: bool}>}>
+     * @return list<array{key: string, label: string, items: list<array{label: string, url: string, active: bool, searchable: bool, searchRank: int}>}>
      */
     public static function groups(?Authenticatable $admin): array
     {
@@ -39,6 +42,7 @@ class AdminNavigation
                     'active' => $currentScreen === $key || ($route && request()->routeIs($route.'*')),
                     // Los grids CRUD aceptan ?q= para buscar registros
                     'searchable' => ! $route && ! empty($screen['model']),
+                    'searchRank' => ($rank = array_search($key, self::SEARCH_FIRST, true)) === false ? 99 : $rank,
                 ];
             }
 
@@ -65,7 +69,7 @@ class AdminNavigation
     /**
      * Entradas del buscador: dashboards permitidos más todas las páginas del menú.
      *
-     * @return list<array{label: string, group: string, url: string, searchable: bool}>
+     * @return list<array{label: string, group: string, url: string, searchable: bool, searchRank: int}>
      */
     public static function searchEntries(?Authenticatable $admin): array
     {
@@ -76,13 +80,19 @@ class AdminNavigation
         $entries = [];
         foreach (['dashboard' => ['Dashboard comercial', 'admin.dashboard'], 'dashboard-technical' => ['Dashboard técnico', 'admin.dashboard.technical']] as $screen => [$label, $route]) {
             if ($admin->can(AdminRbac::permissionsForScreen($screen)['view'])) {
-                $entries[] = ['label' => $label, 'group' => 'Dashboard', 'url' => route($route), 'searchable' => false];
+                $entries[] = ['label' => $label, 'group' => 'Dashboard', 'url' => route($route), 'searchable' => false, 'searchRank' => 99];
             }
         }
 
         foreach (self::groups($admin) as $group) {
             foreach ($group['items'] as $item) {
-                $entries[] = ['label' => $item['label'], 'group' => $group['label'], 'url' => $item['url'], 'searchable' => $item['searchable']];
+                $entries[] = [
+                    'label' => $item['label'],
+                    'group' => $group['label'],
+                    'url' => $item['url'],
+                    'searchable' => $item['searchable'],
+                    'searchRank' => $item['searchRank'] ?? 99,
+                ];
             }
         }
 
@@ -90,7 +100,7 @@ class AdminNavigation
     }
 
     /**
-     * @return array{label: string, url: string, active: bool, searchable: bool}
+     * @return array{label: string, url: string, active: bool, searchable: bool, searchRank: int}
      */
     private static function item(string $label, string $route, string $activePattern): array
     {
@@ -99,6 +109,7 @@ class AdminNavigation
             'url' => route($route),
             'active' => request()->routeIs($activePattern),
             'searchable' => false,
+            'searchRank' => 99,
         ];
     }
 }

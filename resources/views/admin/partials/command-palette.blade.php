@@ -78,7 +78,7 @@
                         const pages = entries.filter((e) => norm(e.label).includes(q) || norm(e.group).includes(q));
                         // Buscar el texto dentro de los grids que aceptan ?q=
                         const searches = q.length >= 2
-                            ? entries.filter((e) => e.searchable).slice(0, 6).map((e) => ({
+                            ? entries.filter((e) => e.searchable).sort((a, b) => a.searchRank - b.searchRank).slice(0, 6).map((e) => ({
                                 label: `Buscar «${this.query.trim()}» en ${e.label}`,
                                 group: 'Registros',
                                 url: e.url + (e.url.includes('?') ? '&' : '?') + 'q=' + encodeURIComponent(this.query.trim()),
