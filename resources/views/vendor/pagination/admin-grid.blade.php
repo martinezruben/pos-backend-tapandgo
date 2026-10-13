@@ -54,7 +54,7 @@
             @foreach ($elements as $element)
                 @if (is_string($element))
                     <span aria-disabled="true">
-                        <span class="grid h-7 w-7 cursor-default place-items-center text-[10px] font-medium text-slate-400">{{ $element }}</span>
+                        <span class="grid h-7 w-7 cursor-default place-items-center text-[10px] font-medium text-slate-500">{{ $element }}</span>
                     </span>
                 @endif
 

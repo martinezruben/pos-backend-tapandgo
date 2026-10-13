@@ -10,31 +10,37 @@
 return [
     [
         'key' => 'infra',
+        'icon' => 'building-office-2',
         'label' => 'Infraestructura',
         'screens' => ['locations', 'devices', 'licenses'],
     ],
     [
         'key' => 'catalog',
+        'icon' => 'book-open',
         'label' => 'Catálogo',
         'screens' => ['families', 'subfamilies', 'promotions', 'products'],
     ],
     [
         'key' => 'ops',
+        'icon' => 'briefcase',
         'label' => 'Operación',
         'screens' => ['android-users', 'shifts', 'transactions', 'payment-methods', 'ncf-sequences'],
     ],
     [
         'key' => 'sync',
+        'icon' => 'arrows-right-left',
         'label' => 'Sincronización',
         'screens' => ['sync-states', 'sync-logs', 'api-request-logs'],
     ],
     [
         'key' => 'system',
+        'icon' => 'wrench-screwdriver',
         'label' => 'Sistema',
         'screens' => ['admin-users', 'roles', 'permissions', 'audit-log'],
     ],
     [
         'key' => 'reports',
+        'icon' => 'chart-bar',
         'label' => 'Reportes',
         'screens' => [
             'products-best-sellers',

@@ -9,6 +9,12 @@
         @apply antialiased text-snow-800;
     }
 
+    a:focus-visible,
+    button:focus-visible,
+    summary:focus-visible {
+        @apply outline-none ring-2 ring-primary-500 ring-offset-1;
+    }
+
     [x-cloak] {
         display: none !important;
     }

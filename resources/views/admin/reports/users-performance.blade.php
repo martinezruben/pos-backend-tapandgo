@@ -39,7 +39,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-4 py-6 text-center text-[11px] text-slate-400">No hay ventas en el periodo seleccionado.</td>
+                                <td colspan="6" class="px-4 py-6 text-center text-[11px] text-slate-500">No hay ventas en el periodo seleccionado.</td>
                             </tr>
                         @endforelse
                     </tbody>

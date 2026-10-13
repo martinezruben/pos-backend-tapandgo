@@ -22,7 +22,7 @@
             </div>
             <button
                 type="button"
-                class="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                class="shrink-0 rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
                 @click="closeDetail()"
                 aria-label="Cerrar"
             >
@@ -40,45 +40,45 @@
             <div class="space-y-4">
                     <dl class="grid grid-cols-1 gap-x-4 gap-y-2 text-[10px] sm:grid-cols-2">
                         <div class="flex flex-col gap-0.5 sm:col-span-2">
-                            <dt class="font-semibold uppercase tracking-wide text-slate-400">ID</dt>
+                            <dt class="font-semibold uppercase tracking-wide text-slate-500">ID</dt>
                             <dd class="font-mono text-slate-800" x-text="row.id"></dd>
                         </div>
                         <div class="flex flex-col gap-0.5">
-                            <dt class="font-semibold uppercase tracking-wide text-slate-400">Fecha/hora</dt>
+                            <dt class="font-semibold uppercase tracking-wide text-slate-500">Fecha/hora</dt>
                             <dd class="text-slate-800" x-text="row.created_at ?? '—'"></dd>
                         </div>
                         <div class="flex flex-col gap-0.5">
-                            <dt class="font-semibold uppercase tracking-wide text-slate-400">HTTP</dt>
+                            <dt class="font-semibold uppercase tracking-wide text-slate-500">HTTP</dt>
                             <dd class="text-slate-800" x-text="row.response_status != null ? String(row.response_status) : '—'"></dd>
                         </div>
                         <div class="flex flex-col gap-0.5">
-                            <dt class="font-semibold uppercase tracking-wide text-slate-400">Duración (ms)</dt>
+                            <dt class="font-semibold uppercase tracking-wide text-slate-500">Duración (ms)</dt>
                             <dd class="text-slate-800" x-text="row.duration_ms != null ? String(row.duration_ms) : '—'"></dd>
                         </div>
                         <div class="flex flex-col gap-0.5">
-                            <dt class="font-semibold uppercase tracking-wide text-slate-400">IP</dt>
+                            <dt class="font-semibold uppercase tracking-wide text-slate-500">IP</dt>
                             <dd class="font-mono text-slate-800" x-text="row.ip_address ?? '—'"></dd>
                         </div>
                         <div class="flex flex-col gap-0.5 sm:col-span-2">
-                            <dt class="font-semibold uppercase tracking-wide text-slate-400">Localidad</dt>
+                            <dt class="font-semibold uppercase tracking-wide text-slate-500">Localidad</dt>
                             <dd class="text-slate-800" x-text="row.location_name ?? (row.location_id ?? '—')"></dd>
                         </div>
                         <div class="flex flex-col gap-0.5 sm:col-span-2">
-                            <dt class="font-semibold uppercase tracking-wide text-slate-400">Dispositivo</dt>
+                            <dt class="font-semibold uppercase tracking-wide text-slate-500">Dispositivo</dt>
                             <dd class="text-slate-800" x-text="row.device_label ?? (row.device_id ?? '—')"></dd>
                         </div>
                         <div class="flex flex-col gap-0.5 sm:col-span-2">
-                            <dt class="font-semibold uppercase tracking-wide text-slate-400">Huella</dt>
+                            <dt class="font-semibold uppercase tracking-wide text-slate-500">Huella</dt>
                             <dd class="break-all font-mono text-slate-800" x-text="row.device_fingerprint ?? '—'"></dd>
                         </div>
                     </dl>
 
                     <div>
-                        <h3 class="mb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Parámetros (JSON)</h3>
+                        <h3 class="mb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Parámetros (JSON)</h3>
                         <pre class="max-h-[220px] overflow-auto rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-[10px] leading-relaxed text-slate-800 whitespace-pre-wrap break-words font-mono" x-text="jsonBlock(row.parameters_json, row.parameters)"></pre>
                     </div>
                     <div>
-                        <h3 class="mb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Respuesta (JSON / cuerpo)</h3>
+                        <h3 class="mb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Respuesta (JSON / cuerpo)</h3>
                         <pre class="max-h-[280px] overflow-auto rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-[10px] leading-relaxed text-slate-800 whitespace-pre-wrap break-words font-mono" x-text="jsonBlock(row.response_json, row.response_summary)"></pre>
                     </div>
                 </div>

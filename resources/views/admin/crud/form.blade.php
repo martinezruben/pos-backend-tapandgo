@@ -109,7 +109,7 @@
                         }">
                             @if($item && method_exists($item, 'pin4Plain') && $item->pin4Plain() !== null)
                                 <div>
-                                    <span class="mb-1 block text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400">PIN actual</span>
+                                    <span class="mb-1 block text-[9px] font-mono font-bold uppercase tracking-widest text-slate-500">PIN actual</span>
                                     <div class="inline-flex gap-1.5" aria-hidden="true">
                                         @foreach(str_split(str_pad((string) $item->pin4Plain(), 4)) as $digit)
                                             <span class="flex h-9 w-8 items-center justify-center rounded-md border border-slate-200 bg-slate-50 font-mono text-base font-bold tabular-nums text-slate-700 shadow-sm">{{ trim($digit) }}</span>
@@ -118,7 +118,7 @@
                                 </div>
                             @endif
                             <div>
-                                <span class="mb-1 block text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400">{{ $item ? 'Nuevo PIN' : 'PIN' }}</span>
+                                <span class="mb-1 block text-[9px] font-mono font-bold uppercase tracking-widest text-slate-500">{{ $item ? 'Nuevo PIN' : 'PIN' }}</span>
                                 <div class="relative inline-flex cursor-text gap-1.5" @click="$refs.pin4Input.focus()">
                                     <template x-for="(digit, index) in digits" :key="index">
                                         <span

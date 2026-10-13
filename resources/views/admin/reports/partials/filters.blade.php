@@ -10,7 +10,7 @@
     class="snow-card flex flex-wrap items-end gap-2 rounded-xl border border-slate-200/90 bg-white p-3 shadow-hope-card"
 >
     <div class="flex min-w-[9rem] flex-1 flex-col gap-0.5 sm:flex-none">
-        <label class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400" for="rf-loc">Localidad</label>
+        <label class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500" for="rf-loc">Localidad</label>
         <select id="rf-loc" name="location_id" class="hope-filter-select">
             <option value="">Todas las localidades</option>
             @foreach ($locations as $location)
@@ -21,11 +21,11 @@
         </select>
     </div>
     <div class="flex min-w-[9rem] flex-1 flex-col gap-0.5 sm:flex-none">
-        <label class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400" for="rf-from">Desde</label>
+        <label class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500" for="rf-from">Desde</label>
         <input id="rf-from" type="date" name="date_from" value="{{ $dateFrom }}" class="hope-filter-select">
     </div>
     <div class="flex min-w-[9rem] flex-1 flex-col gap-0.5 sm:flex-none">
-        <label class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400" for="rf-to">Hasta</label>
+        <label class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500" for="rf-to">Hasta</label>
         <input id="rf-to" type="date" name="date_to" value="{{ $dateTo }}" class="hope-filter-select">
     </div>
     <button type="submit" class="rounded-md bg-primary-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-primary-700">Aplicar</button>

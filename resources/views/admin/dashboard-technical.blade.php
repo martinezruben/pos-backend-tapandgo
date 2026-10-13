@@ -71,13 +71,13 @@
                                             {{ $row['location'] }}
                                         </p>
                                         <span class="inline-flex shrink-0 items-center gap-0.5 text-[11px] font-medium tabular-nums text-slate-500">
-                                            <x-admin.snow.icon name="clock" class="h-3 w-3 text-slate-400" />
+                                            <x-admin.snow.icon name="clock" class="h-3 w-3 text-slate-500" />
                                             {{ $row['time_human'] }}
                                         </span>
                                     </div>
                                     <div class="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                                         <span class="inline-flex min-w-0 max-w-full items-center gap-1 text-[11px] text-slate-600">
-                                            <x-admin.snow.icon name="device-phone-mobile" class="h-3 w-3 shrink-0 text-slate-400" />
+                                            <x-admin.snow.icon name="device-phone-mobile" class="h-3 w-3 shrink-0 text-slate-500" />
                                             <span class="truncate">{{ $row['device'] }}</span>
                                         </span>
                                         <span
@@ -96,7 +96,7 @@
                     @empty
                         <li class="flex list-none flex-col items-center justify-center gap-2 py-10 text-center">
                             <div
-                                class="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-400"
+                                class="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-500"
                             >
                                 <x-admin.snow.icon name="arrow-path" class="h-5 w-5" />
                             </div>
@@ -116,7 +116,7 @@
     <x-modal name="dash-contingencies" maxWidth="lg">
         <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <h3 class="text-sm font-semibold text-slate-900">Localidades en contingencia ({{ count($contingencies) }})</h3>
-            <button type="button" x-on:click="$dispatch('close-modal', 'dash-contingencies')" class="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label="Cerrar">
+            <button type="button" x-on:click="$dispatch('close-modal', 'dash-contingencies')" class="rounded-md p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-600" aria-label="Cerrar">
                 <x-admin.snow.icon name="x-mark" class="h-4 w-4" />
             </button>
         </div>
@@ -127,7 +127,7 @@
                     @forelse ($contingencies as $row)
                         <tr><td class="px-4 py-2 font-medium text-slate-800">{{ $row['name'] }}</td><td class="px-4 py-2 text-slate-600">{{ $row['since'] }}</td></tr>
                     @empty
-                        <tr><td colspan="2" class="px-4 py-6 text-center text-slate-400">Ninguna localidad en contingencia.</td></tr>
+                        <tr><td colspan="2" class="px-4 py-6 text-center text-slate-500">Ninguna localidad en contingencia.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -136,7 +136,7 @@
     <x-modal name="dash-devices-no-sync" maxWidth="lg">
         <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <h3 class="text-sm font-semibold text-slate-900">Dispositivos sin sincronizar hace más de 4 h ({{ count($devicesNoSync) }})</h3>
-            <button type="button" x-on:click="$dispatch('close-modal', 'dash-devices-no-sync')" class="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label="Cerrar">
+            <button type="button" x-on:click="$dispatch('close-modal', 'dash-devices-no-sync')" class="rounded-md p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-600" aria-label="Cerrar">
                 <x-admin.snow.icon name="x-mark" class="h-4 w-4" />
             </button>
         </div>
@@ -147,7 +147,7 @@
                     @forelse ($devicesNoSync as $row)
                         <tr><td class="px-4 py-2 font-medium text-slate-800">{{ $row['name'] }}</td><td class="px-4 py-2 text-slate-600">{{ $row['location'] }}</td><td class="px-4 py-2 tabular-nums text-slate-600">{{ $row['hours_ago'] }}</td></tr>
                     @empty
-                        <tr><td colspan="3" class="px-4 py-6 text-center text-slate-400">Todos los dispositivos están al día.</td></tr>
+                        <tr><td colspan="3" class="px-4 py-6 text-center text-slate-500">Todos los dispositivos están al día.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -156,7 +156,7 @@
     <x-modal name="dash-licenses-expiring" maxWidth="lg">
         <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <h3 class="text-sm font-semibold text-slate-900">Licencias por vencer en 7 días ({{ count($licensesExpiring) }})</h3>
-            <button type="button" x-on:click="$dispatch('close-modal', 'dash-licenses-expiring')" class="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label="Cerrar">
+            <button type="button" x-on:click="$dispatch('close-modal', 'dash-licenses-expiring')" class="rounded-md p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-600" aria-label="Cerrar">
                 <x-admin.snow.icon name="x-mark" class="h-4 w-4" />
             </button>
         </div>
@@ -167,7 +167,7 @@
                     @forelse ($licensesExpiring as $row)
                         <tr><td class="px-4 py-2 font-medium text-slate-800">{{ $row['device'] }}</td><td class="px-4 py-2 text-slate-600">{{ $row['location'] }}</td><td class="px-4 py-2 text-slate-600">{{ $row['expires_in'] }}</td></tr>
                     @empty
-                        <tr><td colspan="3" class="px-4 py-6 text-center text-slate-400">Ninguna licencia por vencer.</td></tr>
+                        <tr><td colspan="3" class="px-4 py-6 text-center text-slate-500">Ninguna licencia por vencer.</td></tr>
                     @endforelse
                 </tbody>
             </table>

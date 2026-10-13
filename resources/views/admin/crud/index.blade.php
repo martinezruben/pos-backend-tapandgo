@@ -89,7 +89,7 @@
                     @endif
                 </div>
                 <div class="relative flex w-full min-w-0 flex-1 sm:max-w-[220px] md:max-w-sm">
-                    <span class="pointer-events-none absolute inset-y-0 left-1.5 flex items-center text-slate-400">
+                    <span class="pointer-events-none absolute inset-y-0 left-1.5 flex items-center text-slate-500">
                         <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
                     </span>
                     <input
@@ -108,7 +108,7 @@
                 <div class="flex flex-wrap items-end gap-1.5 border-t border-slate-50 bg-slate-50/70 px-2 py-3 sm:px-3 sm:py-3.5" x-data="selectCascade">
                     @foreach($gridFilters as $param => $fdef)
                         <div class="flex min-w-[7rem] flex-col gap-0.5">
-                            <label class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400" for="flt-{{ $param }}">{{ $fdef['label'] ?? $param }}</label>
+                            <label class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500" for="flt-{{ $param }}">{{ $fdef['label'] ?? $param }}</label>
                             @if(($fdef['type'] ?? '') === 'date')
                                 <input
                                     id="flt-{{ $param }}"
@@ -137,11 +137,11 @@
             <div class="border-b border-slate-100 bg-gradient-to-b from-slate-50/90 to-white px-2 py-2 sm:px-3">
                 <div class="mb-1.5 flex flex-wrap items-end justify-between gap-2">
                     <div>
-                        <h3 class="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Mapa de localidades</h3>
+                        <h3 class="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Mapa de localidades</h3>
                         <p class="text-[9px] text-slate-500">Mismos filtros que la tabla · número = dispositivos activos · verde = al menos una sincronización exitosa en el periodo</p>
                     </div>
                     <div class="flex min-w-0 flex-col gap-0.5 sm:items-end">
-                        <label for="admin-locations-map-period" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Sincronizaciones</label>
+                        <label for="admin-locations-map-period" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Sincronizaciones</label>
                         <select id="admin-locations-map-period" class="hope-filter-select max-w-full py-1 text-[10px] sm:min-w-[12rem]">
                             <option value="today" selected>Hoy</option>
                             <option value="yesterday">Ayer</option>

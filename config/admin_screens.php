@@ -25,7 +25,7 @@ return [
     // Sin modelo: `rbac` lo expone en la matriz de permisos solo con `dashboard.view`
     'dashboard' => ['label' => 'Dashboard comercial', 'icon' => 'chart-bar', 'readonly' => true, 'rbac' => true],
     // Sin modelo: solo expone el permiso pulse.view en la matriz RBAC
-    'pulse' => ['label' => 'Pulse (métricas)', 'icon' => 'chart-bar', 'readonly' => true, 'rbac' => true, 'exclude_from_nav' => true],
+    'pulse' => ['label' => 'Pulse (métricas)', 'icon' => 'bolt', 'readonly' => true, 'rbac' => true, 'exclude_from_nav' => true],
     'dashboard-technical' => ['label' => 'Dashboard técnico', 'icon' => 'wrench-screwdriver', 'readonly' => true, 'rbac' => true, 'exclude_from_nav' => true],
     'locations' => [
         'model' => Location::class,
@@ -212,7 +212,7 @@ return [
     'subfamilies' => [
         'model' => Subfamily::class,
         'label' => 'Subfamilias',
-        'icon' => 'queue-list',
+        'icon' => 'rectangle-stack',
         'fields' => ['family_id', 'name'],
         'foreign_labels' => [
             'family_id' => ['relation' => 'family', 'attribute' => 'name', 'header' => 'Familia'],
@@ -504,7 +504,7 @@ return [
         'exclude_from_nav' => true,
         'model' => TransactionItem::class,
         'label' => 'Items Transacción',
-        'icon' => 'queue-list',
+        'icon' => 'list-bullet',
         'fields' => ['transaction_id', 'product_id', 'product_name', 'product_sku', 'qty', 'unit_price', 'discount', 'tax', 'line_total'],
         'foreign_labels' => [
             'transaction_id' => ['relation' => 'transaction', 'attribute' => 'external_id', 'header' => 'Transacción'],
@@ -540,7 +540,7 @@ return [
         'exclude_from_nav' => true,
         'model' => TransactionPayment::class,
         'label' => 'Pagos Transacción',
-        'icon' => 'credit-card',
+        'icon' => 'wallet',
         'fields' => ['transaction_id', 'payment_method', 'amount', 'reference'],
         'foreign_labels' => [
             'transaction_id' => ['relation' => 'transaction', 'attribute' => 'external_id', 'header' => 'Transacción'],
@@ -653,7 +653,7 @@ return [
     'api-request-logs' => [
         'model' => ApiRequestLog::class,
         'label' => 'Llamadas API',
-        'icon' => 'arrow-path',
+        'icon' => 'server-stack',
         'readonly' => true,
         'labels' => [
             'created_at' => 'Fecha/hora',
@@ -723,7 +723,7 @@ return [
     'system-settings' => [
         'model' => SystemParameter::class,
         'label' => 'Parámetros del sistema',
-        'icon' => 'cube',
+        'icon' => 'cog-6-tooth',
         'exclude_from_nav' => true,
         'disable_create' => true,
         'disable_delete' => true,
@@ -791,7 +791,7 @@ return [
     'ncf-sequences' => [
         'model' => NcfSequence::class,
         'label' => 'NCF (Series de consecutivos)',
-        'icon' => 'identifier',
+        'icon' => 'hashtag',
         'labels' => [
             'type' => 'Tipo',
             'establishment' => 'Establecimiento',
@@ -817,7 +817,7 @@ return [
     'ncf-report' => [
         'model' => NcfSequence::class,
         'label' => 'Reporte NCF',
-        'icon' => 'identifier',
+        'icon' => 'document-text',
         'readonly' => true,
         'fields' => ['type', 'location_id', 'establishment', 'start', 'end', 'current'],
         'labels' => [
@@ -933,7 +933,7 @@ return [
     'transactions-report' => [
         'model' => Transaction::class,
         'label' => 'Reporte Transacciones',
-        'icon' => 'clipboard-document-list',
+        'icon' => 'receipt-percent',
         'readonly' => true,
         'labels' => [
             'occurred_at' => 'Fecha / hora',
@@ -982,7 +982,7 @@ return [
     'products-best-sellers' => [
         'model' => Product::class,
         'label' => 'Productos Más Vendidos',
-        'icon' => 'chart-bar',
+        'icon' => 'trophy',
         'readonly' => true,
         'route' => 'admin.reports.products-best-sellers',
         'labels' => [
@@ -1036,7 +1036,7 @@ return [
     'payment-methods-report' => [
         'model' => PaymentMethod::class,
         'label' => 'Ingresos por Método de Pago',
-        'icon' => 'credit-card',
+        'icon' => 'chart-pie',
         'readonly' => true,
         'route' => 'admin.reports.payment-methods',
         'labels' => [
@@ -1077,7 +1077,7 @@ return [
     'users-performance-report' => [
         'model' => User::class,
         'label' => 'Desempeño de Usuarios',
-        'icon' => 'users',
+        'icon' => 'user-group',
         'readonly' => true,
         'route' => 'admin.reports.users-performance',
         'labels' => [

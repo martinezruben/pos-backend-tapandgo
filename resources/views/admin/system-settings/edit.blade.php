@@ -12,10 +12,10 @@
             @method('PUT')
 
             <section>
-                <h2 class="mb-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Usuarios backend (panel admin)</h2>
+                <h2 class="mb-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Usuarios backend (panel admin)</h2>
                 <div class="space-y-3 rounded-lg border border-slate-100 bg-white p-3">
                     <div class="flex flex-col gap-0.5 sm:max-w-xs">
-                        <label for="admin_password_min_length" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Longitud mínima</label>
+                        <label for="admin_password_min_length" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Longitud mínima</label>
                         <input
                             type="number"
                             name="admin_password_min_length"
@@ -54,10 +54,10 @@
             </section>
 
             <section>
-                <h2 class="mb-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Usuarios POS (app / Android)</h2>
+                <h2 class="mb-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Usuarios POS (app / Android)</h2>
                 <div class="space-y-3 rounded-lg border border-slate-100 bg-white p-3">
                     <div class="flex flex-col gap-0.5 sm:max-w-xs">
-                        <label for="pos_password_min_length" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Longitud mínima</label>
+                        <label for="pos_password_min_length" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Longitud mínima</label>
                         <input
                             type="number"
                             name="pos_password_min_length"
@@ -96,10 +96,10 @@
             </section>
 
             <section>
-                <h2 class="mb-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Login panel (backend)</h2>
+                <h2 class="mb-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Login panel (backend)</h2>
                 <div class="grid grid-cols-1 gap-3 rounded-lg border border-slate-100 bg-white p-3 sm:grid-cols-2">
                     <div class="flex flex-col gap-0.5">
-                        <label for="admin_max_failed_login_attempts" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Intentos fallidos antes de bloquear</label>
+                        <label for="admin_max_failed_login_attempts" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Intentos fallidos antes de bloquear</label>
                         <input
                             type="number"
                             name="admin_max_failed_login_attempts"
@@ -115,7 +115,7 @@
                         @enderror
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <label for="admin_lockout_minutes" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Duración del bloqueo (minutos)</label>
+                        <label for="admin_lockout_minutes" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Duración del bloqueo (minutos)</label>
                         <input
                             type="number"
                             name="admin_lockout_minutes"
@@ -135,7 +135,7 @@
             </section>
 
             <section>
-                <h2 class="mb-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Sincronización</h2>
+                <h2 class="mb-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Sincronización</h2>
                 <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-100 bg-white p-3 text-[11px] text-slate-700">
                     <input
                         type="checkbox"
@@ -152,7 +152,7 @@
             </section>
 
             <section x-data="{ activeTab: 'general' }">
-                <h2 class="mb-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Correos (SMTP / Office 365)</h2>
+                <h2 class="mb-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Correos (SMTP / Office 365)</h2>
                 <div class="rounded-lg border border-slate-100 bg-white overflow-hidden">
                     <!-- Tabs -->
                     <div class="flex border-b border-slate-100 bg-slate-50/50 overflow-x-auto">
@@ -167,7 +167,7 @@
                         <!-- General Tab -->
                         <div x-show="activeTab === 'general'" class="space-y-3">
                             <div class="flex flex-col gap-0.5">
-                                <label for="mail_driver" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Proveedor de correos</label>
+                                <label for="mail_driver" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Proveedor de correos</label>
                                 <select name="mail_driver" id="mail_driver" class="snow-input text-xs" required>
                                     <option value="smtp" @selected(old('mail_driver', $params->mail_driver) === 'smtp')>SMTP</option>
                                     <option value="365" @selected(old('mail_driver', $params->mail_driver) === '365')>Office 365 / Microsoft Graph</option>
@@ -177,14 +177,14 @@
                                 @enderror
                             </div>
                             <div class="flex flex-col gap-0.5">
-                                <label for="mail_from_address" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Correo de envío</label>
+                                <label for="mail_from_address" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Correo de envío</label>
                                 <input type="email" name="mail_from_address" id="mail_from_address" placeholder="noreply@example.com" value="{{ old('mail_from_address', $params->mail_from_address) }}" class="snow-input text-xs">
                                 @error('mail_from_address')
                                     <p class="text-[10px] text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div class="flex flex-col gap-0.5">
-                                <label for="mail_from_name" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Nombre del remitente</label>
+                                <label for="mail_from_name" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Nombre del remitente</label>
                                 <input type="text" name="mail_from_name" id="mail_from_name" placeholder="Tap&Go" value="{{ old('mail_from_name', $params->mail_from_name) }}" class="snow-input text-xs">
                                 @error('mail_from_name')
                                     <p class="text-[10px] text-red-600">{{ $message }}</p>
@@ -195,7 +195,7 @@
                         <!-- SMTP Tab -->
                         <div x-show="activeTab === 'smtp'" class="space-y-3">
                             <div class="flex flex-col gap-0.5">
-                                <label for="smtp_host" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Servidor SMTP</label>
+                                <label for="smtp_host" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Servidor SMTP</label>
                                 <input type="text" name="smtp_host" id="smtp_host" placeholder="smtp.gmail.com" value="{{ old('smtp_host', $params->smtp_host) }}" class="snow-input text-xs">
                                 @error('smtp_host')
                                     <p class="text-[10px] text-red-600">{{ $message }}</p>
@@ -203,14 +203,14 @@
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div class="flex flex-col gap-0.5">
-                                    <label for="smtp_port" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Puerto</label>
+                                    <label for="smtp_port" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Puerto</label>
                                     <input type="number" name="smtp_port" id="smtp_port" placeholder="587" value="{{ old('smtp_port', $params->smtp_port) }}" min="1" max="65535" class="snow-input text-xs">
                                     @error('smtp_port')
                                         <p class="text-[10px] text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
                                 <div class="flex flex-col gap-0.5">
-                                    <label for="smtp_encryption" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Encriptación</label>
+                                    <label for="smtp_encryption" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Encriptación</label>
                                     <select name="smtp_encryption" id="smtp_encryption" class="snow-input text-xs">
                                         <option value="">Ninguna</option>
                                         <option value="tls" @selected(old('smtp_encryption', $params->smtp_encryption) === 'tls')>TLS</option>
@@ -219,14 +219,14 @@
                                 </div>
                             </div>
                             <div class="flex flex-col gap-0.5">
-                                <label for="smtp_username" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Usuario SMTP</label>
+                                <label for="smtp_username" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Usuario SMTP</label>
                                 <input type="text" name="smtp_username" id="smtp_username" value="{{ old('smtp_username', $params->smtp_username) }}" class="snow-input text-xs">
                                 @error('smtp_username')
                                     <p class="text-[10px] text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div class="flex flex-col gap-0.5">
-                                <label for="smtp_password" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Contraseña SMTP</label>
+                                <label for="smtp_password" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Contraseña SMTP</label>
                                 <input type="password" name="smtp_password" id="smtp_password" placeholder="●●●●●●●●" class="snow-input text-xs" autocomplete="off">
                                 @error('smtp_password')
                                     <p class="text-[10px] text-red-600">{{ $message }}</p>
@@ -239,21 +239,21 @@
                         <!-- Office 365 Tab -->
                         <div x-show="activeTab === 'office365'" class="space-y-3">
                             <div class="flex flex-col gap-0.5">
-                                <label for="office365_tenant_id" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">ID del Tenant</label>
+                                <label for="office365_tenant_id" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">ID del Tenant</label>
                                 <input type="text" name="office365_tenant_id" id="office365_tenant_id" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" value="{{ old('office365_tenant_id', $params->office365_tenant_id) }}" class="snow-input text-xs font-mono text-[10px]">
                                 @error('office365_tenant_id')
                                     <p class="text-[10px] text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div class="flex flex-col gap-0.5">
-                                <label for="office365_client_id" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">ID de Cliente</label>
+                                <label for="office365_client_id" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">ID de Cliente</label>
                                 <input type="text" name="office365_client_id" id="office365_client_id" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" value="{{ old('office365_client_id', $params->office365_client_id) }}" class="snow-input text-xs font-mono text-[10px]">
                                 @error('office365_client_id')
                                     <p class="text-[10px] text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div class="flex flex-col gap-0.5">
-                                <label for="office365_client_secret" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Secreto de Cliente</label>
+                                <label for="office365_client_secret" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Secreto de Cliente</label>
                                 <input type="password" name="office365_client_secret" id="office365_client_secret" placeholder="●●●●●●●●" class="snow-input text-xs" autocomplete="off">
                                 @error('office365_client_secret')
                                     <p class="text-[10px] text-red-600">{{ $message }}</p>
@@ -261,7 +261,7 @@
                                 <p class="text-[8px] text-slate-500">Dejar vacío para mantener el secreto actual</p>
                             </div>
                             <div class="flex flex-col gap-0.5">
-                                <label for="office365_scopes" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Permisos (Scopes, JSON)</label>
+                                <label for="office365_scopes" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Permisos (Scopes, JSON)</label>
                                 <textarea name="office365_scopes" id="office365_scopes" placeholder='["Mail.Send", "User.Read"]' class="snow-input text-xs font-mono text-[10px]" rows="3">{{ old('office365_scopes', is_array($params->office365_scopes) ? json_encode($params->office365_scopes) : $params->office365_scopes) }}</textarea>
                                 @error('office365_scopes')
                                     <p class="text-[10px] text-red-600">{{ $message }}</p>
@@ -289,7 +289,7 @@
                             </div>
 
                             <div class="flex flex-col gap-0.5">
-                                <label for="contingency_email_list" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Correos para notificaciones (uno por línea)</label>
+                                <label for="contingency_email_list" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Correos para notificaciones (uno por línea)</label>
                                 <textarea
                                     name="contingency_email_list"
                                     id="contingency_email_list"
@@ -304,7 +304,7 @@
                             </div>
 
                             <div class="flex flex-col gap-0.5">
-                                <label for="contingency_resend_hours" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Intervalo de reenvío (horas)</label>
+                                <label for="contingency_resend_hours" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Intervalo de reenvío (horas)</label>
                                 <input
                                     type="number"
                                     name="contingency_resend_hours"

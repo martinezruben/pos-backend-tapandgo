@@ -8,7 +8,7 @@
         </span>
         <div class="min-w-0 flex-1 leading-tight">
             <p class="truncate text-[12.5px] font-semibold text-white">{{ auth('admin')->user()->name }}</p>
-            <p class="truncate font-mono text-[9.5px] text-slate-400">{{ auth('admin')->user()->email }}</p>
+            <p class="truncate font-mono text-[11px] text-slate-400">{{ auth('admin')->user()->email }}</p>
         </div>
     </div>
 
@@ -31,7 +31,7 @@
     </nav>
 
     <div class="mt-auto shrink-0 border-t border-slate-700 px-3 py-2.5">
-        <div class="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-widest text-slate-500">
+        <div class="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-slate-400">
             <span class="flex h-5 w-5 items-center justify-center rounded bg-primary-600 text-[9px] font-bold text-white">P</span>
             Tap&Go
         </div>
