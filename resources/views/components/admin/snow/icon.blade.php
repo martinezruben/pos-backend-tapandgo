@@ -13,4 +13,4 @@
     $slug = $aliases[$name] ?? $name;
 @endphp
 
-{{ svg('heroicon-o-'.$slug, $class, $attributes->getAttributes()) }}
+{{ svg('heroicon-o-'.$slug, $class, array_merge(['aria-hidden' => 'true'], $attributes->getAttributes())) }}

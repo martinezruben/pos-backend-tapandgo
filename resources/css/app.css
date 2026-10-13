@@ -23,7 +23,7 @@
     }
 
     .snow-label {
-        @apply mb-1 block font-mono text-[9.5px] font-semibold uppercase tracking-widest text-slate-400;
+        @apply mb-1 block font-mono text-[11px] font-semibold uppercase tracking-wider text-slate-500;
     }
 
     .snow-btn-primary {
@@ -51,7 +51,7 @@
 
     /* Cabeceras de tabla: compactas, mono uppercase */
     .snow-table-head {
-        @apply bg-slate-50 text-left font-mono text-[9.5px] font-medium uppercase tracking-widest text-slate-500;
+        @apply bg-slate-50 text-left font-mono text-[11px] font-medium uppercase tracking-wider text-slate-500;
     }
 
     .snow-topbar {
@@ -76,12 +76,12 @@
 
     /* Búsqueda compacta en grids */
     .hope-grid-search {
-        @apply w-full rounded-md border border-slate-200 bg-snow-25 py-1 pl-7 pr-1.5 text-[10px] leading-tight text-slate-800 placeholder:text-slate-400;
+        @apply w-full rounded-md border border-slate-200 bg-snow-25 py-1 pl-7 pr-1.5 text-[11px] leading-tight text-slate-800 placeholder:text-slate-400;
         @apply focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500/35;
     }
 
     .hope-filter-select {
-        @apply rounded-md border border-slate-200 bg-snow-25 py-0.5 pl-1.5 pr-6 text-[10px] text-slate-800 shadow-sm;
+        @apply rounded-md border border-slate-200 bg-snow-25 py-0.5 pl-1.5 pr-6 text-[11px] text-slate-800 shadow-sm;
         @apply focus:outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-500/30;
     }
 }

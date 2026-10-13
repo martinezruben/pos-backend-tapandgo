@@ -9,13 +9,13 @@
         </div>
 
         {{-- Ventas y transacciones a todo el ancho --}}
-        <div class="snow-card rounded-xl border border-slate-200/90 bg-white p-4 shadow-hope-card">
+        <div class="snow-card p-4">
             <div class="mb-3 flex flex-wrap items-start justify-between gap-2">
                 <div>
                     <h2 class="text-sm font-semibold text-slate-900">Ventas y transacciones</h2>
-                    <p class="text-[10px] text-slate-500">Evolución diaria (ventas PAID)</p>
+                    <p class="text-[11px] text-slate-500">Evolución diaria (ventas PAID)</p>
                 </div>
-                <select id="dash-sales-period" class="hope-filter-select text-[10px]">
+                <select id="dash-sales-period" class="hope-filter-select text-[11px]">
                     <option value="30d" selected>Últimos 30 días</option>
                     <option value="7d">Última semana</option>
                 </select>
@@ -25,31 +25,31 @@
 
         {{-- Ventas por familia y por método de pago, lado a lado --}}
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div class="snow-card flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white p-4 shadow-hope-card">
+            <div class="snow-card flex min-h-0 flex-col overflow-hidden p-4">
                 <div class="mb-2 shrink-0">
                     <h3 class="text-sm font-semibold text-slate-900">Ventas por familia</h3>
-                    <p class="text-[10px] text-slate-500">Últimos 30 días · líneas de ticket</p>
+                    <p class="text-[11px] text-slate-500">Últimos 30 días · líneas de ticket</p>
                 </div>
                 <div data-chart="family-donut" class="h-[280px] w-full"></div>
             </div>
 
-            <div class="snow-card flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white p-4 shadow-hope-card">
+            <div class="snow-card flex min-h-0 flex-col overflow-hidden p-4">
                 <div class="mb-2 shrink-0">
                     <h3 class="text-sm font-semibold text-slate-900">Ventas por método de pago</h3>
-                    <p class="text-[10px] text-slate-500">Últimos 30 días · transacciones PAID</p>
+                    <p class="text-[11px] text-slate-500">Últimos 30 días · transacciones PAID</p>
                 </div>
                 <div data-chart="payment-donut" class="h-[280px] w-full"></div>
             </div>
         </div>
 
         {{-- Tabla top productos --}}
-        <div class="snow-card rounded-xl border border-slate-200/90 bg-white shadow-hope-card">
+        <div class="snow-card ">
             <div class="border-b border-slate-100 px-4 py-3">
                 <h3 class="text-sm font-semibold text-slate-900">Top productos por ventas</h3>
-                <p class="text-[10px] text-slate-500">Últimos 30 días · transacciones PAID · participación sobre el total vendido</p>
+                <p class="text-[11px] text-slate-500">Últimos 30 días · transacciones PAID · participación sobre el total vendido</p>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-100 text-left text-[11px]">
+                <table class="min-w-full divide-y divide-slate-100 text-left text-xs">
                     <thead class="snow-table-head">
                         <tr>
                             <th class="px-4 py-2 font-semibold">Producto</th>
@@ -68,17 +68,17 @@
                                     <div class="flex items-center gap-2">
                                         <div class="h-2 min-w-[120px] flex-1 overflow-hidden rounded-full bg-slate-100">
                                             <div
-                                                class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all"
+                                                class="h-full rounded-full bg-primary-500 transition-all"
                                                 style="width: {{ $p['pct'] }}%"
                                             ></div>
                                         </div>
-                                        <span class="w-10 shrink-0 text-right text-[10px] tabular-nums text-slate-500">{{ \App\Support\Format::percent($p['pct']) }}</span>
+                                        <span class="w-10 shrink-0 text-right text-[11px] tabular-nums text-slate-500">{{ \App\Support\Format::percent($p['pct']) }}</span>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-4 py-6 text-center text-[11px] text-slate-400">Sin ventas de productos en el periodo.</td>
+                                <td colspan="4" class="px-4 py-6 text-center text-xs text-slate-500">Sin ventas de productos en el periodo.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -88,13 +88,13 @@
 
         @if ($topLocations !== null)
         {{-- Tabla top localidades --}}
-        <div class="snow-card rounded-xl border border-slate-200/90 bg-white shadow-hope-card">
+        <div class="snow-card ">
             <div class="border-b border-slate-100 px-4 py-3">
                 <h3 class="text-sm font-semibold text-slate-900">Top localidades por ventas</h3>
-                <p class="text-[10px] text-slate-500">Últimos 30 días · transacciones PAID · participación sobre el total vendido</p>
+                <p class="text-[11px] text-slate-500">Últimos 30 días · transacciones PAID · participación sobre el total vendido</p>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-100 text-left text-[11px]">
+                <table class="min-w-full divide-y divide-slate-100 text-left text-xs">
                     <thead class="snow-table-head">
                         <tr>
                             <th class="px-4 py-2 font-semibold">Localidad</th>
@@ -111,17 +111,17 @@
                                     <div class="flex items-center gap-2">
                                         <div class="h-2 min-w-[120px] flex-1 overflow-hidden rounded-full bg-slate-100">
                                             <div
-                                                class="h-full rounded-full bg-gradient-to-r from-primary-500 to-sky-400 transition-all"
+                                                class="h-full rounded-full bg-primary-500 transition-all"
                                                 style="width: {{ $loc['pct'] }}%"
                                             ></div>
                                         </div>
-                                        <span class="w-10 shrink-0 text-right text-[10px] tabular-nums text-slate-500">{{ \App\Support\Format::percent($loc['pct']) }}</span>
+                                        <span class="w-10 shrink-0 text-right text-[11px] tabular-nums text-slate-500">{{ \App\Support\Format::percent($loc['pct']) }}</span>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="px-4 py-6 text-center text-[11px] text-slate-400">Sin datos de ventas por localidad.</td>
+                                <td colspan="3" class="px-4 py-6 text-center text-xs text-slate-500">Sin datos de ventas por localidad.</td>
                             </tr>
                         @endforelse
                     </tbody>

@@ -21,7 +21,7 @@
                     : 'text-slate-300 hover:bg-slate-700/60 hover:text-white' }}"
             @if($dashActive) aria-current="page" @endif
         >
-            <span class="h-[5px] w-[5px] shrink-0 rounded-full {{ $dashActive ? 'bg-primary-400' : 'bg-slate-500' }}"></span>
+            <x-admin.snow.icon name="home" class="h-4 w-4 shrink-0 {{ $dashActive ? 'text-primary-400' : 'text-slate-400' }}" />
             <span class="truncate">Dashboard</span>
         </a>
     </div>
