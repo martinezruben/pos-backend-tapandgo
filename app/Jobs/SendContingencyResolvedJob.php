@@ -6,6 +6,7 @@ use App\Mail\ContingencyResolvedMail;
 use App\Models\ContingencyAuditLog;
 use App\Models\Location;
 use App\Models\SystemParameter;
+use App\Services\MailConfigurationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -37,6 +38,10 @@ class SendContingencyResolvedJob implements ShouldQueue
 
             return;
         }
+
+        // SMTP configurado en el panel (no el mailer del .env)
+
+        app(MailConfigurationService::class)->applyToMailer();
 
         foreach ($emailList as $email) {
             try {

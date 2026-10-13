@@ -33,6 +33,13 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->appendToGroup('api', LogApiRequest::class);
+
+        // Detrás de un proxy con TLS (p. ej. Caddy del perfil "https"): confiar solo en
+        // los proxies de TRUSTED_PROXIES. Sin configurar no se confía en ninguno, para
+        // que un cliente no pueda falsear su IP (límites de intentos) con X-Forwarded-For.
+        if ($proxies = env('TRUSTED_PROXIES')) {
+            $middleware->trustProxies(at: $proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
+        }
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e): bool {

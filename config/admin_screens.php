@@ -24,6 +24,8 @@ use App\Models\User;
 return [
     // Sin modelo: `rbac` lo expone en la matriz de permisos solo con `dashboard.view`
     'dashboard' => ['label' => 'Dashboard comercial', 'icon' => 'chart-bar', 'readonly' => true, 'rbac' => true],
+    // Sin modelo: solo expone el permiso pulse.view en la matriz RBAC
+    'pulse' => ['label' => 'Pulse (métricas)', 'icon' => 'chart-bar', 'readonly' => true, 'rbac' => true, 'exclude_from_nav' => true],
     'dashboard-technical' => ['label' => 'Dashboard técnico', 'icon' => 'wrench-screwdriver', 'readonly' => true, 'rbac' => true, 'exclude_from_nav' => true],
     'locations' => [
         'model' => Location::class,

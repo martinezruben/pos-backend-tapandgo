@@ -13,7 +13,8 @@ export TMPDIR=/tmp/php
 echo "Waiting for MySQL..."
 max_retries=30
 retry=0
-while ! php -r "new PDO('mysql:host=mysql;dbname=kopagpos', 'kopagpos', 'secret');" 2>/dev/null; do
+# Credenciales desde el entorno (.env vía env_file), no escritas en el script
+while ! php -r 'new PDO("mysql:host=".getenv("DB_HOST").";dbname=".getenv("DB_DATABASE"), getenv("DB_USERNAME"), getenv("DB_PASSWORD"));' 2>/dev/null; do
     retry=$((retry + 1))
     if [ $retry -ge $max_retries ]; then
         echo "MySQL connection failed after $max_retries attempts"

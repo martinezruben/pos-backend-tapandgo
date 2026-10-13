@@ -6,6 +6,7 @@ use App\Mail\ContingencyReminderMail;
 use App\Models\ContingencyAuditLog;
 use App\Models\Location;
 use App\Models\SystemParameter;
+use App\Services\MailConfigurationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -48,6 +49,9 @@ class ScheduleContingencyReminderJob implements ShouldQueue
         }
 
         // Send reminder emails
+        // SMTP configurado en el panel (no el mailer del .env)
+        app(MailConfigurationService::class)->applyToMailer();
+
         foreach ($emailList as $email) {
             try {
                 Mail::to($email)->send(new ContingencyReminderMail($this->location));

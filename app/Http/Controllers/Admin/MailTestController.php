@@ -12,21 +12,21 @@ class MailTestController extends Controller
 
     public function validateSmtp()
     {
-        $this->authorize('system_parameters.edit');
+        $this->authorize('system_settings.edit');
 
         return response()->json($this->mailService->validateSmtpConnection());
     }
 
     public function validateOffice365()
     {
-        $this->authorize('system_parameters.edit');
+        $this->authorize('system_settings.edit');
 
         return response()->json($this->mailService->validateOffice365Connection());
     }
 
     public function sendTest(Request $request)
     {
-        $this->authorize('system_parameters.edit');
+        $this->authorize('system_settings.edit');
 
         $validated = $request->validate([
             'to_address' => 'required|email',

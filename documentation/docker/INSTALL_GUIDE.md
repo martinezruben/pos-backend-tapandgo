@@ -86,8 +86,16 @@ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8081             # →
 | Servicio | Puerto interno | Puerto anfitrión | Nota |
 |----------|----------------|------------------|------|
 | App (nginx) | 80 | **8082** | 8080 está reservado para Portainer |
-| MySQL | 3306 | 3306 | |
-| phpMyAdmin | 80 | **8081** | |
+| MySQL | 3306 | 127.0.0.1:3306 | Solo desde el servidor |
+| phpMyAdmin | 80 | 127.0.0.1:**8081** | Solo desde el servidor; pide usuario y clave de la BD |
+| Caddy (perfil `https`) | 80 / 443 | 80 / 443 | Opcional, HTTPS automático |
+
+MySQL y phpMyAdmin no quedan expuestos a la red. Para usarlos desde tu equipo abre un túnel SSH:
+
+```bash
+ssh -L 8081:127.0.0.1:8081 -L 3306:127.0.0.1:3306 usuario@servidor
+# luego: http://localhost:8081 (phpMyAdmin)
+```
 
 ---
 
@@ -135,10 +143,43 @@ docker compose exec app php artisan migrate:status
 
 ---
 
-## 7. Consideraciones de producción (TO-DO)
+## 7. Producción: HTTPS y credenciales
 
+`./deploy.sh` genera un `.env` de producción (`APP_ENV=production`, `APP_DEBUG=false`) con contraseñas aleatorias para la BD y para `root`. Si el `.env` ya existía, revisa estos valores a mano:
+
+```dotenv
+APP_ENV=production
+APP_DEBUG=false
+DB_PASSWORD=<aleatoria, no "secret">
+MYSQL_ROOT_PASSWORD=<aleatoria>
+```
+
+> `MYSQL_ROOT_PASSWORD` solo se aplica al crear el volumen de datos. En una base ya creada, cambia las contraseñas con `ALTER USER` dentro de MySQL (`./deploy.sh db`) y luego actualiza el `.env`.
+
+### HTTPS con Caddy (certificados automáticos)
+
+1. Apunta el DNS del dominio a este servidor y deja libres los puertos 80 y 443.
+2. En `.env`:
+   ```dotenv
+   DOMAIN=pos.tu-dominio.com
+   APP_URL=https://pos.tu-dominio.com
+   TRUSTED_PROXIES=*
+   SESSION_SECURE_COOKIE=true
+   ```
+3. Levanta el stack con el perfil `https`:
+   ```bash
+   docker compose -p kopagpos --profile https up -d
+   php artisan config:clear   # dentro del contenedor app
+   ```
+4. Cierra el puerto `8082` al exterior (firewall), o publícalo solo en `127.0.0.1`, para que todo el tráfico pase por Caddy. `TRUSTED_PROXIES=*` solo es seguro si la app no es accesible directamente.
+
+Caddy obtiene y renueva los certificados de Let's Encrypt solo y agrega HSTS. Nginx ya envía `X-Frame-Options`, `X-Content-Type-Options` y `Referrer-Policy`.
+
+## 8. Pendientes de producción
+
+- [x] `APP_ENV=production` y `APP_DEBUG=false` en el `.env` generado.
+- [x] HTTPS (perfil `https` con Caddy).
+- [x] MySQL y phpMyAdmin solo accesibles desde el servidor.
 - [ ] Generar `APP_KEY` via secret, no en .env plano.
-- [ ] Usar `.env.production` con `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://...`.
-- [ ] Certificados HTTPS (modificar nginx para TLS).
 - [ ] Backup automático del volumen `db_data` (`docker run --rm -v kopagpos-backend_db_data:/src ...` o `mysqldump`).
 - [ ] Rotar el `ghp_...` token de GitHub expuesto en el remote `pos-kopagpos`.
