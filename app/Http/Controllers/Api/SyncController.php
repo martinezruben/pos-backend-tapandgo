@@ -171,7 +171,7 @@ class SyncController extends Controller
                 foreach ($txData['payments'] ?? [] as $payment) {
                     TransactionPayment::create([
                         'transaction_id' => $transaction->id,
-                        'payment_method' => Str::limit($payment['payment_method'] ?? 'OTHER', 30, ''),
+                        'payment_method' => Str::limit($payment['payment_method'] ?? 'OTHER', 64, ''),
                         'amount' => $payment['amount'] ?? 0,
                         'reference' => isset($payment['reference']) ? Str::limit($payment['reference'], 100, '') : null,
                     ]);
