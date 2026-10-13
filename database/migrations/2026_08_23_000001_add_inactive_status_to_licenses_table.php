@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Agrega el estado INACTIVE al ENUM de licenses.status.
@@ -9,14 +11,18 @@ use Illuminate\Support\Facades\DB;
  * así que se usa el SQL nativo con MODIFY COLUMN manteniendo
  * los valores existentes + INACTIVE.
  *
- * SQLite (tests) no soporta MODIFY ni ENUM, pero tampoco valida
- * el CHECK del enum, por lo que el ALTER es innecesario ahí.
+ * SQLite (tests) no soporta MODIFY, y sí valida el CHECK que Laravel crea
+ * para el enum, así que ahí se reconstruye la columna con ->change().
  */
 return new class extends Migration
 {
     public function up(): void
     {
         if (DB::getDriverName() === 'sqlite') {
+            Schema::table('licenses', function (Blueprint $table) {
+                $table->enum('status', ['ACTIVE', 'INACTIVE', 'EXPIRED', 'REVOKED'])->default('ACTIVE')->change();
+            });
+
             return;
         }
 
@@ -28,6 +34,10 @@ return new class extends Migration
     public function down(): void
     {
         if (DB::getDriverName() === 'sqlite') {
+            Schema::table('licenses', function (Blueprint $table) {
+                $table->enum('status', ['ACTIVE', 'EXPIRED', 'REVOKED'])->default('ACTIVE')->change();
+            });
+
             return;
         }
 
