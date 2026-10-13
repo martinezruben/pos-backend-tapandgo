@@ -35,12 +35,12 @@ return [
     | ncf.low_threshold → notificar cuando quedan N números
     */
     'ncf' => [
-        'enabled'          => (bool) env('POS_NCF_ENABLED', true),
-        'country'          => env('POS_NCF_COUNTRY', 'EC'),
-        'mode'             => env('POS_NCF_MODE', 'by_location'),
-        'start'            => (int) env('POS_NCF_START', 1),
-        'end'              => (int) env('POS_NCF_END', 999999999),
-        'low_threshold'    => (int) env('POS_NCF_LOW_THRESHOLD', 100),
+        'enabled' => (bool) env('POS_NCF_ENABLED', true),
+        'country' => env('POS_NCF_COUNTRY', 'EC'),
+        'mode' => env('POS_NCF_MODE', 'by_location'),
+        'start' => (int) env('POS_NCF_START', 1),
+        'end' => (int) env('POS_NCF_END', 999999999),
+        'low_threshold' => (int) env('POS_NCF_LOW_THRESHOLD', 100),
     ],
 
 ];

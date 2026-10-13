@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AdminUser;
+use App\Models\Family;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Testing\File;
 use Illuminate\Support\Facades\Storage;
@@ -30,7 +31,7 @@ class FamilyUploadSqliteTest extends TestCase
 
         $res->assertRedirect();
 
-        $fam = \App\Models\Family::where('name', 'Familia Diag')->first();
+        $fam = Family::where('name', 'Familia Diag')->first();
         $this->assertNotNull($fam, 'La familia debe crearse');
         fwrite(STDERR, "\nimage_url guardada: ".var_export($fam->image_url, true)."\n");
         $this->assertNotEmpty($fam->image_url);

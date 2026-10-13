@@ -23,7 +23,7 @@ return new class extends Migration
                 Schema::table('transactions', function (Blueprint $table) {
                     $table->dropForeign(['shift_id']);
                 });
-            } catch (\Throwable) {
+            } catch (Throwable) {
             }
             DB::statement('ALTER TABLE transactions MODIFY COLUMN shift_id VARCHAR(100) NULL');
 
@@ -35,14 +35,14 @@ return new class extends Migration
                 Schema::table('transactions', function (Blueprint $table) {
                     $table->dropForeign(['shift_id']);
                 });
-            } catch (\Throwable) {
+            } catch (Throwable) {
             }
 
             try {
                 Schema::table('transactions', function (Blueprint $table) {
                     $table->string('shift_id', 100)->nullable()->change();
                 });
-            } catch (\Throwable) {
+            } catch (Throwable) {
             }
         }
     }
@@ -69,7 +69,7 @@ return new class extends Migration
                 Schema::table('transactions', function (Blueprint $table) {
                     $table->uuid('shift_id')->nullable()->change();
                 });
-            } catch (\Throwable) {
+            } catch (Throwable) {
             }
         }
     }

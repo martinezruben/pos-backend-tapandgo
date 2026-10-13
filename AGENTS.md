@@ -5,9 +5,9 @@ Backend Laravel (PHP 8.3, Laravel 13) para la app POS Android "Tap&Go" + panel d
 ## Comandos
 
 ```bash
-php artisan test                          # suite completa
+php artisan test                          # suite completa (debe quedar 100 % verde; el CI la corre en cada PR)
 php artisan test tests/Feature/XxxTest.php  # test enfocado
-vendor/bin/pint <archivos>                # formatter/lint (obligatorio antes de commit)
+vendor/bin/pint <archivos>                # formatter/lint (obligatorio antes de commit; el CI corre `pint --test` sobre todo el repo)
 npm run build                             # assets Vite (obligatorio si se toca resources/js o CSS)
 php artisan pos:generate-thumbnails       # backfill miniaturas WebP de imágenes existentes
 ./deploy.sh                               # despliegue Docker (build/up/logs)
@@ -33,8 +33,7 @@ php artisan pos:generate-thumbnails       # backfill miniaturas WebP de imágene
 
 ## Gotchas
 
-- **Tests corren en sqlite en memoria** (`phpunit.xml`): las migraciones deben ser compatibles o hacer no-op para sqlite (ver ejemplo en `2026_08_23_000001_add_inactive_status_to_licenses_table.php`, que salta el `MODIFY COLUMN` de MySQL).
-- 3 tests de `FamilyImageUploadTest` fallan siempre: no usan `RefreshDatabase` y requieren una BD real con `DemoPosSeeder`. No intentar "arreglarlos" sin saber esto.
+- **Tests corren en sqlite en memoria** (`phpunit.xml`): las migraciones deben ser compatibles o hacer no-op para sqlite (ver `2026_08_23_000001_add_inactive_status_to_licenses_table.php`: `MODIFY COLUMN` en MySQL y `->change()` en sqlite, porque sqlite sí valida el CHECK de los enum).
 - `intervention/image` v4: API es `decodePath()` + `save($path, quality:)` (no `read()`/`toWebp()`). Al guardar en ruta nueva del disco, crear el directorio antes (`Storage::disk('public')->makeDirectory()`).
 - Las imágenes nuevas subidas desde el admin generan miniatura automáticamente; para imágenes previas existe `pos:generate-thumbnails`.
 - Después de cambiar `config/` en producción: `php artisan config:clear` (o rebuild del contenedor).
