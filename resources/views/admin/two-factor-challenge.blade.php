@@ -35,7 +35,7 @@
 
             <form method="POST" action="{{ route('admin.logout') }}" class="mt-4 border-t border-slate-100 pt-3 text-center">
                 @csrf
-                <button type="submit" class="text-[10px] font-medium text-slate-400 hover:text-slate-600">Cancelar e ir a inicio de sesión</button>
+                <button type="submit" class="text-[10px] font-medium text-slate-500 hover:text-slate-600">Cancelar e ir a inicio de sesión</button>
             </form>
         </div>
     </body>

@@ -16,7 +16,7 @@ class AdminNavigation
     private const SEARCH_FIRST = ['products', 'transactions', 'android-users', 'locations', 'devices', 'families'];
 
     /**
-     * @return list<array{key: string, label: string, items: list<array{label: string, url: string, active: bool, searchable: bool, searchRank: int}>}>
+     * @return list<array{key: string, label: string, icon: string, items: list<array{label: string, icon: string, url: string, active: bool, searchable: bool, searchRank: int}>}>
      */
     public static function groups(?Authenticatable $admin): array
     {
@@ -38,6 +38,7 @@ class AdminNavigation
                 $route = $screen['route'] ?? null;
                 $items[] = [
                     'label' => $screen['label'],
+                    'icon' => $screen['icon'] ?? 'squares-2x2',
                     'url' => $route ? route($route) : route('admin.screens.index', $key),
                     'active' => $currentScreen === $key || ($route && request()->routeIs($route.'*')),
                     // Los grids CRUD aceptan ?q= para buscar registros
@@ -48,19 +49,19 @@ class AdminNavigation
 
             $key = $group['key'] ?? '';
             if ($key === 'reports' && $admin->can('cierre_caja.view')) {
-                $items[] = self::item('Cierre de caja', 'admin.cierre-caja.index', 'admin.cierre-caja.*');
+                $items[] = self::item('Cierre de caja', 'archive-box', 'admin.cierre-caja.index', 'admin.cierre-caja.*');
             }
             if ($key === 'system' && $admin->can('roles.edit')) {
-                $items[] = self::item('Permisos por rol', 'admin.rbac.matrix.index', 'admin.rbac.*');
+                $items[] = self::item('Permisos por rol', 'adjustments-horizontal', 'admin.rbac.matrix.index', 'admin.rbac.*');
             }
             if ($key === 'system' && $admin->can('system_settings.view')) {
-                $items[] = self::item('Parámetros del sistema', 'admin.system-settings.edit', 'admin.system-settings.*');
+                $items[] = self::item('Parámetros del sistema', 'cog-6-tooth', 'admin.system-settings.edit', 'admin.system-settings.*');
             }
             if ($key === 'system' && Gate::forUser($admin)->allows('viewPulse')) {
-                $items[] = self::item('Pulse (métricas)', 'pulse', 'pulse');
+                $items[] = self::item('Pulse (métricas)', 'bolt', 'pulse', 'pulse');
             }
 
-            $groups[] = ['key' => $key, 'label' => $group['label'], 'items' => $items];
+            $groups[] = ['key' => $key, 'label' => $group['label'], 'icon' => $group['icon'] ?? 'squares-2x2', 'items' => $items];
         }
 
         return $groups;
@@ -100,12 +101,13 @@ class AdminNavigation
     }
 
     /**
-     * @return array{label: string, url: string, active: bool, searchable: bool, searchRank: int}
+     * @return array{label: string, icon: string, url: string, active: bool, searchable: bool, searchRank: int}
      */
-    private static function item(string $label, string $route, string $activePattern): array
+    private static function item(string $label, string $icon, string $route, string $activePattern): array
     {
         return [
             'label' => $label,
+            'icon' => $icon,
             'url' => route($route),
             'active' => request()->routeIs($activePattern),
             'searchable' => false,

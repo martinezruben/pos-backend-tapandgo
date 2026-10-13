@@ -13,6 +13,7 @@
 @php
     $dashActive = request()->routeIs('admin.dashboard');
 @endphp
+<a href="#contenido" class="sr-only z-[60] rounded-md bg-primary-600 px-3 py-2 text-xs font-semibold text-white focus:not-sr-only focus:fixed focus:left-2 focus:top-2">Saltar al contenido</a>
 <div class="min-h-full lg:flex" x-data="{ mobileNav: false }">
     {{-- Mobile --}}
     <div class="sticky top-0 z-40 flex items-center justify-between border-b border-slate-200 bg-snow-800 px-2 py-2 shadow-sm lg:hidden">
@@ -73,19 +74,19 @@
                         class="hidden h-8 min-w-0 flex-1 items-center gap-1.5 rounded-md border border-slate-200 bg-snow-50 px-2 text-left transition hover:border-primary-300 sm:flex sm:w-[220px] md:w-64"
                         aria-label="Buscar en el panel"
                     >
-                        <svg class="h-3.5 w-3.5 shrink-0 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
-                        <span class="flex-1 truncate text-[12px] text-slate-400">Buscar en el panel</span>
-                        <span class="hidden shrink-0 rounded border border-slate-200 px-1 font-mono text-[9.5px] text-slate-400 md:inline">⌘K</span>
+                        <svg class="h-3.5 w-3.5 shrink-0 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                        <span class="flex-1 truncate text-[12px] text-slate-500">Buscar en el panel</span>
+                        <span class="hidden shrink-0 rounded border border-slate-200 px-1 font-mono text-[9.5px] text-slate-500 md:inline">⌘K</span>
                     </button>
                     <button type="button" x-data x-on:click="$dispatch('open-palette')" class="snow-icon-btn h-8 w-8 sm:hidden" title="Buscar en el panel" aria-label="Buscar en el panel">
                         <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
                     </button>
-                    <a href="{{ route('admin.2fa.show') }}" class="snow-icon-btn h-8 w-8" title="Verificación en dos pasos">
+                    <a href="{{ route('admin.2fa.show') }}" class="snow-icon-btn h-8 w-8" title="Verificación en dos pasos" aria-label="Verificación en dos pasos">
                         <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
                     </a>
                     <form method="POST" action="{{ route('admin.logout') }}" class="inline">
                         @csrf
-                        <button type="submit" class="snow-icon-btn h-8 w-8" title="Salir">
+                        <button type="submit" class="snow-icon-btn h-8 w-8" title="Salir" aria-label="Salir">
                             <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M18 12H9m9 0 3-3m-3 3-3-3" /></svg>
                         </button>
                     </form>
@@ -96,7 +97,7 @@
             </div>
         </header>
 
-        <main class="flex-1 px-2 py-2 sm:px-3 sm:py-3 lg:px-4">
+        <main id="contenido" tabindex="-1" class="flex-1 focus:outline-none px-2 py-2 sm:px-3 sm:py-3 lg:px-4">
             @if(session('status'))
                 <div class="mb-2 rounded-lg border border-primary-200/80 bg-primary-50 px-2.5 py-1.5 text-xs font-medium text-primary-900 shadow-sm">
                     {{ session('status') }}
@@ -107,10 +108,9 @@
 
         @include('admin.partials.command-palette')
 
-        <footer class="mt-auto border-t border-slate-200 bg-snow-50 px-3 py-2 text-[10px] text-slate-400">
+        <footer class="mt-auto border-t border-slate-200 bg-snow-50 px-3 py-2 text-[11px] text-slate-500">
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <span>© {{ date('Y') }} {{ config('app.name') }}</span>
-                <span class="font-mono font-medium tracking-wide text-slate-300">Public Sans · IBM Plex Mono</span>
             </div>
         </footer>
     </div>

@@ -22,7 +22,7 @@
             </div>
             <button
                 type="button"
-                class="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                class="shrink-0 rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
                 @click="closeDetail()"
                 aria-label="Cerrar"
             >
@@ -40,33 +40,33 @@
             <div class="space-y-4">
                 <dl class="grid grid-cols-1 gap-x-4 gap-y-2 text-[10px] sm:grid-cols-2">
                     <div class="flex flex-col gap-0.5">
-                        <dt class="font-semibold uppercase tracking-wide text-slate-400">Fecha / hora</dt>
+                        <dt class="font-semibold uppercase tracking-wide text-slate-500">Fecha / hora</dt>
                         <dd class="tabular-nums text-slate-800" x-text="detail.occurred_at ?? '—'"></dd>
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <dt class="font-semibold uppercase tracking-wide text-slate-400">Estado</dt>
+                        <dt class="font-semibold uppercase tracking-wide text-slate-500">Estado</dt>
                         <dd class="text-slate-800" x-text="detail.status ?? '—'"></dd>
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <dt class="font-semibold uppercase tracking-wide text-slate-400">Método de pago</dt>
+                        <dt class="font-semibold uppercase tracking-wide text-slate-500">Método de pago</dt>
                         <dd class="text-slate-800" x-text="(detail.payment_methods && detail.payment_methods.length) ? detail.payment_methods.join(', ') : '—'"></dd>
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <dt class="font-semibold uppercase tracking-wide text-slate-400">Total</dt>
+                        <dt class="font-semibold uppercase tracking-wide text-slate-500">Total</dt>
                         <dd class="tabular-nums text-slate-800" x-text="detail.total ?? '—'"></dd>
                     </div>
                     <div class="flex flex-col gap-0.5 sm:col-span-2">
-                        <dt class="font-semibold uppercase tracking-wide text-slate-400">Localidad</dt>
+                        <dt class="font-semibold uppercase tracking-wide text-slate-500">Localidad</dt>
                         <dd class="text-slate-800" x-text="detail.location_name ?? '—'"></dd>
                     </div>
                     <div class="flex flex-col gap-0.5 sm:col-span-2">
-                        <dt class="font-semibold uppercase tracking-wide text-slate-400">Dispositivo</dt>
+                        <dt class="font-semibold uppercase tracking-wide text-slate-500">Dispositivo</dt>
                         <dd class="text-slate-800" x-text="detail.device_label ?? '—'"></dd>
                     </div>
                 </dl>
 
                 <div>
-                    <h3 class="mb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Líneas</h3>
+                    <h3 class="mb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Líneas</h3>
                     <div class="overflow-x-auto rounded-lg border border-slate-200">
                         <table class="w-full min-w-[640px] border-collapse text-left text-[10px]">
                             <thead class="border-b border-slate-100 bg-slate-50/90">
@@ -97,7 +97,7 @@
                 </div>
 
                 <div>
-                    <h3 class="mb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Pagos</h3>
+                    <h3 class="mb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Pagos</h3>
                     <div class="overflow-x-auto rounded-lg border border-slate-200">
                         <table class="w-full min-w-[360px] border-collapse text-left text-[10px]">
                             <thead class="border-b border-slate-100 bg-slate-50/90">

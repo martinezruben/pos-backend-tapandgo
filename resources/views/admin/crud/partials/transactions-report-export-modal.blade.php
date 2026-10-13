@@ -24,7 +24,7 @@
             </div>
             <button
                 type="button"
-                class="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                class="shrink-0 rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
                 @click="open = false"
                 :disabled="loading"
                 aria-label="Cerrar"
@@ -38,7 +38,7 @@
 
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div class="flex flex-col gap-0.5">
-                    <label for="tx-report-from" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Desde</label>
+                    <label for="tx-report-from" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Desde</label>
                     <input
                         id="tx-report-from"
                         type="date"
@@ -48,7 +48,7 @@
                     >
                 </div>
                 <div class="flex flex-col gap-0.5">
-                    <label for="tx-report-to" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Hasta</label>
+                    <label for="tx-report-to" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Hasta</label>
                     <input
                         id="tx-report-to"
                         type="date"
@@ -60,7 +60,7 @@
             </div>
 
             <div class="flex flex-col gap-0.5">
-                <label for="tx-report-loc" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Localidad</label>
+                <label for="tx-report-loc" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Localidad</label>
                 <select
                     id="tx-report-loc"
                     x-model="locationId"

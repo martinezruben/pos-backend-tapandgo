@@ -70,7 +70,7 @@ function mountSalesArea(ApexCharts, el, initial, onPeriodChange) {
             categories: initial.labels,
             tickAmount: tickAmountFor(el, initial.labels.length),
             labels: {
-                style: { colors: '#64748b', fontSize: '10px' },
+                style: { colors: '#64748b', fontSize: '11px' },
                 rotate: 0,
                 hideOverlappingLabels: true,
             },
@@ -81,7 +81,7 @@ function mountSalesArea(ApexCharts, el, initial, onPeriodChange) {
             {
                 title: { text: 'Ventas ($)', style: { color: '#64748b', fontSize: '11px' } },
                 labels: {
-                    style: { colors: '#64748b', fontSize: '10px' },
+                    style: { colors: '#64748b', fontSize: '11px' },
                     formatter: fmtMoney,
                 },
             },
@@ -89,7 +89,7 @@ function mountSalesArea(ApexCharts, el, initial, onPeriodChange) {
                 opposite: true,
                 title: { text: 'Tickets', style: { color: '#64748b', fontSize: '11px' } },
                 labels: {
-                    style: { colors: '#64748b', fontSize: '10px' },
+                    style: { colors: '#64748b', fontSize: '11px' },
                     formatter: (v) => `${Math.round(v)}`,
                 },
             },
@@ -177,7 +177,7 @@ function mountFamilyDonut(ApexCharts, el, familyMix, palette) {
         dataLabels: { enabled: false },
         legend: {
             position: 'bottom',
-            fontSize: '10px',
+            fontSize: '11px',
             itemMargin: { vertical: 2 },
             offsetY: 2,
         },
@@ -268,7 +268,7 @@ function mountSyncStacked(ApexCharts, el, syncByDay) {
             categories: categories.length ? categories : Array.from({ length: n }, (_, i) => String(i + 1)),
             tickAmount: tickAmountFor(el, n),
             labels: {
-                style: { colors: '#64748b', fontSize: '9px' },
+                style: { colors: '#64748b', fontSize: '11px' },
                 rotate: -35,
                 rotateAlways: n > 7,
                 hideOverlappingLabels: true,
@@ -281,7 +281,7 @@ function mountSyncStacked(ApexCharts, el, syncByDay) {
             max: yMax,
             forceNiceScale: true,
             labels: {
-                style: { colors: '#64748b', fontSize: '10px' },
+                style: { colors: '#64748b', fontSize: '11px' },
                 formatter: (v) => `${Math.round(v)}`,
             },
         },

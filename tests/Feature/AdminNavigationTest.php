@@ -6,6 +6,7 @@ use App\Models\AdminUser;
 use App\Support\AdminNavigation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class AdminNavigationTest extends TestCase
@@ -21,6 +22,20 @@ class AdminNavigationTest extends TestCase
         }
 
         return $admin;
+    }
+
+    public function test_menu_items_have_distinct_icons(): void
+    {
+        $admin = AdminUser::factory()->create();
+        $admin->assignRole(Role::findOrCreate('super-admin', 'admin'));
+        $this->actingAs($admin, 'admin');
+
+        $groups = AdminNavigation::groups($admin);
+        $icons = collect($groups)->pluck('items')->flatten(1)->pluck('icon');
+
+        $this->assertNotEmpty($icons);
+        $this->assertSame($icons->count(), $icons->unique()->count(), 'Dos páginas del menú comparten ícono: '.$icons->duplicates()->implode(', '));
+        $this->assertSame(count($groups), collect($groups)->pluck('icon')->unique()->count());
     }
 
     public function test_search_entries_follow_permissions(): void

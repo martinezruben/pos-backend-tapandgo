@@ -2,7 +2,7 @@
     <div class="space-y-4 pb-6">
         <form method="GET" action="{{ route('admin.cierre-caja.index') }}" class="snow-card flex flex-wrap items-end gap-2 rounded-xl border border-slate-200/90 bg-white p-3 shadow-hope-card">
             <div class="flex min-w-[9rem] flex-col gap-0.5">
-                <label class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400" for="cc-loc">Localidad</label>
+                <label class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500" for="cc-loc">Localidad</label>
                 <select id="cc-loc" name="filter[location_id]" class="hope-filter-select">
                     @foreach(($gridFilterOptions['location_id'] ?? collect()) as $opt)
                         <option value="{{ $opt['id'] }}" @selected((string) $filterLocationId === (string) $opt['id'])>{{ $opt['label'] }}</option>
@@ -10,11 +10,11 @@
                 </select>
             </div>
             <div class="flex min-w-[9rem] flex-col gap-0.5">
-                <label class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400" for="cc-from">Desde</label>
+                <label class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500" for="cc-from">Desde</label>
                 <input id="cc-from" type="date" name="filter[date_from]" value="{{ $filterDateFrom }}" class="hope-filter-select">
             </div>
             <div class="flex min-w-[9rem] flex-col gap-0.5">
-                <label class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400" for="cc-to">Hasta</label>
+                <label class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500" for="cc-to">Hasta</label>
                 <input id="cc-to" type="date" name="filter[date_to]" value="{{ $filterDateTo }}" class="hope-filter-select">
             </div>
             <button type="submit" class="rounded-md bg-primary-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-primary-700">Aplicar</button>
@@ -71,7 +71,7 @@
                                 <td class="px-3 py-2.5 text-right tabular-nums text-slate-700">{{ $r['closing_balance'] === null ? '—' : '$'.number_format($r['closing_balance'], 2) }}</td>
                                 <td class="px-3 py-2.5 text-right">
                                     @if($r['difference'] === null)
-                                        <span class="text-[10px] text-slate-400">sin declarar</span>
+                                        <span class="text-[10px] text-slate-500">sin declarar</span>
                                     @else
                                         @php
                                             $ok = abs((float) $r['difference']) < 0.01;
@@ -84,7 +84,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="13" class="px-4 py-8 text-center text-[11px] text-slate-400">No hay turnos en el periodo seleccionado.</td>
+                                <td colspan="13" class="px-4 py-8 text-center text-[11px] text-slate-500">No hay turnos en el periodo seleccionado.</td>
                             </tr>
                         @endforelse
                     </tbody>

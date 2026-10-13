@@ -196,6 +196,22 @@ class AdminDashboardTest extends TestCase
             ->assertViewHas('kpis', fn (array $kpis): bool => collect($kpis)->every(fn ($k) => ($k['tone'] ?? null) !== 'warn'));
     }
 
+    public function test_dashboard_kpis_do_not_repeat_icons(): void
+    {
+        $admin = $this->adminWith('dashboard.view', 'dashboard_technical.view');
+
+        foreach (['admin.dashboard', 'admin.dashboard.technical'] as $route) {
+            $this->actingAs($admin, 'admin')
+                ->get(route($route))
+                ->assertOk()
+                ->assertViewHas('kpis', function (array $kpis): bool {
+                    $icons = array_column($kpis, 'icon');
+
+                    return count($icons) === count(array_unique($icons));
+                });
+        }
+    }
+
     public function test_commercial_dashboard_shows_sales_not_operations(): void
     {
         Location::factory()->create(['name' => 'Sucursal Sur', 'contingency_started_at' => now()->subHours(3)]);

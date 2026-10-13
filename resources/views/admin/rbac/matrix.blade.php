@@ -16,7 +16,7 @@
 
             <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div class="flex min-w-0 flex-col gap-0.5">
-                    <label for="rbac-role" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400">Rol</label>
+                    <label for="rbac-role" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Rol</label>
                     <select
                         id="rbac-role"
                         class="hope-filter-select max-w-md py-1.5 text-xs"
@@ -51,7 +51,7 @@
                     <tbody class="divide-y divide-slate-100 bg-white">
                         @foreach($screenGroups as $group)
                             <tr class="bg-slate-50/80">
-                                <td colspan="4" class="sticky left-0 z-[1] bg-slate-50/95 px-2 py-1 text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 shadow-[1px_0_0_0_rgb(241_245_249)]">
+                                <td colspan="4" class="sticky left-0 z-[1] bg-slate-50/95 px-2 py-1 text-[9px] font-mono font-bold uppercase tracking-widest text-slate-500 shadow-[1px_0_0_0_rgb(241_245_249)]">
                                     {{ $group['label'] }}
                                 </td>
                             </tr>
@@ -64,7 +64,7 @@
                                 <td class="sticky left-0 z-[1] bg-white px-2 py-1 align-middle font-medium text-slate-800 shadow-[1px_0_0_0_rgb(241_245_249)]">
                                     <span class="block truncate" title="{{ $s['key'] }}">{{ $s['label'] }}</span>
                                     @if($ro)
-                                        <span class="text-[9px] font-normal text-slate-400">(solo lectura)</span>
+                                        <span class="text-[9px] font-normal text-slate-500">(solo lectura)</span>
                                     @endif
                                 </td>
                                 <td class="px-2 py-1 text-center align-middle">

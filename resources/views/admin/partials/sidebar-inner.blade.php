@@ -8,7 +8,7 @@
         </span>
         <div class="min-w-0 flex-1 leading-tight">
             <p class="truncate text-[12.5px] font-semibold text-white">{{ auth('admin')->user()->name }}</p>
-            <p class="truncate font-mono text-[9.5px] text-slate-400">{{ auth('admin')->user()->email }}</p>
+            <p class="truncate font-mono text-[11px] text-slate-400">{{ auth('admin')->user()->email }}</p>
         </div>
     </div>
 
@@ -21,7 +21,7 @@
                     : 'text-slate-300 hover:bg-slate-700/60 hover:text-white' }}"
             @if($dashActive) aria-current="page" @endif
         >
-            <span class="h-[5px] w-[5px] shrink-0 rounded-full {{ $dashActive ? 'bg-primary-400' : 'bg-slate-500' }}"></span>
+            <x-admin.snow.icon name="home" class="h-4 w-4 shrink-0 {{ $dashActive ? 'text-primary-400' : 'text-slate-400' }}" />
             <span class="truncate">Dashboard</span>
         </a>
     </div>
@@ -31,7 +31,7 @@
     </nav>
 
     <div class="mt-auto shrink-0 border-t border-slate-700 px-3 py-2.5">
-        <div class="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-widest text-slate-500">
+        <div class="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-slate-400">
             <span class="flex h-5 w-5 items-center justify-center rounded bg-primary-600 text-[9px] font-bold text-white">P</span>
             Tap&Go
         </div>
