@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AuditLogDetailController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CashClosingController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DeviceAccessController;
 use App\Http\Controllers\Admin\DeviceLastSyncController;
 use App\Http\Controllers\Admin\LocationMapStatusController;
 use App\Http\Controllers\Admin\LocationPairingTokenController;
@@ -47,6 +48,8 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::get('/locations/{location}/pairing-token', [LocationPairingTokenController::class, 'show'])->name('locations.pairing-token.show');
         Route::post('/locations/{location}/pairing-token', [LocationPairingTokenController::class, 'store'])->name('locations.pairing-token.store');
 
+        Route::post('/devices/{device}/block', [DeviceAccessController::class, 'block'])->name('devices.block');
+        Route::post('/devices/{device}/unblock', [DeviceAccessController::class, 'unblock'])->name('devices.unblock');
         Route::post('/devices/{device}/reset-last-sync', [DeviceLastSyncController::class, 'store'])->name('devices.reset-last-sync');
 
         Route::get('/api-request-logs/{id}', [ApiRequestLogDetailController::class, 'show'])->name('api-request-logs.show');

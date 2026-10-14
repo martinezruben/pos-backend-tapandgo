@@ -122,6 +122,7 @@ class AuthController extends Controller
         if (! $device->is_enabled) {
             return response()->json([
                 'message' => 'El dispositivo está deshabilitado.',
+                'code' => 'DEVICE_BLOCKED',
             ], 403);
         }
 
@@ -182,6 +183,7 @@ class AuthController extends Controller
         if (! $device->is_enabled) {
             return response()->json([
                 'message' => 'El dispositivo está deshabilitado.',
+                'code' => 'DEVICE_BLOCKED',
             ], 403);
         }
 
