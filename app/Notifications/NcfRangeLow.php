@@ -6,20 +6,21 @@ use App\Models\NcfSequence;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\DatabaseMessage;
 
 class NcfRangeLow extends Notification implements ShouldQueue
 {
     use Queueable;
 
     public NcfSequence $sequence;
+
     public string $type;
+
     public int $remaining;
 
     public function __construct(NcfSequence $sequence, string $type, int $remaining)
     {
-        $this->sequence  = $sequence;
-        $this->type      = $type;
+        $this->sequence = $sequence;
+        $this->type = $type;
         $this->remaining = $remaining;
     }
 
@@ -37,9 +38,9 @@ class NcfRangeLow extends Notification implements ShouldQueue
     public function toDatabase($notifiable): array
     {
         return [
-            'title'       => '⚠️ Rango NCF agotándose',
-            'message'     => "NCF {$this->type} (".($this->sequence->location_id ? "loc" : "global").") con {$this->remaining} restantes.",
-            'level'       => 'critical',
+            'title' => '⚠️ Rango NCF agotándose',
+            'message' => "NCF {$this->type} (".($this->sequence->location_id ? 'loc' : 'global').") con {$this->remaining} restantes.",
+            'level' => 'critical',
             'sequence_id' => $this->sequence->id,
         ];
     }
@@ -47,9 +48,9 @@ class NcfRangeLow extends Notification implements ShouldQueue
     public function toArray($notifiable): array
     {
         return [
-            'type'      => $this->type,
+            'type' => $this->type,
             'remaining' => $this->remaining,
-            'sequence'  => $this->sequence->only(['id', 'type', 'current', 'end']),
+            'sequence' => $this->sequence->only(['id', 'type', 'current', 'end']),
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\NcfRangeLow;
 use App\Models\NcfSequence;
 use Illuminate\Support\Facades\Config;
 use RuntimeException;
@@ -20,8 +21,8 @@ class NcfService
             return null;
         }
 
-        $mode   = Config::get('ncf.mode', 'by_location');
-        $locId  = $mode === 'global' ? null : $locationId;
+        $mode = Config::get('ncf.mode', 'by_location');
+        $locId = $mode === 'global' ? null : $locationId;
         $country = Config::get('ncf.country', 'EC');
 
         $seq = NcfSequence::where('type', $type)
@@ -49,8 +50,8 @@ class NcfService
         $seq = str_pad((string) $value, 9, '0', STR_PAD_LEFT);
 
         return match ($country) {
-            'DO' => $type . $est . $seq,          // E310010000000001 (13 chars)
-            default => $type . $est . $seq,       // 01001000000001   (13 chars)
+            'DO' => $type.$est.$seq,          // E310010000000001 (13 chars)
+            default => $type.$est.$seq,       // 01001000000001   (13 chars)
         };
     }
 
@@ -63,11 +64,11 @@ class NcfService
         $remaining = $seq->end - $seq->current + 1;
 
         if ($remaining <= $threshold && $remaining > 0) {
-            $msg = "Rango NCF {$type} " . ($seq->location_id ? "loc {$seq->location_id}" : "global")
-                   . " agotándose: {$remaining} restantes (límite {$seq->end}).";
+            $msg = "Rango NCF {$type} ".($seq->location_id ? "loc {$seq->location_id}" : 'global')
+                   ." agotándose: {$remaining} restantes (límite {$seq->end}).";
 
             // Notificación broadcast via event — el handler admin la muestra en Dashboard
-            event(new \App\Events\NcfRangeLow($seq, $type, $remaining));
+            event(new NcfRangeLow($seq, $type, $remaining));
         }
     }
 }

@@ -35,6 +35,25 @@
     letter-spacing: -0.02em;
 }
 
+/* Glifo de estado en la esquina del pin: el estado no depende solo del color */
+.admin-loc-marker__badge {
+    position: absolute;
+    top: -0.1rem;
+    right: -0.15rem;
+    z-index: 2;
+    display: flex;
+    height: 1.2rem;
+    width: 1.2rem;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #fff;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #fff;
+}
+
 /* Capa Leaflet sobre el fondo de la tarjeta */
 .leaflet-container {
     font-family: Inter, ui-sans-serif, system-ui, sans-serif;

@@ -42,6 +42,29 @@
             </div>
         </div>
 
+        {{-- Cuándo se vende: día de la semana × hora --}}
+        <div class="snow-card p-4">
+            <div class="mb-3 flex flex-wrap items-start justify-between gap-2">
+                <div>
+                    <h3 class="text-sm font-semibold text-slate-900">Ventas por día y hora</h3>
+                    <p class="text-[11px] text-slate-500">Cuándo se vende más · transacciones PAID · hora local del comercio</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label for="dash-heatmap-metric" class="sr-only">Métrica</label>
+                    <select id="dash-heatmap-metric" class="hope-filter-select text-[11px]">
+                        <option value="sales" selected>Ventas ($)</option>
+                        <option value="tickets">Transacciones</option>
+                    </select>
+                    <label for="dash-heatmap-period" class="sr-only">Periodo</label>
+                    <select id="dash-heatmap-period" class="hope-filter-select text-[11px]">
+                        <option value="30d" selected>Últimos 30 días</option>
+                        <option value="90d">Últimos 90 días</option>
+                    </select>
+                </div>
+            </div>
+            <div data-chart="sales-heatmap" class="min-h-[300px] w-full" role="img" aria-label="Mapa de calor de ventas por día de la semana y hora"></div>
+        </div>
+
         {{-- Tabla top productos --}}
         <div class="snow-card ">
             <div class="border-b border-slate-100 px-4 py-3">

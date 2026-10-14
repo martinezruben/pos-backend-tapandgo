@@ -14,7 +14,8 @@ class ReportController extends Controller
 {
     public function dashboard(Request $request): JsonResponse
     {
-        $locationId = $request->query('location_id');
+        // Un dispositivo solo ve las cifras de su propia localidad (location_id ajeno se ignora).
+        $locationId = $request->attributes->get('device')->location_id;
 
         // Filtrar el día según la zona del comercio; la BD guarda hora de muro local (GMT-4)
         $tz = config('app.pos_sales_timezone', 'America/Santo_Domingo');
@@ -53,9 +54,10 @@ class ReportController extends Controller
         ]);
     }
 
-    public function byLocation(): JsonResponse
+    public function byLocation(Request $request): JsonResponse
     {
         $rows = Transaction::query()
+            ->where('location_id', $request->attributes->get('device')->location_id)
             ->select('location_id', DB::raw('COUNT(*) as tickets'), DB::raw('SUM(total) as sales'))
             ->groupBy('location_id')
             ->get();

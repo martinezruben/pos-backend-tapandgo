@@ -19,10 +19,10 @@ class NcfSequence extends Model
     ];
 
     protected $casts = [
-        'location_id'  => 'string',
-        'start'        => 'integer',
-        'end'          => 'integer',
-        'current'      => 'integer',
+        'location_id' => 'string',
+        'start' => 'integer',
+        'end' => 'integer',
+        'current' => 'integer',
     ];
 
     /**

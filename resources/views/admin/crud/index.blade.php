@@ -137,12 +137,12 @@
             <div class="border-b border-slate-100 bg-gradient-to-b from-slate-50/90 to-white px-2 py-2 sm:px-3">
                 <div class="mb-1.5 flex flex-wrap items-end justify-between gap-2">
                     <div>
-                        <h3 class="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Mapa de localidades</h3>
-                        <p class="text-[9px] text-slate-500">Mismos filtros que la tabla · número = dispositivos activos · verde = al menos una sincronización exitosa en el periodo</p>
+                        <h3 class="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">Mapa de localidades</h3>
+                        <p class="text-[11px] text-slate-500">Mismos filtros que la tabla · el número es la cantidad de dispositivos activos · el estado se actualiza cada minuto</p>
                     </div>
                     <div class="flex min-w-0 flex-col gap-0.5 sm:items-end">
-                        <label for="admin-locations-map-period" class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500">Sincronizaciones</label>
-                        <select id="admin-locations-map-period" class="hope-filter-select max-w-full py-1 text-[10px] sm:min-w-[12rem]">
+                        <label for="admin-locations-map-period" class="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">Sync exitosa en</label>
+                        <select id="admin-locations-map-period" class="hope-filter-select max-w-full py-1 text-[11px] sm:min-w-[12rem]">
                             <option value="today" selected>Hoy</option>
                             <option value="yesterday">Ayer</option>
                             <option value="last_week">Última semana</option>
@@ -150,8 +150,31 @@
                         </select>
                     </div>
                 </div>
+                @php
+                    $mapStatuses = [
+                        'online' => ['label' => 'En línea', 'glyph' => '✓', 'dot' => 'bg-green-600'],
+                        'stale' => ['label' => 'Sin sincronizar', 'glyph' => '!', 'dot' => 'bg-amber-600'],
+                        'contingency' => ['label' => 'En contingencia', 'glyph' => '▲', 'dot' => 'bg-red-600'],
+                        'inactive' => ['label' => 'Inactiva', 'glyph' => '–', 'dot' => 'bg-slate-400'],
+                    ];
+                @endphp
+                <div class="mb-2 flex flex-wrap items-center gap-1.5" role="group" aria-label="Filtrar el mapa por estado">
+                    @foreach ($mapStatuses as $key => $st)
+                        <button
+                            type="button"
+                            data-map-filter="{{ $key }}"
+                            aria-pressed="true"
+                            class="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 shadow-sm transition hover:border-primary-300"
+                        >
+                            <span class="flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white {{ $st['dot'] }}" aria-hidden="true">{{ $st['glyph'] }}</span>
+                            {{ $st['label'] }}
+                            <span data-map-count="{{ $key }}" class="font-mono tabular-nums text-slate-500">{{ collect($locationsMapPins ?? [])->where('status', $key)->count() }}</span>
+                        </button>
+                    @endforeach
+                </div>
                 <div
                     id="admin-locations-map"
+                    data-status-url="{{ route('admin.locations.map-status') }}"
                     class="z-0 h-[min(420px,52vh)] w-full overflow-hidden rounded-lg border border-slate-200/90 shadow-sm ring-1 ring-slate-200/40"
                     role="region"
                     aria-label="Mapa de localidades"
@@ -161,8 +184,24 @@
                         fn (array $p) => ($p['lat'] ?? null) !== null && ($p['lng'] ?? null) !== null,
                     );
                 @endphp
+                @if (count($locationsMapPins ?? []) > 0)
+                    <details class="mt-2 text-[11px] text-slate-700">
+                        <summary class="cursor-pointer font-semibold text-slate-600">Ver estado en lista</summary>
+                        <ul id="admin-locations-map-list" class="mt-1.5 divide-y divide-slate-100 rounded-md border border-slate-200 bg-white">
+                            @foreach ($locationsMapPins as $pin)
+                                <li data-loc-id="{{ $pin['id'] }}" class="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 px-2.5 py-1.5">
+                                    <span class="font-medium text-slate-800">{{ $pin['name'] }}</span>
+                                    <span class="flex items-center gap-3 text-slate-500">
+                                        <span data-loc-status-label class="font-semibold">{{ $mapStatuses[$pin['status']]['glyph'] }} {{ $pin['statusLabel'] }}</span>
+                                        <span>Última sync: <span data-loc-last-sync>{{ $pin['lastSyncHuman'] ?? 'nunca' }}</span></span>
+                                    </span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </details>
+                @endif
                 @if (! $hasCoords && count($locationsMapPins ?? []) > 0)
-                    <p class="mt-1.5 text-center text-[10px] text-amber-800/90">
+                    <p class="mt-1.5 text-center text-[11px] text-amber-800">
                         Indica latitud y longitud en cada localidad para mostrarla en el mapa.
                     </p>
                 @endif

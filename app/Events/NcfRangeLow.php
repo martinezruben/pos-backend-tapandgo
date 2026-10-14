@@ -15,13 +15,15 @@ class NcfRangeLow
     use Dispatchable, SerializesModels;
 
     public NcfSequence $sequence;
+
     public string $type;
+
     public int $remaining;
 
     public function __construct(NcfSequence $sequence, string $type, int $remaining)
     {
-        $this->sequence  = $sequence;
-        $this->type      = $type;
+        $this->sequence = $sequence;
+        $this->type = $type;
         $this->remaining = $remaining;
     }
 }

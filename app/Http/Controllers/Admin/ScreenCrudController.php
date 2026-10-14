@@ -106,16 +106,7 @@ class ScreenCrudController extends Controller
 
         $locationsMapPins = [];
         if ($screen === 'locations') {
-            $mapQuery = Location::query();
-            AdminGridQuery::apply($mapQuery, $request, $screen, $cfg);
-            $mapQuery->withCount([
-                'devices as active_devices_count' => fn ($q) => $q->where('is_enabled', true),
-            ]);
-            $mapLocations = $mapQuery->get(['id', 'name', 'latitude', 'longitude', 'is_active']);
-            $locationsMapPins = LocationMapSyncPins::build(
-                $mapLocations,
-                $user->can($p['edit']),
-            );
+            $locationsMapPins = LocationMapSyncPins::forRequest($request, $user->can($p['edit']));
         }
 
         return view('admin.crud.index', [
@@ -213,10 +204,14 @@ class ScreenCrudController extends Controller
                 'name' => ['nullable', 'string', 'max:100'],
                 'is_enabled' => ['nullable', 'boolean'],
             ]);
-            $item->update([
-                'name' => $validated['name'] ?? null,
-                'is_enabled' => $request->boolean('is_enabled'),
-            ]);
+            // Habilitar/deshabilitar exige motivo y revoca sesiones: se hace con Bloquear/Reactivar
+            if ($request->has('is_enabled') && $request->boolean('is_enabled') !== (bool) $item->is_enabled) {
+                throw ValidationException::withMessages([
+                    'is_enabled' => 'Para bloquear o reactivar el dispositivo usa los botones de acceso e indica el motivo.',
+                ]);
+            }
+
+            $item->update(['name' => $validated['name'] ?? null]);
 
             return redirect()->route('admin.screens.index', $screen)->with('status', 'Actualizado correctamente.');
         }

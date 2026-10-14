@@ -25,7 +25,7 @@ class EnsureDeviceOperational
         }
 
         if (! $device->is_enabled) {
-            return response()->json(['message' => 'Device is disabled.'], 403);
+            return response()->json(['message' => 'Device is disabled.', 'code' => 'DEVICE_BLOCKED'], 403);
         }
 
         if (! $device->location || ! $device->location->is_active) {

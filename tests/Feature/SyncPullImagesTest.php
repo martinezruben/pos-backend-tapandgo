@@ -109,22 +109,22 @@ class SyncPullImagesTest extends TestCase
         // imagen almacenada con un APP_URL anterior (host que ya no aplica)
         $legacy = 'https://posbackend.test/storage/families/vieja.png';
 
-        $sync = \App\Services\ImageThumbnailService::syncUrl($legacy);
+        $sync = ImageThumbnailService::syncUrl($legacy);
         $this->assertStringStartsWith(rtrim(config('app.url'), '/').'/storage/', $sync);
         $this->assertStringEndsWith('/storage/families/vieja.png', $sync);
 
-        $display = \App\Services\ImageThumbnailService::displayUrl($legacy);
+        $display = ImageThumbnailService::displayUrl($legacy);
         $this->assertSame('/storage/families/vieja.png', $display);
     }
 
     public function test_display_url_is_relative_for_admin_grid(): void
     {
         Storage::fake('public');
-        $url = \App\Services\ImageThumbnailService::displayUrl('/storage/families/abc.png');
+        $url = ImageThumbnailService::displayUrl('/storage/families/abc.png');
         $this->assertSame('/storage/families/abc.png', $url);
 
         // URL verdaderamente externa pasa intacta
-        $ext = \App\Services\ImageThumbnailService::displayUrl('https://cdn.example.com/x.png');
+        $ext = ImageThumbnailService::displayUrl('https://cdn.example.com/x.png');
         $this->assertSame('https://cdn.example.com/x.png', $ext);
     }
 

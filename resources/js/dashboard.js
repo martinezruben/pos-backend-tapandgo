@@ -135,6 +135,61 @@ function mountSalesArea(ApexCharts, el, initial, onPeriodChange) {
     return chart;
 }
 
+function mountSalesHeatmap(ApexCharts, el, heatmap) {
+    const metricEl = document.getElementById('dash-heatmap-metric');
+    const periodEl = document.getElementById('dash-heatmap-period');
+
+    // ApexCharts dibuja la primera serie abajo: se invierte para que el lunes quede arriba
+    const buildSeries = (data, metric) => data.days
+        .map((day, i) => ({
+            name: day,
+            data: data.hours.map((h, j) => ({ x: h, y: data[metric][i][j] })),
+        }))
+        .reverse();
+
+    const current = () => heatmap[periodEl?.value === '90d' ? '90d' : '30d'];
+    const metric = () => (metricEl?.value === 'tickets' ? 'tickets' : 'sales');
+    const fmt = (v) => (metric() === 'tickets' ? `${Math.round(v)} transacciones` : money(v));
+
+    const chart = new ApexCharts(el, {
+        chart: {
+            type: 'heatmap',
+            height: 300,
+            toolbar: { show: false },
+            fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
+        },
+        series: buildSeries(current(), metric()),
+        // Una sola tinta (la del acento): más oscuro = más ventas
+        colors: ['#1e4b8d'],
+        dataLabels: { enabled: false },
+        stroke: { width: 2, colors: ['#fbfcfe'] },
+        plotOptions: {
+            heatmap: { radius: 3, enableShades: true, shadeIntensity: 0.85, useFillColorAsStroke: false },
+        },
+        xaxis: {
+            type: 'category',
+            labels: { style: { colors: '#64748b', fontSize: '11px' }, rotate: 0 },
+            title: { text: 'Hora del día', style: { color: '#64748b', fontSize: '11px' } },
+            tooltip: { enabled: false },
+        },
+        yaxis: { labels: { style: { colors: '#64748b', fontSize: '11px' } } },
+        grid: { padding: { left: 4, right: 8 } },
+        legend: { show: false },
+        tooltip: {
+            theme: 'light',
+            y: { formatter: (v) => fmt(v) },
+        },
+        noData: { text: 'Sin ventas en este periodo', style: { color: '#64748b', fontSize: '12px' } },
+    });
+    chart.render();
+
+    const refresh = () => chart.updateSeries(buildSeries(current(), metric()));
+    metricEl?.addEventListener('change', refresh);
+    periodEl?.addEventListener('change', refresh);
+
+    return chart;
+}
+
 function mountFamilyDonut(ApexCharts, el, familyMix, palette) {
     const empty = !familyMix?.labels?.length;
 
@@ -318,6 +373,11 @@ async function init() {
         const periodEl = document.getElementById('dash-sales-period');
         const initial = sliceTrend(full, periodEl?.value === '7d' ? '7d' : '30d');
         mountSalesArea(ApexCharts, salesEl, initial, (period) => sliceTrend(full, period));
+    }
+
+    const heatmapEl = document.querySelector('[data-chart="sales-heatmap"]');
+    if (heatmapEl && data.heatmap) {
+        mountSalesHeatmap(ApexCharts, heatmapEl, data.heatmap);
     }
 
     const donutEl = document.querySelector('[data-chart="family-donut"]');

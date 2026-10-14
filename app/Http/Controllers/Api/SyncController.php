@@ -22,11 +22,17 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
+use Throwable;
 
 class SyncController extends Controller
 {
+    /** Orden de avance del estado de una transacción; un reintento viejo no puede retroceder. */
+    private const STATUS_RANK = ['PENDING' => 0, 'PAID' => 1, 'VOIDED' => 2];
+
     /**
      * Cada transacción: `user_id` = UUID de un usuario POS existente (`users.id`); `status` ∈ PENDING, PAID, VOIDED;
      * `shift_id` = identificador de turno enviado por el cliente (texto libre, opcional), sin validar contra `shifts`.
@@ -34,8 +40,21 @@ class SyncController extends Controller
      */
     public function push(Request $request): JsonResponse
     {
+        /** @var Device $device */
         $device = $request->attributes->get('device');
+        $startedAt = now();
 
+        try {
+            return $this->storePush($request, $device, $startedAt);
+        } catch (Throwable $e) {
+            $this->recordPushFailure($device, $startedAt, $e);
+
+            throw $e;
+        }
+    }
+
+    private function storePush(Request $request, Device $device, Carbon $startedAt): JsonResponse
+    {
         $payload = $request->validate([
             'transactions' => ['required', 'array'],
             'transactions.*.external_id' => ['required', 'string'],
@@ -46,7 +65,18 @@ class SyncController extends Controller
             'transactions.*.total' => ['required', 'numeric'],
             'transactions.*.occurred_at' => ['required'],
             'transactions.*.items' => ['array'],
+            'transactions.*.items.*.product_id' => ['nullable', 'string'],
+            'transactions.*.items.*.product_name' => ['nullable', 'string'],
+            'transactions.*.items.*.product_sku' => ['nullable', 'string'],
+            'transactions.*.items.*.qty' => ['nullable', 'numeric'],
+            'transactions.*.items.*.unit_price' => ['nullable', 'numeric'],
+            'transactions.*.items.*.discount' => ['nullable', 'numeric'],
+            'transactions.*.items.*.tax' => ['nullable', 'numeric'],
+            'transactions.*.items.*.line_total' => ['nullable', 'numeric'],
             'transactions.*.payments' => ['array'],
+            'transactions.*.payments.*.payment_method' => ['nullable', 'string'],
+            'transactions.*.payments.*.amount' => ['nullable', 'numeric'],
+            'transactions.*.payments.*.reference' => ['nullable', 'string'],
         ]);
 
         foreach ($payload['transactions'] as $i => $txData) {
@@ -84,11 +114,25 @@ class SyncController extends Controller
             }
         }
 
-        $startedAt = now();
         $stored = 0;
 
-        DB::transaction(function () use ($payload, $device, &$stored): void {
+        // Un producto desconocido no debe tumbar toda la venta: la línea conserva nombre y SKU.
+        $knownProducts = Product::withTrashed()
+            ->whereIn('id', collect($payload['transactions'])->pluck('items.*.product_id')->flatten()->filter()->unique()->all())
+            ->pluck('id')
+            ->flip();
+
+        DB::transaction(function () use ($payload, $device, &$stored, $knownProducts): void {
             foreach ($payload['transactions'] as $txData) {
+                // Reintento desordenado: nunca degradar PAID -> PENDING ni reabrir una VOIDED.
+                $existing = Transaction::query()
+                    ->where('device_id', $device->id)
+                    ->where('external_id', $txData['external_id'])
+                    ->first();
+                if ($existing && self::STATUS_RANK[$txData['status']] < self::STATUS_RANK[$existing->status]) {
+                    continue;
+                }
+
                 $transaction = Transaction::updateOrCreate(
                     ['device_id' => $device->id, 'external_id' => $txData['external_id']],
                     [
@@ -112,9 +156,9 @@ class SyncController extends Controller
                 foreach ($txData['items'] ?? [] as $item) {
                     TransactionItem::create([
                         'transaction_id' => $transaction->id,
-                        'product_id' => $item['product_id'] ?? null,
-                        'product_name' => $item['product_name'] ?? 'unknown',
-                        'product_sku' => $item['product_sku'] ?? null,
+                        'product_id' => isset($item['product_id'], $knownProducts[$item['product_id']]) ? $item['product_id'] : null,
+                        'product_name' => Str::limit($item['product_name'] ?? 'unknown', 120, ''),
+                        'product_sku' => isset($item['product_sku']) ? Str::limit($item['product_sku'], 50, '') : null,
                         'qty' => $item['qty'] ?? 0,
                         'unit_price' => $item['unit_price'] ?? 0,
                         'discount' => $item['discount'] ?? 0,
@@ -127,9 +171,9 @@ class SyncController extends Controller
                 foreach ($txData['payments'] ?? [] as $payment) {
                     TransactionPayment::create([
                         'transaction_id' => $transaction->id,
-                        'payment_method' => $payment['payment_method'] ?? 'OTHER',
+                        'payment_method' => Str::limit($payment['payment_method'] ?? 'OTHER', 64, ''),
                         'amount' => $payment['amount'] ?? 0,
-                        'reference' => $payment['reference'] ?? null,
+                        'reference' => isset($payment['reference']) ? Str::limit($payment['reference'], 100, '') : null,
                     ]);
                 }
             }
@@ -158,6 +202,36 @@ class SyncController extends Controller
             'success' => true,
             'stored' => $stored,
         ]);
+    }
+
+    /**
+     * Anota el fallo del push para que el dashboard técnico (sync fallidas) y la pantalla
+     * de estados de sync lo reflejen; antes solo se registraban los éxitos.
+     */
+    private function recordPushFailure(Device $device, Carbon $startedAt, Throwable $e): void
+    {
+        $message = Str::limit($e instanceof ValidationException ? collect($e->errors())->flatten()->first() ?? $e->getMessage() : $e->getMessage(), 1000);
+
+        try {
+            SyncLog::create([
+                'location_id' => $device->location_id,
+                'device_id' => $device->id,
+                'operation' => 'PUSH',
+                'entity' => 'transactions',
+                'records_count' => 0,
+                'status' => 'FAILED',
+                'started_at' => $startedAt,
+                'finished_at' => now(),
+                'error_message' => $message,
+            ]);
+
+            SyncState::updateOrCreate(
+                ['location_id' => $device->location_id, 'device_id' => $device->id],
+                ['last_error_at' => now(), 'last_error_message' => $message]
+            );
+        } catch (Throwable) {
+            // El registro del fallo nunca debe ocultar el error original.
+        }
     }
 
     /**
@@ -567,7 +641,7 @@ class SyncController extends Controller
 
         try {
             return Carbon::parse($s)->timezone($appTz);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             throw new InvalidArgumentException('No es una fecha ISO válida ni un timestamp numérico (segundos o milisegundos).');
         }
     }

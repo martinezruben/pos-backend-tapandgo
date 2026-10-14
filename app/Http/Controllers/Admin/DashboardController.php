@@ -118,6 +118,7 @@ class DashboardController extends Controller
 
         $chartPayload = [
             'salesTrend' => $service->getDailySalesTrend(now()->subDays(29)->startOfDay(), now()->endOfDay()),
+            'heatmap' => ['30d' => $service->getSalesHeatmap(30), '90d' => $service->getSalesHeatmap(90)],
             'familyMix' => $service->getSalesByFamily(30),
             'paymentMix' => $service->getSalesByPaymentMethod(30),
         ];
@@ -139,7 +140,7 @@ class DashboardController extends Controller
         $service = new DashboardService($location?->id);
 
         $contingencies = $service->getLocationsInContingency();
-        $devicesNoSync = $service->getDevicesNotSyncedSince(4);
+        $devicesNoSync = $service->getDevicesNotSyncedSince();
         $licensesExpiring = $service->getLicensesExpiringWithin(7);
         $sync7d = $service->getSyncStats7d();
         $syncFailures24h = $service->getSyncFailuresLast24h();

@@ -4,7 +4,7 @@
             <h2 class="text-sm font-bold text-slate-900">{{ $item ? 'Editar' : 'Crear' }} · {{ $cfg['label'] }}</h2>
             <p class="mt-0.5 text-[11px] text-slate-500">
                 @if(($screen ?? null) === 'devices' && $item)
-                    Puedes editar el nombre y «Habilitado», y restablecer la última sincronización.
+                    Puedes editar el nombre, restablecer la última sincronización y bloquear o reactivar el acceso (con motivo).
                 @else
                     Completa los campos y guarda.
                 @endif
@@ -41,22 +41,50 @@
                                 <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
-                        <div>
-                            <label class="snow-label" for="f-is_enabled">Habilitado</label>
-                            <div class="mt-1">
-                                <x-admin.snow.badge field="is_enabled" :value="$item->is_enabled" />
-                            </div>
-                            <select id="f-is_enabled" name="is_enabled" class="snow-input mt-2 max-w-[12rem]">
-                                <option value="1" @selected(old('is_enabled', $item->is_enabled) == 1)>Sí</option>
-                                <option value="0" @selected(old('is_enabled', $item->is_enabled) == 0)>No</option>
-                            </select>
-                            @error('is_enabled')
-                                <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
                         <div class="flex flex-wrap items-center gap-2 pt-1">
                             <button type="submit" class="snow-btn-primary">Guardar</button>
                             <a href="{{ route('admin.screens.index', $screen) }}" class="snow-btn-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+                <div class="md:col-span-2 border-t border-slate-100 pt-3" id="acceso">
+                    <span class="snow-label">Acceso del dispositivo</span>
+                    <div class="mt-1 flex flex-wrap items-center gap-2">
+                        <x-admin.snow.badge field="is_enabled" :value="$item->is_enabled" />
+                        @if (! $item->is_enabled && $item->disabled_at)
+                            <span class="text-xs text-slate-600">Bloqueado el {{ $item->disabled_at->format('Y-m-d H:i') }}@if ($item->disabled_by) por {{ $item->disabled_by }}@endif</span>
+                        @endif
+                    </div>
+                    @if (! $item->is_enabled && $item->disabled_reason)
+                        <p class="mt-1.5 rounded-md border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs text-amber-900"><span class="font-semibold">Motivo:</span> {{ $item->disabled_reason }}</p>
+                    @endif
+                    @error('is_enabled')
+                        <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p>
+                    @enderror
+
+                    <form
+                        method="POST"
+                        action="{{ $item->is_enabled ? route('admin.devices.block', $item) : route('admin.devices.unblock', $item) }}"
+                        class="mt-2 flex max-w-xl flex-col gap-2"
+                        onsubmit="return confirm('{{ $item->is_enabled ? '¿Bloquear este dispositivo y cerrar su sesión?' : '¿Reactivar este dispositivo?' }}');"
+                    >
+                        @csrf
+                        <label class="snow-label" for="f-reason">{{ $item->is_enabled ? 'Motivo del bloqueo' : 'Motivo de la reactivación' }}</label>
+                        <textarea id="f-reason" name="reason" rows="2" maxlength="255" required class="snow-input" placeholder="{{ $item->is_enabled ? 'Ej.: tablet extraviada en sucursal Centro' : 'Ej.: equipo recuperado y verificado' }}">{{ old('reason') }}</textarea>
+                        @error('reason')
+                            <p class="text-xs font-medium text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="text-[11px] text-slate-500">
+                            @if ($item->is_enabled)
+                                Se cerrará su sesión en el servidor. El equipo lo notará en su próxima conexión; mientras esté sin internet puede seguir vendiendo con lo que ya tiene guardado.
+                            @else
+                                El equipo deberá iniciar sesión de nuevo desde la app para volver a sincronizar.
+                            @endif
+                        </p>
+                        <div>
+                            <button type="submit" class="{{ $item->is_enabled ? 'snow-btn-danger' : 'snow-btn-primary' }}">
+                                {{ $item->is_enabled ? 'Bloquear y cerrar sesión' : 'Reactivar dispositivo' }}
+                            </button>
                         </div>
                     </form>
                 </div>

@@ -906,7 +906,7 @@ return [
                 'action' => [
                     'label' => 'Acción',
                     'type' => 'select',
-                    'options' => ['created' => 'Creación', 'updated' => 'Edición', 'deleted' => 'Eliminación', 'login' => 'Login', 'logout' => 'Logout'],
+                    'options' => ['created' => 'Creación', 'updated' => 'Edición', 'deleted' => 'Eliminación', 'login' => 'Login', 'logout' => 'Logout', 'blocked' => 'Bloqueo', 'unblocked' => 'Reactivación'],
                     'apply' => ['type' => 'column', 'column' => 'action'],
                 ],
                 'entity_type' => [
@@ -978,6 +978,14 @@ return [
     // ============================================================================
     // REPORTES PRIORITARIOS
     // ============================================================================
+
+    'products-no-movement' => [
+        'label' => 'Productos sin movimiento',
+        'icon' => 'archive-box-x-mark',
+        'readonly' => true,
+        'rbac' => true,
+        'route' => 'admin.reports.products-no-movement',
+    ],
 
     'products-best-sellers' => [
         'model' => Product::class,

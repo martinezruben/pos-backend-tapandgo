@@ -4,8 +4,8 @@ namespace App\Listeners;
 
 use App\Events\NcfRangeLow;
 use App\Models\AdminUser;
-use Illuminate\Support\Facades\Notification;
 use App\Notifications\NcfRangeLow as NcfRangeLowNotification;
+use Illuminate\Support\Facades\Notification;
 
 /**
  * Al detectar rango NCF bajo, notifica a todos los admins activos.
