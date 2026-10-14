@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\DeviceLastSyncController;
 use App\Http\Controllers\Admin\LocationPairingTokenController;
 use App\Http\Controllers\Admin\MailTestController;
 use App\Http\Controllers\Admin\ProductExcelController;
+use App\Http\Controllers\Admin\ProductsNoMovementExportController;
 use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\ReportsExportController;
 use App\Http\Controllers\Admin\RoleRbacMatrixController;
@@ -72,8 +73,12 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
 
         // Reportes prioritarios
         Route::get('/reports/products-best-sellers', [ReportsController::class, 'productsBestSellers'])->name('reports.products-best-sellers');
+        Route::get('/reports/products-no-movement', [ReportsController::class, 'productsNoMovement'])->name('reports.products-no-movement');
         Route::get('/reports/payment-methods', [ReportsController::class, 'paymentMethodsReport'])->name('reports.payment-methods');
         Route::get('/reports/users-performance', [ReportsController::class, 'usersPerformanceReport'])->name('reports.users-performance');
+
+        Route::post('/reports/products-no-movement/export', [ProductsNoMovementExportController::class, 'excel'])->name('reports.products-no-movement.export');
+        Route::post('/reports/products-no-movement/export-csv', [ProductsNoMovementExportController::class, 'csv'])->name('reports.products-no-movement.export-csv');
 
         // Exportar reportes Excel
         Route::post('/reports/products-best-sellers/export', [ReportsExportController::class, 'productsBestSellers'])->name('reports.products-best-sellers.export');

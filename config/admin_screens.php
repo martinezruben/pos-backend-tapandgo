@@ -979,6 +979,14 @@ return [
     // REPORTES PRIORITARIOS
     // ============================================================================
 
+    'products-no-movement' => [
+        'label' => 'Productos sin movimiento',
+        'icon' => 'archive-box-x-mark',
+        'readonly' => true,
+        'rbac' => true,
+        'route' => 'admin.reports.products-no-movement',
+    ],
+
     'products-best-sellers' => [
         'model' => Product::class,
         'label' => 'Productos Más Vendidos',

@@ -6,6 +6,7 @@ use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ReportService
@@ -34,6 +35,38 @@ class ReportService
             ->get();
 
         return $query;
+    }
+
+    /**
+     * Productos activos sin ventas cobradas (PAID) en el periodo; con la fecha de su última
+     * venta (en cualquier fecha, dentro de la localidad si se filtra). Los nunca vendidos
+     * salen primero. Un producto creado después del periodo no se considera.
+     *
+     * @return Collection<int, Product>
+     */
+    public function getProductsWithoutMovement(?Carbon $dateFrom = null, ?Carbon $dateTo = null, ?string $locationId = null)
+    {
+        $dateFrom = $dateFrom ?? now()->subMonth()->startOfDay();
+        $dateTo = $dateTo ?? now()->endOfDay();
+
+        $paidSales = fn ($q) => $q->from('transaction_items as ti')
+            ->join('transactions as t', 't.id', '=', 'ti.transaction_id')
+            ->whereColumn('ti.product_id', 'products.id')
+            ->where('t.status', 'PAID')
+            ->when($locationId, fn ($q2) => $q2->where('t.location_id', $locationId));
+
+        return Product::query()
+            ->where('products.is_active', true)
+            ->where('products.created_at', '<=', $dateTo)
+            ->whereNotExists(fn ($q) => $paidSales($q)->select(DB::raw(1))->whereBetween('t.occurred_at', [$dateFrom, $dateTo]))
+            ->select('products.*')
+            ->selectSub(fn ($q) => $paidSales($q)->selectRaw('MAX(t.occurred_at)'), 'last_sold_at')
+            ->with('subfamily.family')
+            ->orderByRaw('last_sold_at IS NOT NULL')
+            ->orderBy('last_sold_at')
+            ->orderBy('products.name')
+            ->limit(2000)
+            ->get();
     }
 
     public function getPaymentMethodsReport(?Carbon $dateFrom = null, ?Carbon $dateTo = null, ?string $locationId = null)

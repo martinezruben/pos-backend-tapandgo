@@ -37,6 +37,22 @@ class ReportsController extends Controller
         ]);
     }
 
+    public function productsNoMovement(Request $request): View
+    {
+        $this->authorizeView('products-no-movement');
+
+        [$dateFrom, $dateTo] = $this->period($request);
+        $locationId = $request->input('location_id');
+
+        return view('admin.reports.products-no-movement', [
+            'products' => $this->reportService->getProductsWithoutMovement($dateFrom, $dateTo, $locationId),
+            'dateFrom' => $dateFrom->format('Y-m-d'),
+            'dateTo' => $dateTo->format('Y-m-d'),
+            'locationId' => $locationId,
+            'locations' => Location::query()->orderBy('name')->get(['id', 'name', 'is_active']),
+        ]);
+    }
+
     public function paymentMethodsReport(Request $request): View
     {
         $this->authorizeView('payment-methods-report');

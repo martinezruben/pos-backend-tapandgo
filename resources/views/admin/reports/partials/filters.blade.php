@@ -50,7 +50,7 @@
             class="absolute right-0 z-20 mt-1 w-40 overflow-hidden rounded-md border border-slate-200 bg-white py-1 shadow-lg"
             style="display: none"
         >
-            @foreach (['excel' => 'Excel (.xlsx)', 'csv' => 'CSV (.csv)', 'pdf' => 'PDF (.pdf)'] as $format => $label)
+            @foreach (collect(['excel' => 'Excel (.xlsx)', 'csv' => 'CSV (.csv)', 'pdf' => 'PDF (.pdf)'])->only(array_keys($exports)) as $format => $label)
                 <button
                     type="button"
                     role="menuitem"
