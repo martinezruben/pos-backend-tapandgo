@@ -149,6 +149,48 @@ class DashboardService
         ];
     }
 
+    /**
+     * Ventas cobradas por día de la semana (lunes primero) y hora del día, para el mapa de calor.
+     * La BD guarda hora de muro local, así que se agrupa sin convertir zona horaria.
+     *
+     * @return array{days: list<string>, hours: list<string>, sales: list<list<float>>, tickets: list<list<int>>}
+     */
+    public function getSalesHeatmap(int $days): array
+    {
+        $since = now()->subDays($days - 1)->startOfDay();
+
+        [$dowSql, $hourSql] = match (DB::getDriverName()) {
+            // %w: 0 = domingo; HOUR/DAYOFWEEK de MySQL: 1 = domingo
+            'sqlite' => ["CAST(strftime('%w', occurred_at) AS INTEGER)", "CAST(strftime('%H', occurred_at) AS INTEGER)"],
+            default => ['(DAYOFWEEK(occurred_at) - 1)', 'HOUR(occurred_at)'],
+        };
+
+        $rows = Transaction::query()
+            ->where('status', 'PAID')
+            ->where('occurred_at', '>=', $since)
+            ->when($this->locationId, fn ($q) => $q->where('location_id', $this->locationId))
+            ->selectRaw("{$dowSql} as dow, {$hourSql} as hr, SUM(total) as sales, COUNT(*) as cnt")
+            ->groupBy(DB::raw($dowSql), DB::raw($hourSql))
+            ->get();
+
+        // Filas lunes..domingo (la columna dow trae 0 = domingo)
+        $sales = array_fill(0, 7, array_fill(0, 24, 0.0));
+        $tickets = array_fill(0, 7, array_fill(0, 24, 0));
+        foreach ($rows as $row) {
+            $day = ((int) $row->dow + 6) % 7;
+            $hour = (int) $row->hr;
+            $sales[$day][$hour] = round((float) $row->sales, 2);
+            $tickets[$day][$hour] = (int) $row->cnt;
+        }
+
+        return [
+            'days' => ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+            'hours' => array_map(fn (int $h) => sprintf('%02d', $h), range(0, 23)),
+            'sales' => $sales,
+            'tickets' => $tickets,
+        ];
+    }
+
     public function getSalesByFamily(int $days): array
     {
         $since = now()->subDays($days)->startOfDay();

@@ -118,6 +118,7 @@ class DashboardController extends Controller
 
         $chartPayload = [
             'salesTrend' => $service->getDailySalesTrend(now()->subDays(29)->startOfDay(), now()->endOfDay()),
+            'heatmap' => ['30d' => $service->getSalesHeatmap(30), '90d' => $service->getSalesHeatmap(90)],
             'familyMix' => $service->getSalesByFamily(30),
             'paymentMix' => $service->getSalesByPaymentMethod(30),
         ];
