@@ -92,6 +92,7 @@ final class LocationMapSyncPins
                 $enabled = (int) ($deviceStats[$id]['enabled'] ?? 0);
                 $fresh = (int) ($deviceStats[$id]['fresh'] ?? 0);
                 $status = self::statusFor((bool) $loc->is_active, $loc->contingency_started_at !== null, $fresh);
+                $lastSync = collect([$loc->last_sync_at, $deviceStats[$id]['last'] ?? null])->filter()->max();
 
                 return [
                     'id' => $id,
@@ -104,7 +105,7 @@ final class LocationMapSyncPins
                     'statusLabel' => $status === 'stale' && $enabled === 0 ? 'Sin dispositivos activos' : self::STATUS_LABELS[$status],
                     'enabledDevices' => $enabled,
                     'staleDevices' => $enabled - $fresh,
-                    'lastSyncHuman' => $loc->last_sync_at?->copy()->locale('es')->diffForHumans(),
+                    'lastSyncHuman' => $lastSync?->copy()->locale('es')->diffForHumans(),
                     'contingencySinceHuman' => $loc->contingency_started_at?->copy()->locale('es')->diffForHumans(),
                     'editUrl' => $canEdit ? route('admin.screens.edit', ['locations', $loc->getKey()]) : '',
                     'syncInPeriod' => [
@@ -123,7 +124,7 @@ final class LocationMapSyncPins
      * Dispositivos habilitados por localidad y cuántos sincronizaron dentro de la ventana.
      *
      * @param  Collection<int, mixed>  $locationIds
-     * @return array<string, array{enabled: int, fresh: int}>
+     * @return array<string, array{enabled: int, fresh: int, last: ?Carbon}>
      */
     private static function deviceStats(Collection $locationIds): array
     {
@@ -136,10 +137,10 @@ final class LocationMapSyncPins
         return Device::query()
             ->where('is_enabled', true)
             ->whereIn('location_id', $locationIds)
-            ->selectRaw('location_id, COUNT(*) as enabled, SUM(CASE WHEN last_sync_at >= ? THEN 1 ELSE 0 END) as fresh', [$cutoff])
+            ->selectRaw('location_id, COUNT(*) as enabled, SUM(CASE WHEN last_sync_at >= ? THEN 1 ELSE 0 END) as fresh, MAX(last_sync_at) as last_sync', [$cutoff])
             ->groupBy('location_id')
             ->get()
-            ->mapWithKeys(fn ($row) => [(string) $row->location_id => ['enabled' => (int) $row->enabled, 'fresh' => (int) $row->fresh]])
+            ->mapWithKeys(fn ($row) => [(string) $row->location_id => ['enabled' => (int) $row->enabled, 'fresh' => (int) $row->fresh, 'last' => $row->last_sync ? Carbon::parse($row->last_sync) : null]])
             ->all();
     }
 

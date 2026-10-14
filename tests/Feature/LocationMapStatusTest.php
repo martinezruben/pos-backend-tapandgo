@@ -62,6 +62,16 @@ class LocationMapStatusTest extends TestCase
         $this->assertSame('stale', $pins['Deshabilitado']['status']);
     }
 
+    public function test_last_sync_uses_the_most_recent_device_sync(): void
+    {
+        $this->travelTo(Carbon::parse('2026-10-14 12:00:00'));
+        $loc = Location::factory()->create(['name' => 'Sede', 'last_sync_at' => null]);
+        Device::factory()->create(['location_id' => $loc->id, 'is_enabled' => true, 'last_sync_at' => now()->subHours(2)]);
+        Device::factory()->create(['location_id' => $loc->id, 'is_enabled' => true, 'last_sync_at' => now()->subMinutes(10)]);
+
+        $this->assertStringContainsString('10 minutos', $this->pins()['Sede']['lastSyncHuman']);
+    }
+
     public function test_map_status_matches_the_technical_dashboard_definition(): void
     {
         $this->travelTo(Carbon::parse('2026-10-14 12:00:00'));
