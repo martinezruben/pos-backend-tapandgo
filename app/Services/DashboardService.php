@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardService
 {
+    /** Horas sin sincronizar a partir de las cuales un dispositivo se considera atrasado (dashboard técnico y mapa). */
+    public const STALE_SYNC_HOURS = 4;
+
     private ?string $locationId = null;
 
     public function __construct(?string $locationId = null)
@@ -468,7 +471,7 @@ class DashboardService
             ->all();
     }
 
-    public function getDevicesNotSyncedSince(int $hours = 4): array
+    public function getDevicesNotSyncedSince(int $hours = self::STALE_SYNC_HOURS): array
     {
         $since = now()->subHours($hours);
 

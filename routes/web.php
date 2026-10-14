@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CashClosingController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DeviceLastSyncController;
+use App\Http\Controllers\Admin\LocationMapStatusController;
 use App\Http\Controllers\Admin\LocationPairingTokenController;
 use App\Http\Controllers\Admin\MailTestController;
 use App\Http\Controllers\Admin\ProductExcelController;
@@ -42,6 +43,7 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::post('/2fa/setup', [AdminTwoFactorController::class, 'enable'])->name('2fa.enable');
         Route::post('/2fa/disable', [AdminTwoFactorController::class, 'disable'])->name('2fa.disable');
 
+        Route::get('/locations-map/status', [LocationMapStatusController::class, 'index'])->name('locations.map-status');
         Route::get('/locations/{location}/pairing-token', [LocationPairingTokenController::class, 'show'])->name('locations.pairing-token.show');
         Route::post('/locations/{location}/pairing-token', [LocationPairingTokenController::class, 'store'])->name('locations.pairing-token.store');
 

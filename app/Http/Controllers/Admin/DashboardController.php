@@ -140,7 +140,7 @@ class DashboardController extends Controller
         $service = new DashboardService($location?->id);
 
         $contingencies = $service->getLocationsInContingency();
-        $devicesNoSync = $service->getDevicesNotSyncedSince(4);
+        $devicesNoSync = $service->getDevicesNotSyncedSince();
         $licensesExpiring = $service->getLicensesExpiringWithin(7);
         $sync7d = $service->getSyncStats7d();
         $syncFailures24h = $service->getSyncFailuresLast24h();

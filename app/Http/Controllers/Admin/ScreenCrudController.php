@@ -106,16 +106,7 @@ class ScreenCrudController extends Controller
 
         $locationsMapPins = [];
         if ($screen === 'locations') {
-            $mapQuery = Location::query();
-            AdminGridQuery::apply($mapQuery, $request, $screen, $cfg);
-            $mapQuery->withCount([
-                'devices as active_devices_count' => fn ($q) => $q->where('is_enabled', true),
-            ]);
-            $mapLocations = $mapQuery->get(['id', 'name', 'latitude', 'longitude', 'is_active']);
-            $locationsMapPins = LocationMapSyncPins::build(
-                $mapLocations,
-                $user->can($p['edit']),
-            );
+            $locationsMapPins = LocationMapSyncPins::forRequest($request, $user->can($p['edit']));
         }
 
         return view('admin.crud.index', [
