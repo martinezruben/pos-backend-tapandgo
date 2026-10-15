@@ -8,7 +8,9 @@ use App\Models\License;
 use App\Models\Location;
 use App\Models\PaymentMethod;
 use App\Models\SyncLog;
+use App\Models\SystemParameter;
 use App\Models\Transaction;
+use App\Support\AppVersion;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -493,6 +495,37 @@ class DashboardService
                     'hours_ago' => (int) ceil($last->diffInMinutes(now()) / 60),
                 ];
             })
+            ->all();
+    }
+
+    /**
+     * Dispositivos habilitados cuya versión de app reportada es menor que la mínima configurada.
+     * Los que nunca reportaron versión no cuentan: aún no tienen una app que la envíe.
+     *
+     * @return list<array{name: string, location: string, version: string, minimum: string}>
+     */
+    public function getOutdatedDevices(): array
+    {
+        $minimum = AppVersion::normalize(SystemParameter::query()->value('min_app_version'));
+        if ($minimum === null) {
+            return [];
+        }
+
+        return Device::query()
+            ->where('is_enabled', true)
+            ->whereNotNull('app_version')
+            ->when($this->locationId, fn ($q) => $q->where('location_id', $this->locationId))
+            ->with('location:id,name')
+            ->orderBy('app_version')
+            ->get(['id', 'name', 'location_id', 'app_version'])
+            ->filter(fn ($dev) => AppVersion::isOutdated($dev->app_version, $minimum))
+            ->map(fn ($dev) => [
+                'name' => $dev->name ?: $dev->id,
+                'location' => $dev->location?->name ?? '—',
+                'version' => $dev->app_version,
+                'minimum' => $minimum,
+            ])
+            ->values()
             ->all();
     }
 

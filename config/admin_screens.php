@@ -52,8 +52,9 @@ return [
         'disable_create' => true,
         'labels' => [
             'registered_at' => 'Fecha de registro',
+            'app_version' => 'Versión de la app',
         ],
-        'fields' => ['location_id', 'device_fingerprint', 'name', 'is_enabled', 'registered_at', 'last_sync_at'],
+        'fields' => ['location_id', 'device_fingerprint', 'name', 'is_enabled', 'app_version', 'registered_at', 'last_sync_at'],
         'foreign_labels' => [
             'location_id' => ['relation' => 'location', 'attribute' => 'name', 'header' => 'Localidad'],
         ],
@@ -68,7 +69,7 @@ return [
                     'apply' => ['type' => 'column', 'column' => 'location_id'],
                 ],
             ],
-            'sortable' => ['location_id', 'device_fingerprint', 'name', 'is_enabled', 'registered_at', 'last_sync_at'],
+            'sortable' => ['location_id', 'device_fingerprint', 'name', 'is_enabled', 'app_version', 'registered_at', 'last_sync_at'],
             'default_sort' => ['key' => 'updated_at', 'direction' => 'desc'],
         ],
     ],

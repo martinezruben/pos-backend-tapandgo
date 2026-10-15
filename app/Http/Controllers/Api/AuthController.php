@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Device;
 use App\Models\License;
 use App\Models\Location;
+use App\Support\AppVersion;
 use App\Support\DevicePairingToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,6 +44,8 @@ class AuthController extends Controller
             ->first();
 
         if ($existing !== null) {
+            AppVersion::record($existing, $request);
+
             return $this->jsonTokenForExistingDeviceAfterPairing($existing);
         }
 
@@ -79,6 +82,7 @@ class AuthController extends Controller
             $plainToken = $device->createToken('pos-device')->plainTextToken;
 
             return [
+                'device_id' => $device->id,
                 'token' => $plainToken,
                 'license_key' => $license->license_key,
                 'location_id' => $device->location_id,
@@ -86,6 +90,9 @@ class AuthController extends Controller
                 ...$this->licenseValidityForJson($license),
             ];
         });
+
+        AppVersion::record(Device::query()->findOrFail($result['device_id']), $request);
+        unset($result['device_id']);
 
         return response()->json($result);
     }
@@ -147,6 +154,7 @@ class AuthController extends Controller
 
         $device->tokens()->delete();
         $token = $device->createToken('pos-device')->plainTextToken;
+        AppVersion::record($device, $request);
 
         return response()->json([
             'token' => $token,

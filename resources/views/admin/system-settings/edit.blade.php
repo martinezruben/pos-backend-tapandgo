@@ -149,6 +149,23 @@
                         <span class="block text-[9px] text-slate-500">Detiene push/pull de los dispositivos (login y reportes siguen operativos). Útil durante migraciones o incidencias.</span>
                     </span>
                 </label>
+                <div class="mt-2 rounded-lg border border-slate-100 bg-white p-3">
+                    <label for="min_app_version" class="snow-label">Versión mínima de la app</label>
+                    <input
+                        id="min_app_version"
+                        type="text"
+                        name="min_app_version"
+                        value="{{ old('min_app_version', $params->min_app_version) }}"
+                        maxlength="30"
+                        inputmode="decimal"
+                        placeholder="Ej.: 1.4.0"
+                        class="snow-input max-w-[12rem] text-xs"
+                    >
+                    @error('min_app_version')
+                        <p class="text-[11px] text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="mt-1 text-[11px] text-slate-500">Los dispositivos con una versión menor se marcan como desactualizados en el dashboard técnico. Déjalo vacío para no avisar. Solo informa: no bloquea la venta.</p>
+                </div>
             </section>
 
             <section x-data="{ activeTab: 'general' }">

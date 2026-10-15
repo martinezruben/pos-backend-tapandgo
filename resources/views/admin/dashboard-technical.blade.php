@@ -174,6 +174,27 @@
         </div>
     </x-modal>
 
+    <x-modal name="dash-outdated-devices" maxWidth="lg">
+        <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+            <h3 class="text-sm font-semibold text-slate-900">Dispositivos con app desactualizada ({{ count($outdatedDevices) }})</h3>
+            <button type="button" x-on:click="$dispatch('close-modal', 'dash-outdated-devices')" class="rounded-md p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-600" aria-label="Cerrar">
+                <x-admin.snow.icon name="x-mark" class="h-4 w-4" />
+            </button>
+        </div>
+        <div class="max-h-[60vh] overflow-y-auto">
+            <table class="min-w-full divide-y divide-slate-100 text-left text-xs">
+                <thead class="snow-table-head"><tr><th class="px-4 py-2 font-semibold">Dispositivo</th><th class="px-4 py-2 font-semibold">Localidad</th><th class="px-4 py-2 font-semibold">Versión</th><th class="px-4 py-2 font-semibold">Mínima</th></tr></thead>
+                <tbody class="divide-y divide-slate-50">
+                    @forelse ($outdatedDevices as $row)
+                        <tr><td class="px-4 py-2 font-medium text-slate-800">{{ $row['name'] }}</td><td class="px-4 py-2 text-slate-600">{{ $row['location'] }}</td><td class="px-4 py-2 font-mono text-amber-700">{{ $row['version'] }}</td><td class="px-4 py-2 font-mono text-slate-600">{{ $row['minimum'] }}</td></tr>
+                    @empty
+                        <tr><td colspan="4" class="px-4 py-6 text-center text-slate-500">Todos los dispositivos tienen la versión mínima o superior.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </x-modal>
+
     @push('scripts')
         <script type="application/json" id="dashboard-chart-data">@json($chartPayload)</script>
         @vite(['resources/js/dashboard.js'])

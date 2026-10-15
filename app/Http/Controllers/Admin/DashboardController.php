@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Location;
+use App\Models\SystemParameter;
 use App\Services\DashboardService;
 use App\Support\AdminRbac;
+use App\Support\AppVersion;
 use App\Support\Format;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -142,6 +144,8 @@ class DashboardController extends Controller
         $contingencies = $service->getLocationsInContingency();
         $devicesNoSync = $service->getDevicesNotSyncedSince();
         $licensesExpiring = $service->getLicensesExpiringWithin(7);
+        $minAppVersion = AppVersion::normalize(SystemParameter::query()->value('min_app_version'));
+        $outdatedDevices = $service->getOutdatedDevices();
         $sync7d = $service->getSyncStats7d();
         $syncFailures24h = $service->getSyncFailuresLast24h();
         $counts = $service->getInventoryCounts();
@@ -186,6 +190,14 @@ class DashboardController extends Controller
                 'tone' => count($licensesExpiring) > 0 ? 'warn' : 'good',
                 'modal' => count($licensesExpiring) > 0 ? 'dash-licenses-expiring' : null,
             ],
+            ...($minAppVersion === null ? [] : [[
+                'label' => 'App desactualizada (< '.$minAppVersion.')',
+                'value' => (string) count($outdatedDevices),
+                'sub' => count($outdatedDevices) > 0 ? 'Ver dispositivos' : 'Todos al día',
+                'icon' => 'arrow-up-circle',
+                'tone' => count($outdatedDevices) > 0 ? 'warn' : 'good',
+                'modal' => count($outdatedDevices) > 0 ? 'dash-outdated-devices' : null,
+            ]]),
             [
                 'label' => 'Sync correctas (7 días)',
                 'value' => $sync7d['okPct'] === null ? '—' : $sync7d['okPct'].'%',
@@ -207,6 +219,8 @@ class DashboardController extends Controller
             'contingencies' => $contingencies,
             'devicesNoSync' => $devicesNoSync,
             'licensesExpiring' => $licensesExpiring,
+            'outdatedDevices' => $outdatedDevices,
+            'minAppVersion' => $minAppVersion,
             'activity' => $service->getRecentActivity(8),
             'chartPayload' => [
                 'syncByDay' => $service->getSyncSuccessFailedByDay(now()->subDays(13)->startOfDay(), now()->endOfDay()),

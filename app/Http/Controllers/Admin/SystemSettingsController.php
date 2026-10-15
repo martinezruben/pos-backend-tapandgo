@@ -44,6 +44,7 @@ class SystemSettingsController extends Controller
             'office365_client_id' => ['nullable', 'string', 'max:255'],
             'office365_client_secret' => ['nullable', 'string'],
             'office365_scopes' => ['nullable', 'string'],
+            'min_app_version' => ['nullable', 'string', 'max:30', 'regex:/^\d+(\.\d+){0,3}$/'],
             'contingency_enabled' => ['boolean'],
             'contingency_email_list' => ['nullable', 'string'],
             'contingency_resend_hours' => ['sometimes', 'required', 'integer', 'min:1', 'max:168'],
@@ -62,6 +63,11 @@ class SystemSettingsController extends Controller
             'contingency_enabled',
         ] as $boolField) {
             $validated[$boolField] = $request->boolean($boolField);
+        }
+
+        // Vacío = sin versión mínima
+        if (array_key_exists('min_app_version', $validated)) {
+            $validated['min_app_version'] = trim((string) $validated['min_app_version']) ?: null;
         }
 
         if (! empty($validated['office365_scopes'])) {
