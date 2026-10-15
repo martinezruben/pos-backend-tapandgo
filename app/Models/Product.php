@@ -12,12 +12,13 @@ class Product extends Model
 {
     use HasFactory, HasUuidPrimaryKey, SoftDeletes;
 
-    protected $fillable = ['sku', 'barcode', 'name', 'description', 'image_url', 'subfamily_id', 'price', 'tax_rate', 'is_active', 'is_favorite'];
+    protected $fillable = ['sku', 'barcode', 'name', 'description', 'image_url', 'subfamily_id', 'price', 'cost', 'tax_rate', 'is_active', 'is_favorite'];
 
     protected function casts(): array
     {
         return [
             'price' => 'decimal:2',
+            'cost' => 'decimal:2',
             'tax_rate' => 'decimal:2',
             'is_active' => 'boolean',
             'is_favorite' => 'boolean',

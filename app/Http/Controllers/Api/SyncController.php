@@ -117,10 +117,11 @@ class SyncController extends Controller
         $stored = 0;
 
         // Un producto desconocido no debe tumbar toda la venta: la línea conserva nombre y SKU.
+        // Un producto desconocido no tumba la venta (la línea conserva nombre y SKU). id => costo vigente
+        // (null si no tiene), que se congela en la línea.
         $knownProducts = Product::withTrashed()
             ->whereIn('id', collect($payload['transactions'])->pluck('items.*.product_id')->flatten()->filter()->unique()->all())
-            ->pluck('id')
-            ->flip();
+            ->pluck('cost', 'id');
 
         DB::transaction(function () use ($payload, $device, &$stored, $knownProducts): void {
             foreach ($payload['transactions'] as $txData) {
@@ -152,11 +153,17 @@ class SyncController extends Controller
                     $stored++;
                 }
 
+                // Un reenvío recrea las líneas: se conserva el costo ya congelado en vez de releer el actual
+                $frozenCosts = $transaction->items()->whereNotNull('product_id')->pluck('unit_cost', 'product_id');
+
                 $transaction->items()->delete();
                 foreach ($txData['items'] ?? [] as $item) {
+                    $productId = isset($item['product_id']) && $knownProducts->has($item['product_id']) ? $item['product_id'] : null;
+
                     TransactionItem::create([
                         'transaction_id' => $transaction->id,
-                        'product_id' => isset($item['product_id'], $knownProducts[$item['product_id']]) ? $item['product_id'] : null,
+                        'product_id' => $productId,
+                        'unit_cost' => $productId === null ? null : ($frozenCosts->has($productId) ? $frozenCosts[$productId] : $knownProducts[$productId]),
                         'product_name' => Str::limit($item['product_name'] ?? 'unknown', 120, ''),
                         'product_sku' => isset($item['product_sku']) ? Str::limit($item['product_sku'], 50, '') : null,
                         'qty' => $item['qty'] ?? 0,

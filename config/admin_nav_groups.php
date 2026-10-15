@@ -44,6 +44,7 @@ return [
         'label' => 'Reportes',
         'screens' => [
             'products-best-sellers',
+            'products-margin',
             'products-no-movement',
             'payment-methods-report',
             'users-performance-report',

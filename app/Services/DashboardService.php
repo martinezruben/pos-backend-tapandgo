@@ -155,6 +155,16 @@ class DashboardService
     }
 
     /**
+     * Margen de los últimos N días sobre las líneas con costo congelado, más la cobertura.
+     *
+     * @return array{revenue: float, cost: float, margin: ?float, margin_pct: ?float, coverage_pct: ?float}
+     */
+    public function getMarginSummary(int $days): array
+    {
+        return (new ReportService)->getMarginSummary(now()->subDays($days - 1)->startOfDay(), now()->endOfDay(), $this->locationId);
+    }
+
+    /**
      * Ventas cobradas por día de la semana (lunes primero) y hora del día, para el mapa de calor.
      * La BD guarda hora de muro local, así que se agrupa sin convertir zona horaria.
      *

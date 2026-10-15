@@ -29,6 +29,8 @@ php artisan pos:generate-thumbnails       # backfill miniaturas WebP de imágene
 - API usa Sanctum con modelo `Device` + middleware `device.operational` (valida licencia). El panel usa guard `admin` sobre `admin_users`.
 - Payloads del API en **camelCase**; timestamps en UTC ISO `Y-m-d\TH:i:sZ`. La clave del código de barras de producto es **`codebar`** (mapea de `products.barcode`; null si vacío).
 - Los filtros de grid se definen en config (`apply.type`: `column`, `whereHas`, `date_from`, `date_to`); el orden de columnas del grid usa `grid.field_order`, independiente del orden de `fields` (form).
+- Costo y margen: `products.cost` es opcional y nunca viaja al POS; al sincronizar una venta se congela en `transaction_items.unit_cost` (un reenvío conserva el costo ya congelado). El margen usa `config('pos.line_total_includes_tax')` para decidir si el ingreso neto es `line_total - tax`. Ver costos/margen exige `products_margin.view` (no se otorga a roles existentes).
+- Versión de la app: la app Android envía la cabecera `App-Version` (`1.4.2`); se guarda en `devices.app_version` y se compara con `system_parameters.min_app_version` (solo informa, no bloquea).
 - Importes en grids: listar las columnas en `grid.money` para mostrarlas como `$1,234.56`. Todo formato de cifras pasa por `App\Support\Format` (PHP) y `resources/js/format.js` (gráficos); no usar `number_format` con coma decimal.
 
 ## Gotchas

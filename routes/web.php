@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\LocationMapStatusController;
 use App\Http\Controllers\Admin\LocationPairingTokenController;
 use App\Http\Controllers\Admin\MailTestController;
 use App\Http\Controllers\Admin\ProductExcelController;
+use App\Http\Controllers\Admin\ProductsMarginExportController;
 use App\Http\Controllers\Admin\ProductsNoMovementExportController;
 use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\ReportsExportController;
@@ -79,11 +80,15 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         // Reportes prioritarios
         Route::get('/reports/products-best-sellers', [ReportsController::class, 'productsBestSellers'])->name('reports.products-best-sellers');
         Route::get('/reports/products-no-movement', [ReportsController::class, 'productsNoMovement'])->name('reports.products-no-movement');
+        Route::get('/reports/products-margin', [ReportsController::class, 'productsMargin'])->name('reports.products-margin');
         Route::get('/reports/payment-methods', [ReportsController::class, 'paymentMethodsReport'])->name('reports.payment-methods');
         Route::get('/reports/users-performance', [ReportsController::class, 'usersPerformanceReport'])->name('reports.users-performance');
 
         Route::post('/reports/products-no-movement/export', [ProductsNoMovementExportController::class, 'excel'])->name('reports.products-no-movement.export');
         Route::post('/reports/products-no-movement/export-csv', [ProductsNoMovementExportController::class, 'csv'])->name('reports.products-no-movement.export-csv');
+
+        Route::post('/reports/products-margin/export', [ProductsMarginExportController::class, 'excel'])->name('reports.products-margin.export');
+        Route::post('/reports/products-margin/export-csv', [ProductsMarginExportController::class, 'csv'])->name('reports.products-margin.export-csv');
 
         // Exportar reportes Excel
         Route::post('/reports/products-best-sellers/export', [ReportsExportController::class, 'productsBestSellers'])->name('reports.products-best-sellers.export');

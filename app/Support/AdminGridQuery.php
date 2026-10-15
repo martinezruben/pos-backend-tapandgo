@@ -138,7 +138,7 @@ class AdminGridQuery
             return;
         }
 
-        $skipLike = ['is_active', 'is_synced', 'qty', 'total', 'opening_balance', 'closing_balance', 'tax_rate', 'price', 'discount', 'tax', 'line_amount', 'shift_number', 'turn_number', 'records_count', 'latitude', 'longitude', 'created_at', 'response_status', 'duration_ms', 'items_count', 'occurred_at', 'last_activity_at', 'location_id'];
+        $skipLike = ['is_active', 'is_synced', 'qty', 'total', 'opening_balance', 'closing_balance', 'tax_rate', 'price', 'cost', 'unit_cost', 'discount', 'tax', 'line_amount', 'shift_number', 'turn_number', 'records_count', 'latitude', 'longitude', 'created_at', 'response_status', 'duration_ms', 'items_count', 'occurred_at', 'last_activity_at', 'location_id'];
         $fkFields = array_keys($cfg['foreign_labels'] ?? []);
         $grid = $cfg['grid'] ?? [];
         if (! empty($grid['search_columns']) && is_array($grid['search_columns'])) {

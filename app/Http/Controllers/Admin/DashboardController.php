@@ -36,6 +36,12 @@ class DashboardController extends Controller
 
         $location = $this->selectedLocation($request);
         $data = $this->cached('commercial', $location, fn () => $this->commercialData($location));
+        // La caché es común a todos los usuarios: las tarjetas con permiso se filtran aquí
+        $admin = auth('admin')->user();
+        $data['kpis'] = array_values(array_filter(
+            $data['kpis'],
+            fn (array $card): bool => empty($card['requires']) || $admin?->can($card['requires']),
+        ));
 
         return view('admin.dashboard', $data + [
             'locationOptions' => $this->locationOptions(),
@@ -67,6 +73,7 @@ class DashboardController extends Controller
 
         $k = $service->getKpis();
         $voided = $service->getVoidedTransactions();
+        $margin = $service->getMarginSummary(30);
 
         $kpis = [
             [
@@ -115,6 +122,16 @@ class DashboardController extends Controller
                 'value' => (string) $voided['week']['count'],
                 'sub' => Format::money($voided['week']['total']),
                 'icon' => 'arrow-uturn-left',
+            ],
+            [
+                'label' => 'Margen (30 días)',
+                'value' => $margin['margin'] === null ? '—' : Format::money($margin['margin']),
+                'sub' => $margin['margin'] === null
+                    ? 'Sin costos cargados'
+                    : Format::percent($margin['margin_pct'] ?? 0).' · costo en '.Format::percent($margin['coverage_pct'] ?? 0, 0).' de las ventas',
+                'icon' => 'scale',
+                // El costo y el margen son sensibles: solo con el permiso del reporte de margen
+                'requires' => 'products_margin.view',
             ],
         ];
 

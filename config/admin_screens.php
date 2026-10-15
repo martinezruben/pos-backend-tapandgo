@@ -358,12 +358,13 @@ return [
             'barcode' => 'Código de barras',
             'name' => 'Nombre',
             'price' => 'Precio',
+            'cost' => 'Costo (opcional)',
             'tax_rate' => 'IVA (%)',
             'is_active' => 'Activo',
             'is_favorite' => 'Favorito',
             'image_url' => 'Imagen',
         ],
-        'fields' => ['sku', 'barcode', 'name', 'subfamily_id', 'price', 'tax_rate', 'is_active', 'is_favorite', 'image_url'],
+        'fields' => ['sku', 'barcode', 'name', 'subfamily_id', 'price', 'cost', 'tax_rate', 'is_active', 'is_favorite', 'image_url'],
         'foreign_labels' => [
             'subfamily_id' => ['relation' => 'subfamily', 'attribute' => 'admin_label', 'header' => 'Subfamilia'],
         ],
@@ -979,6 +980,14 @@ return [
     // ============================================================================
     // REPORTES PRIORITARIOS
     // ============================================================================
+
+    'products-margin' => [
+        'label' => 'Margen por producto',
+        'icon' => 'scale',
+        'readonly' => true,
+        'rbac' => true,
+        'route' => 'admin.reports.products-margin',
+    ],
 
     'products-no-movement' => [
         'label' => 'Productos sin movimiento',

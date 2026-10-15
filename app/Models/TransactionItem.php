@@ -11,7 +11,7 @@ class TransactionItem extends Model
     use HasFactory, HasUuidPrimaryKey;
 
     protected $fillable = [
-        'transaction_id', 'product_id', 'product_name', 'product_sku', 'qty', 'unit_price', 'discount', 'tax', 'line_total',
+        'transaction_id', 'product_id', 'product_name', 'product_sku', 'qty', 'unit_price', 'unit_cost', 'discount', 'tax', 'line_total',
     ];
 
     protected function casts(): array
@@ -21,6 +21,7 @@ class TransactionItem extends Model
             'unit_price' => 'decimal:2',
             'discount' => 'decimal:2',
             'tax' => 'decimal:2',
+            'unit_cost' => 'decimal:2',
             'line_total' => 'decimal:2',
         ];
     }

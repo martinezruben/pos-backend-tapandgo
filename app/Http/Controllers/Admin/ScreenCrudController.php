@@ -389,6 +389,10 @@ class ScreenCrudController extends Controller
             }
         }
 
+        if (in_array('cost', $cfg['fields'] ?? [], true) && $request->input('cost') === '') {
+            $request->merge(['cost' => null]);
+        }
+
         if (in_array('barcode', $cfg['fields'] ?? [], true) && $request->input('barcode') === '') {
             $request->merge(['barcode' => null]);
         }
@@ -425,6 +429,8 @@ class ScreenCrudController extends Controller
                 $modelClass = AdminGridCell::relationModel($meta['relation']);
                 $m = new $modelClass;
                 $rules[$field] = ['nullable', 'uuid', Rule::exists($m->getTable(), $m->getKeyName())];
+            } elseif ($screen === 'products' && $field === 'cost') {
+                $rules[$field] = ['nullable', 'numeric', 'min:0', 'max:99999999.99'];
             } elseif ($screen === 'products' && $field === 'barcode') {
                 $rule = Rule::unique('products', 'barcode');
                 if ($updating && $request->route('id')) {

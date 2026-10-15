@@ -53,6 +53,23 @@ class ReportsController extends Controller
         ]);
     }
 
+    public function productsMargin(Request $request): View
+    {
+        $this->authorizeView('products-margin');
+
+        [$dateFrom, $dateTo] = $this->period($request);
+        $locationId = $request->input('location_id');
+
+        return view('admin.reports.products-margin', [
+            'products' => $this->reportService->getProductsMargin($dateFrom, $dateTo, $locationId),
+            'summary' => $this->reportService->getMarginSummary($dateFrom, $dateTo, $locationId),
+            'dateFrom' => $dateFrom->format('Y-m-d'),
+            'dateTo' => $dateTo->format('Y-m-d'),
+            'locationId' => $locationId,
+            'locations' => Location::query()->orderBy('name')->get(['id', 'name', 'is_active']),
+        ]);
+    }
+
     public function paymentMethodsReport(Request $request): View
     {
         $this->authorizeView('payment-methods-report');
