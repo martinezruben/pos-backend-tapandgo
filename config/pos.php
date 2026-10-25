@@ -25,6 +25,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | ¿`transaction_items.line_total` incluye el impuesto de la línea?
+    |--------------------------------------------------------------------------
+    |
+    | Define el ingreso neto para el margen: true = ingreso neto = line_total - tax
+    | (precios con impuesto incluido); false = ingreso neto = line_total.
+    |
+    */
+    'line_total_includes_tax' => (bool) env('POS_LINE_TOTAL_INCLUDES_TAX', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | NCF (Número de Comprobante Fiscal) - Configuración RD/EC
     |--------------------------------------------------------------------------
     | ncf.enabled   → toggle global del módulo NCF (true/false)

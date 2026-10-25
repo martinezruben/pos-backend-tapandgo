@@ -21,6 +21,10 @@
                     <p class="mt-0.5 break-all rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 font-mono text-[12px] text-slate-800">{{ $item->device_fingerprint }}</p>
                 </div>
                 <div class="md:col-span-2">
+                    <span class="snow-label">Versión de la app</span>
+                    <p class="mt-0.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 font-mono text-[13px] text-slate-800">{{ $item->app_version ?? 'Sin reportar' }}@if ($item->app_version_seen_at) <span class="font-sans text-xs text-slate-500">· vista {{ $item->app_version_seen_at->format('Y-m-d H:i') }}</span>@endif</p>
+                </div>
+                <div class="md:col-span-2">
                     <span class="snow-label">Última sincronización</span>
                     <p class="mt-0.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 text-[13px] text-slate-800 tabular-nums">{{ $item->last_sync_at?->format('Y-m-d H:i') ?? '—' }}</p>
                     <form method="POST" action="{{ route('admin.devices.reset-last-sync', $item) }}" class="mt-2 inline" onsubmit="return confirm('¿Restablecer la última sincronización?');">

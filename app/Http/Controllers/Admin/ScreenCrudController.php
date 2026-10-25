@@ -389,6 +389,10 @@ class ScreenCrudController extends Controller
             }
         }
 
+        if (in_array('cost', $cfg['fields'] ?? [], true) && $request->input('cost') === '') {
+            $request->merge(['cost' => null]);
+        }
+
         if (in_array('barcode', $cfg['fields'] ?? [], true) && $request->input('barcode') === '') {
             $request->merge(['barcode' => null]);
         }
@@ -425,6 +429,8 @@ class ScreenCrudController extends Controller
                 $modelClass = AdminGridCell::relationModel($meta['relation']);
                 $m = new $modelClass;
                 $rules[$field] = ['nullable', 'uuid', Rule::exists($m->getTable(), $m->getKeyName())];
+            } elseif ($screen === 'products' && $field === 'cost') {
+                $rules[$field] = ['nullable', 'numeric', 'min:0', 'max:99999999.99'];
             } elseif ($screen === 'products' && $field === 'barcode') {
                 $rule = Rule::unique('products', 'barcode');
                 if ($updating && $request->route('id')) {
@@ -524,16 +530,13 @@ class ScreenCrudController extends Controller
             }
         }
 
-        if ($screen === 'android-users' && ! empty($data['password'] ?? null)) {
-            $data['pin_sha384'] = User::pinSha384FromPlain((string) $data['password']);
-        }
-
         if (array_key_exists('password', $data)) {
             if (empty($data['password'])) {
                 unset($data['password']);
-            } else {
+            } elseif ($screen !== 'android-users') {
                 $data['password'] = Hash::make($data['password']);
             }
+            // android-users: se pasa en claro; User::password() guarda el hash bcrypt y el hash del PIN (SHA-384)
         }
 
         if (($cfg['model'] ?? '') === Role::class || ($cfg['model'] ?? '') === Permission::class) {

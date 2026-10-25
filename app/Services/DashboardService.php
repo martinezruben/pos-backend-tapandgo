@@ -8,7 +8,10 @@ use App\Models\License;
 use App\Models\Location;
 use App\Models\PaymentMethod;
 use App\Models\SyncLog;
+use App\Models\SystemParameter;
 use App\Models\Transaction;
+use App\Models\User;
+use App\Support\AppVersion;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -150,6 +153,16 @@ class DashboardService
             'sales' => $sales,
             'transactions' => $transactions,
         ];
+    }
+
+    /**
+     * Margen de los últimos N días sobre las líneas con costo congelado, más la cobertura.
+     *
+     * @return array{revenue: float, cost: float, margin: ?float, margin_pct: ?float, coverage_pct: ?float}
+     */
+    public function getMarginSummary(int $days): array
+    {
+        return (new ReportService)->getMarginSummary(now()->subDays($days - 1)->startOfDay(), now()->endOfDay(), $this->locationId);
     }
 
     /**
@@ -494,6 +507,66 @@ class DashboardService
                 ];
             })
             ->all();
+    }
+
+    /**
+     * Dispositivos habilitados cuya versión de app reportada es menor que la mínima configurada.
+     * Los que nunca reportaron versión no cuentan: aún no tienen una app que la envíe.
+     *
+     * @return list<array{name: string, location: string, version: string, minimum: string}>
+     */
+    public function getOutdatedDevices(): array
+    {
+        $minimum = AppVersion::normalize(SystemParameter::query()->value('min_app_version'));
+        if ($minimum === null) {
+            return [];
+        }
+
+        return Device::query()
+            ->where('is_enabled', true)
+            ->whereNotNull('app_version')
+            ->when($this->locationId, fn ($q) => $q->where('location_id', $this->locationId))
+            ->with('location:id,name')
+            ->orderBy('app_version')
+            ->get(['id', 'name', 'location_id', 'app_version'])
+            ->filter(fn ($dev) => AppVersion::isOutdated($dev->app_version, $minimum))
+            ->map(fn ($dev) => [
+                'name' => $dev->name ?: $dev->id,
+                'location' => $dev->location?->name ?? '—',
+                'version' => $dev->app_version,
+                'minimum' => $minimum,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Usuarios POS activos que llegan a las tablets pero cuyo PIN no sirve sin conexión
+     * (sin hash SHA-384 válido). Se corrigen volviendo a guardar su contraseña.
+     *
+     * @return array{count: int, rows: list<array{username: string, name: string, role: string, location: string}>}
+     */
+    public function getUsersWithoutOfflinePin(int $limit = 50): array
+    {
+        $query = User::query()
+            ->withoutOfflinePin()
+            ->reachingDevices($this->locationId)
+            ->where('users.is_active', true);
+
+        return [
+            'count' => (clone $query)->count(),
+            'rows' => $query->with(['locations:id,name', 'location:id,name'])
+                ->orderBy('username')
+                ->limit($limit)
+                ->get()
+                ->map(fn (User $u) => [
+                    'username' => $u->username,
+                    'name' => $u->full_name ?: '—',
+                    'role' => $u->role,
+                    'location' => $u->locations->pluck('name')->push($u->location?->name)->filter()->unique()->implode(', ') ?: '—',
+                ])
+                ->all(),
+        ];
     }
 
     public function getLicensesExpiringWithin(int $days = 7): array

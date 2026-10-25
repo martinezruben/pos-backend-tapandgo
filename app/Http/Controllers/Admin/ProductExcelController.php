@@ -27,6 +27,7 @@ class ProductExcelController extends Controller
         'image_url',
         'subfamily_id',
         'price',
+        'cost',
         'tax_rate',
         'is_active',
         'is_favorite',
@@ -62,9 +63,10 @@ class ProductExcelController extends Controller
                         $cell($sheet, 6, $row, $p->image_url);
                         $cell($sheet, 7, $row, $p->subfamily_id);
                         $cell($sheet, 8, $row, $p->price);
-                        $cell($sheet, 9, $row, $p->tax_rate);
-                        $cell($sheet, 10, $row, $p->is_active ? 1 : 0);
-                        $cell($sheet, 11, $row, $p->is_favorite ? 1 : 0);
+                        $cell($sheet, 9, $row, $p->cost);
+                        $cell($sheet, 10, $row, $p->tax_rate);
+                        $cell($sheet, 11, $row, $p->is_active ? 1 : 0);
+                        $cell($sheet, 12, $row, $p->is_favorite ? 1 : 0);
                         $row++;
                     }
                 });
@@ -143,6 +145,20 @@ class ProductExcelController extends Controller
 
                 if ($data['price'] === null || $data['tax_rate'] === null) {
                     continue;
+                }
+
+                // `cost` es opcional: si el archivo no trae la columna no se toca el costo existente
+                if (isset($index['cost'])) {
+                    $cost = $this->cell($row, $index, 'cost');
+                    if ($cost === null || $cost === '') {
+                        $data['cost'] = null;
+                    } elseif (is_numeric($cost) && (float) $cost >= 0) {
+                        $data['cost'] = round((float) $cost, 2);
+                    } else {
+                        $errors[] = "Fila {$line}: cost no es un número válido.";
+
+                        continue;
+                    }
                 }
 
                 if ($data['subfamily_id'] !== null) {

@@ -69,6 +69,88 @@ class ReportService
             ->get();
     }
 
+    /** Ingreso neto de una línea para el margen (ver `config('pos.line_total_includes_tax')`). */
+    private function netRevenueSql(): string
+    {
+        return config('pos.line_total_includes_tax', true) ? '(ti.line_total - ti.tax)' : 'ti.line_total';
+    }
+
+    /**
+     * Margen por producto en el periodo, solo con las líneas que tienen costo congelado
+     * (`unit_cost`). Los productos vendidos sin costo salen al final con margen nulo.
+     *
+     * @return \Illuminate\Support\Collection<int, array<string, mixed>>
+     */
+    public function getProductsMargin(?Carbon $dateFrom = null, ?Carbon $dateTo = null, ?string $locationId = null)
+    {
+        $dateFrom = $dateFrom ?? now()->subMonth()->startOfDay();
+        $dateTo = $dateTo ?? now()->endOfDay();
+        $net = $this->netRevenueSql();
+
+        return DB::table('transaction_items as ti')
+            ->join('transactions as t', 't.id', '=', 'ti.transaction_id')
+            ->join('products as p', 'p.id', '=', 'ti.product_id')
+            ->where('t.status', 'PAID')
+            ->whereBetween('t.occurred_at', [$dateFrom, $dateTo])
+            ->when($locationId, fn ($q) => $q->where('t.location_id', $locationId))
+            ->groupBy('p.id', 'p.name', 'p.sku')
+            ->selectRaw("p.id, p.name, p.sku, SUM(ti.qty) as qty, SUM(CASE WHEN ti.unit_cost IS NOT NULL THEN ti.qty ELSE 0 END) as costed_qty, SUM(CASE WHEN ti.unit_cost IS NOT NULL THEN {$net} ELSE 0 END) as revenue, SUM(CASE WHEN ti.unit_cost IS NOT NULL THEN ti.qty * ti.unit_cost ELSE 0 END) as cost")
+            ->get()
+            ->map(function ($row): array {
+                $costed = (float) $row->costed_qty > 0;
+                $revenue = round((float) $row->revenue, 2);
+                $cost = round((float) $row->cost, 2);
+
+                return [
+                    'id' => $row->id,
+                    'name' => $row->name,
+                    'sku' => $row->sku,
+                    'qty' => (float) $row->qty,
+                    'costed_qty' => (float) $row->costed_qty,
+                    'revenue' => $costed ? $revenue : null,
+                    'cost' => $costed ? $cost : null,
+                    'margin' => $costed ? round($revenue - $cost, 2) : null,
+                    'margin_pct' => $costed && $revenue > 0 ? round(100 * ($revenue - $cost) / $revenue, 1) : null,
+                ];
+            })
+            ->sortBy([
+                fn ($a, $b) => ($a['margin'] === null) <=> ($b['margin'] === null),
+                fn ($a, $b) => ($b['margin'] ?? 0) <=> ($a['margin'] ?? 0),
+            ])
+            ->values();
+    }
+
+    /**
+     * Resumen del margen del periodo y qué parte de las ventas tiene costo (cobertura),
+     * para no presentar como total un margen calculado sobre una fracción.
+     *
+     * @return array{revenue: float, cost: float, margin: ?float, margin_pct: ?float, coverage_pct: ?float}
+     */
+    public function getMarginSummary(Carbon $dateFrom, Carbon $dateTo, ?string $locationId = null): array
+    {
+        $net = $this->netRevenueSql();
+
+        $row = DB::table('transaction_items as ti')
+            ->join('transactions as t', 't.id', '=', 'ti.transaction_id')
+            ->where('t.status', 'PAID')
+            ->whereBetween('t.occurred_at', [$dateFrom, $dateTo])
+            ->when($locationId, fn ($q) => $q->where('t.location_id', $locationId))
+            ->selectRaw("COALESCE(SUM(CASE WHEN ti.unit_cost IS NOT NULL THEN {$net} ELSE 0 END), 0) as revenue, COALESCE(SUM(CASE WHEN ti.unit_cost IS NOT NULL THEN ti.qty * ti.unit_cost ELSE 0 END), 0) as cost, COALESCE(SUM(CASE WHEN ti.unit_cost IS NOT NULL THEN ti.line_total ELSE 0 END), 0) as costed_gross, COALESCE(SUM(ti.line_total), 0) as all_gross, COUNT(CASE WHEN ti.unit_cost IS NOT NULL THEN 1 END) as costed_lines")
+            ->first();
+
+        $revenue = round((float) $row->revenue, 2);
+        $cost = round((float) $row->cost, 2);
+        $hasCost = (int) $row->costed_lines > 0;
+
+        return [
+            'revenue' => $revenue,
+            'cost' => $cost,
+            'margin' => $hasCost ? round($revenue - $cost, 2) : null,
+            'margin_pct' => $hasCost && $revenue > 0 ? round(100 * ($revenue - $cost) / $revenue, 1) : null,
+            'coverage_pct' => (float) $row->all_gross > 0 ? round(100 * (float) $row->costed_gross / (float) $row->all_gross, 1) : null,
+        ];
+    }
+
     public function getPaymentMethodsReport(?Carbon $dateFrom = null, ?Carbon $dateTo = null, ?string $locationId = null)
     {
         $dateFrom = $dateFrom ?? now()->subMonth();

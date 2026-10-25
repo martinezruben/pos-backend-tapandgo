@@ -23,6 +23,7 @@ class SystemParameter extends Model
         'admin_max_failed_login_attempts',
         'admin_lockout_minutes',
         'sync_paused',
+        'min_app_version',
         'mail_driver',
         'mail_from_address',
         'mail_from_name',

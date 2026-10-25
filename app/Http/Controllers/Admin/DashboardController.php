@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Location;
+use App\Models\SystemParameter;
 use App\Services\DashboardService;
 use App\Support\AdminRbac;
+use App\Support\AppVersion;
 use App\Support\Format;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,6 +36,12 @@ class DashboardController extends Controller
 
         $location = $this->selectedLocation($request);
         $data = $this->cached('commercial', $location, fn () => $this->commercialData($location));
+        // La caché es común a todos los usuarios: las tarjetas con permiso se filtran aquí
+        $admin = auth('admin')->user();
+        $data['kpis'] = array_values(array_filter(
+            $data['kpis'],
+            fn (array $card): bool => empty($card['requires']) || $admin?->can($card['requires']),
+        ));
 
         return view('admin.dashboard', $data + [
             'locationOptions' => $this->locationOptions(),
@@ -65,6 +73,7 @@ class DashboardController extends Controller
 
         $k = $service->getKpis();
         $voided = $service->getVoidedTransactions();
+        $margin = $service->getMarginSummary(30);
 
         $kpis = [
             [
@@ -114,6 +123,16 @@ class DashboardController extends Controller
                 'sub' => Format::money($voided['week']['total']),
                 'icon' => 'arrow-uturn-left',
             ],
+            [
+                'label' => 'Margen (30 días)',
+                'value' => $margin['margin'] === null ? '—' : Format::money($margin['margin']),
+                'sub' => $margin['margin'] === null
+                    ? 'Sin costos cargados'
+                    : Format::percent($margin['margin_pct'] ?? 0).' · costo en '.Format::percent($margin['coverage_pct'] ?? 0, 0).' de las ventas',
+                'icon' => 'scale',
+                // El costo y el margen son sensibles: solo con el permiso del reporte de margen
+                'requires' => 'products_margin.view',
+            ],
         ];
 
         $chartPayload = [
@@ -142,6 +161,9 @@ class DashboardController extends Controller
         $contingencies = $service->getLocationsInContingency();
         $devicesNoSync = $service->getDevicesNotSyncedSince();
         $licensesExpiring = $service->getLicensesExpiringWithin(7);
+        $minAppVersion = AppVersion::normalize(SystemParameter::query()->value('min_app_version'));
+        $outdatedDevices = $service->getOutdatedDevices();
+        $usersNoPin = $service->getUsersWithoutOfflinePin();
         $sync7d = $service->getSyncStats7d();
         $syncFailures24h = $service->getSyncFailuresLast24h();
         $counts = $service->getInventoryCounts();
@@ -186,6 +208,22 @@ class DashboardController extends Controller
                 'tone' => count($licensesExpiring) > 0 ? 'warn' : 'good',
                 'modal' => count($licensesExpiring) > 0 ? 'dash-licenses-expiring' : null,
             ],
+            ...($minAppVersion === null ? [] : [[
+                'label' => 'App desactualizada (< '.$minAppVersion.')',
+                'value' => (string) count($outdatedDevices),
+                'sub' => count($outdatedDevices) > 0 ? 'Ver dispositivos' : 'Todos al día',
+                'icon' => 'arrow-up-circle',
+                'tone' => count($outdatedDevices) > 0 ? 'warn' : 'good',
+                'modal' => count($outdatedDevices) > 0 ? 'dash-outdated-devices' : null,
+            ]]),
+            [
+                'label' => 'Usuarios sin PIN offline',
+                'value' => (string) $usersNoPin['count'],
+                'sub' => $usersNoPin['count'] > 0 ? 'Ver usuarios' : 'Todos al día',
+                'icon' => 'finger-print',
+                'tone' => $usersNoPin['count'] > 0 ? 'warn' : 'good',
+                'modal' => $usersNoPin['count'] > 0 ? 'dash-users-no-pin' : null,
+            ],
             [
                 'label' => 'Sync correctas (7 días)',
                 'value' => $sync7d['okPct'] === null ? '—' : $sync7d['okPct'].'%',
@@ -207,6 +245,9 @@ class DashboardController extends Controller
             'contingencies' => $contingencies,
             'devicesNoSync' => $devicesNoSync,
             'licensesExpiring' => $licensesExpiring,
+            'outdatedDevices' => $outdatedDevices,
+            'usersNoPin' => $usersNoPin,
+            'minAppVersion' => $minAppVersion,
             'activity' => $service->getRecentActivity(8),
             'chartPayload' => [
                 'syncByDay' => $service->getSyncSuccessFailedByDay(now()->subDays(13)->startOfDay(), now()->endOfDay()),

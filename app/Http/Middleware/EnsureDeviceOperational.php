@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Device;
 use App\Models\SystemParameter;
+use App\Support\AppVersion;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,6 +44,8 @@ class EnsureDeviceOperational
                 'error' => 'SYNC_PAUSED',
             ], 503);
         }
+
+        AppVersion::record($device, $request);
 
         $request->attributes->set('device', $device);
 

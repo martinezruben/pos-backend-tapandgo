@@ -52,8 +52,9 @@ return [
         'disable_create' => true,
         'labels' => [
             'registered_at' => 'Fecha de registro',
+            'app_version' => 'Versión de la app',
         ],
-        'fields' => ['location_id', 'device_fingerprint', 'name', 'is_enabled', 'registered_at', 'last_sync_at'],
+        'fields' => ['location_id', 'device_fingerprint', 'name', 'is_enabled', 'app_version', 'registered_at', 'last_sync_at'],
         'foreign_labels' => [
             'location_id' => ['relation' => 'location', 'attribute' => 'name', 'header' => 'Localidad'],
         ],
@@ -68,7 +69,7 @@ return [
                     'apply' => ['type' => 'column', 'column' => 'location_id'],
                 ],
             ],
-            'sortable' => ['location_id', 'device_fingerprint', 'name', 'is_enabled', 'registered_at', 'last_sync_at'],
+            'sortable' => ['location_id', 'device_fingerprint', 'name', 'is_enabled', 'app_version', 'registered_at', 'last_sync_at'],
             'default_sort' => ['key' => 'updated_at', 'direction' => 'desc'],
         ],
     ],
@@ -143,6 +144,7 @@ return [
             'is_active' => 'Activo',
             'location_id' => 'Localidad',
             'last_activity_at' => 'Última actividad',
+            'pin_status' => 'PIN sin conexión',
         ],
         'select_options' => [
             'role' => [
@@ -151,10 +153,11 @@ return [
                 'ADMIN' => 'Administrador (ADMIN)',
             ],
         ],
-        'fields' => ['username', 'full_name', 'role', 'is_active', 'location_id', 'last_activity_at', 'password', 'pin4'],
+        'fields' => ['username', 'full_name', 'role', 'is_active', 'location_id', 'last_activity_at', 'pin_status', 'password', 'pin4'],
         'foreign_labels' => [
             'location_id' => ['relation' => 'location', 'attribute' => 'name', 'header' => 'Localidad'],
             'last_activity_at' => ['virtual' => true, 'header' => 'Última actividad'],
+            'pin_status' => ['virtual' => true, 'header' => 'PIN sin conexión'],
         ],
         'grid' => [
             'exclude_from_grid' => ['password', 'pin4'],
@@ -179,6 +182,12 @@ return [
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'apply' => ['type' => 'column', 'column' => 'location_id'],
+                ],
+                'pin' => [
+                    'label' => 'PIN sin conexión',
+                    'type' => 'select',
+                    'options' => ['' => 'Todos', '1' => 'Sin PIN válido'],
+                    'apply' => ['type' => 'scope', 'scope' => 'withoutOfflinePin'],
                 ],
             ],
             'sortable' => ['username', 'full_name', 'role', 'is_active', 'location_id', 'last_activity_at'],
@@ -357,12 +366,13 @@ return [
             'barcode' => 'Código de barras',
             'name' => 'Nombre',
             'price' => 'Precio',
+            'cost' => 'Costo (opcional)',
             'tax_rate' => 'IVA (%)',
             'is_active' => 'Activo',
             'is_favorite' => 'Favorito',
             'image_url' => 'Imagen',
         ],
-        'fields' => ['sku', 'barcode', 'name', 'subfamily_id', 'price', 'tax_rate', 'is_active', 'is_favorite', 'image_url'],
+        'fields' => ['sku', 'barcode', 'name', 'subfamily_id', 'price', 'cost', 'tax_rate', 'is_active', 'is_favorite', 'image_url'],
         'foreign_labels' => [
             'subfamily_id' => ['relation' => 'subfamily', 'attribute' => 'admin_label', 'header' => 'Subfamilia'],
         ],
@@ -978,6 +988,14 @@ return [
     // ============================================================================
     // REPORTES PRIORITARIOS
     // ============================================================================
+
+    'products-margin' => [
+        'label' => 'Margen por producto',
+        'icon' => 'scale',
+        'readonly' => true,
+        'rbac' => true,
+        'route' => 'admin.reports.products-margin',
+    ],
 
     'products-no-movement' => [
         'label' => 'Productos sin movimiento',
