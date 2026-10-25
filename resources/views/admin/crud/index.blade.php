@@ -247,6 +247,12 @@
                                                                 <span class="inline-flex h-7 w-7 items-center justify-center rounded bg-slate-100/80 ring-1 ring-slate-200/80" title="Sin imagen" aria-label="Sin imagen">
                                                                     <svg class="h-3.5 w-3.5 text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5v9l9 5.25M3 7.5l9 5.25m0-9v9"/></svg>
                                                                 </span>
+                                @elseif($f === 'pin_status' && $item instanceof \App\Models\User)
+                                    @if($item->hasOfflinePin())
+                                        <span class="snow-tag bg-emerald-50 text-emerald-800">✓ Listo</span>
+                                    @else
+                                        <span class="snow-tag bg-amber-50 text-amber-800" title="Su PIN no funciona sin conexión hasta que se guarde de nuevo su contraseña">! Restablecer contraseña</span>
+                                    @endif
                                 @elseif(in_array($f, $badgeFields, true) && empty($cfg['foreign_labels'][$f]))
                                     <x-admin.snow.badge :field="$f" :value="$item->{$f}" />
                                 @else

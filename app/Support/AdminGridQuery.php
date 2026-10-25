@@ -109,6 +109,13 @@ class AdminGridQuery
                 continue;
             }
 
+            // Filtro por un scope de Eloquent del modelo (definido en config, nunca por el usuario)
+            if ($type === 'scope') {
+                $query->{$apply['scope']}();
+
+                continue;
+            }
+
             if ($type === 'date_from') {
                 $query->whereDate($apply['column'], '>=', $val);
 

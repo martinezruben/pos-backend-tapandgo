@@ -116,6 +116,10 @@ class AdminGridCell
             return (string) $raw;
         }
 
+        if ($item instanceof User && $field === 'pin_status') {
+            return $item->hasOfflinePin() ? 'Listo' : 'Restablecer contraseña';
+        }
+
         if ($item instanceof SyncState && $field === 'last_sync_since') {
             return $item->last_success_at !== null
                 ? $item->last_success_at->locale('es')->diffForHumans()

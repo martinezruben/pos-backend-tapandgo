@@ -530,16 +530,13 @@ class ScreenCrudController extends Controller
             }
         }
 
-        if ($screen === 'android-users' && ! empty($data['password'] ?? null)) {
-            $data['pin_sha384'] = User::pinSha384FromPlain((string) $data['password']);
-        }
-
         if (array_key_exists('password', $data)) {
             if (empty($data['password'])) {
                 unset($data['password']);
-            } else {
+            } elseif ($screen !== 'android-users') {
                 $data['password'] = Hash::make($data['password']);
             }
+            // android-users: se pasa en claro; User::password() guarda el hash bcrypt y el hash del PIN (SHA-384)
         }
 
         if (($cfg['model'] ?? '') === Role::class || ($cfg['model'] ?? '') === Permission::class) {

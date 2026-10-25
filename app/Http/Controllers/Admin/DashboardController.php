@@ -163,6 +163,7 @@ class DashboardController extends Controller
         $licensesExpiring = $service->getLicensesExpiringWithin(7);
         $minAppVersion = AppVersion::normalize(SystemParameter::query()->value('min_app_version'));
         $outdatedDevices = $service->getOutdatedDevices();
+        $usersNoPin = $service->getUsersWithoutOfflinePin();
         $sync7d = $service->getSyncStats7d();
         $syncFailures24h = $service->getSyncFailuresLast24h();
         $counts = $service->getInventoryCounts();
@@ -216,6 +217,14 @@ class DashboardController extends Controller
                 'modal' => count($outdatedDevices) > 0 ? 'dash-outdated-devices' : null,
             ]]),
             [
+                'label' => 'Usuarios sin PIN offline',
+                'value' => (string) $usersNoPin['count'],
+                'sub' => $usersNoPin['count'] > 0 ? 'Ver usuarios' : 'Todos al día',
+                'icon' => 'finger-print',
+                'tone' => $usersNoPin['count'] > 0 ? 'warn' : 'good',
+                'modal' => $usersNoPin['count'] > 0 ? 'dash-users-no-pin' : null,
+            ],
+            [
                 'label' => 'Sync correctas (7 días)',
                 'value' => $sync7d['okPct'] === null ? '—' : $sync7d['okPct'].'%',
                 'sub' => $sync7d['success'].' de '.($sync7d['success'] + $sync7d['failed']),
@@ -237,6 +246,7 @@ class DashboardController extends Controller
             'devicesNoSync' => $devicesNoSync,
             'licensesExpiring' => $licensesExpiring,
             'outdatedDevices' => $outdatedDevices,
+            'usersNoPin' => $usersNoPin,
             'minAppVersion' => $minAppVersion,
             'activity' => $service->getRecentActivity(8),
             'chartPayload' => [

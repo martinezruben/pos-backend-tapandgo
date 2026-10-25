@@ -144,6 +144,7 @@ return [
             'is_active' => 'Activo',
             'location_id' => 'Localidad',
             'last_activity_at' => 'Última actividad',
+            'pin_status' => 'PIN sin conexión',
         ],
         'select_options' => [
             'role' => [
@@ -152,10 +153,11 @@ return [
                 'ADMIN' => 'Administrador (ADMIN)',
             ],
         ],
-        'fields' => ['username', 'full_name', 'role', 'is_active', 'location_id', 'last_activity_at', 'password', 'pin4'],
+        'fields' => ['username', 'full_name', 'role', 'is_active', 'location_id', 'last_activity_at', 'pin_status', 'password', 'pin4'],
         'foreign_labels' => [
             'location_id' => ['relation' => 'location', 'attribute' => 'name', 'header' => 'Localidad'],
             'last_activity_at' => ['virtual' => true, 'header' => 'Última actividad'],
+            'pin_status' => ['virtual' => true, 'header' => 'PIN sin conexión'],
         ],
         'grid' => [
             'exclude_from_grid' => ['password', 'pin4'],
@@ -180,6 +182,12 @@ return [
                     'order_by' => 'name',
                     'label_column' => 'name',
                     'apply' => ['type' => 'column', 'column' => 'location_id'],
+                ],
+                'pin' => [
+                    'label' => 'PIN sin conexión',
+                    'type' => 'select',
+                    'options' => ['' => 'Todos', '1' => 'Sin PIN válido'],
+                    'apply' => ['type' => 'scope', 'scope' => 'withoutOfflinePin'],
                 ],
             ],
             'sortable' => ['username', 'full_name', 'role', 'is_active', 'location_id', 'last_activity_at'],

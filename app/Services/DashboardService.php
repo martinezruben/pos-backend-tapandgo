@@ -10,6 +10,7 @@ use App\Models\PaymentMethod;
 use App\Models\SyncLog;
 use App\Models\SystemParameter;
 use App\Models\Transaction;
+use App\Models\User;
 use App\Support\AppVersion;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -537,6 +538,35 @@ class DashboardService
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * Usuarios POS activos que llegan a las tablets pero cuyo PIN no sirve sin conexión
+     * (sin hash SHA-384 válido). Se corrigen volviendo a guardar su contraseña.
+     *
+     * @return array{count: int, rows: list<array{username: string, name: string, role: string, location: string}>}
+     */
+    public function getUsersWithoutOfflinePin(int $limit = 50): array
+    {
+        $query = User::query()
+            ->withoutOfflinePin()
+            ->reachingDevices($this->locationId)
+            ->where('users.is_active', true);
+
+        return [
+            'count' => (clone $query)->count(),
+            'rows' => $query->with(['locations:id,name', 'location:id,name'])
+                ->orderBy('username')
+                ->limit($limit)
+                ->get()
+                ->map(fn (User $u) => [
+                    'username' => $u->username,
+                    'name' => $u->full_name ?: '—',
+                    'role' => $u->role,
+                    'location' => $u->locations->pluck('name')->push($u->location?->name)->filter()->unique()->implode(', ') ?: '—',
+                ])
+                ->all(),
+        ];
     }
 
     public function getLicensesExpiringWithin(int $days = 7): array
