@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAdminActive;
 use App\Http\Middleware\EnsureDeviceOperational;
 use App\Http\Middleware\LogApiRequest;
 use Illuminate\Auth\AuthenticationException;
@@ -30,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
         $middleware->alias([
             'device.operational' => EnsureDeviceOperational::class,
+            'admin.active' => EnsureAdminActive::class,
         ]);
 
         $middleware->appendToGroup('api', LogApiRequest::class);

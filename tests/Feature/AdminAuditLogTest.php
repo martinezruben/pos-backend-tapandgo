@@ -148,10 +148,10 @@ class AdminAuditLogTest extends TestCase
 
     public function test_rbac_matrix_permission_changes_are_audited(): void
     {
-        Permission::firstOrCreate(['name' => 'roles.edit', 'guard_name' => 'admin']);
+        // La matriz de permisos es solo para super-admin
         Permission::firstOrCreate(['name' => 'licenses.view', 'guard_name' => 'admin']);
         Permission::firstOrCreate(['name' => 'licenses.edit', 'guard_name' => 'admin']);
-        $this->admin->givePermissionTo('roles.edit');
+        $this->admin->assignRole(Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'admin']));
         $role = Role::create(['name' => 'rbac-target', 'guard_name' => 'admin']);
         $role->givePermissionTo('licenses.view');
 

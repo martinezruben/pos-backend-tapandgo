@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\EnsureAdminActive;
 use App\Models\AdminAuditLog;
 use App\Models\AdminUser;
 use App\Models\Device;
 use App\Models\Family;
 use App\Models\Location;
 use App\Models\User;
+use App\Services\AdminUserGuard;
 use App\Services\ImageThumbnailService;
 use App\Support\AdminGridCell;
 use App\Support\AdminGridQuery;
@@ -49,6 +51,11 @@ class ScreenCrudController extends Controller
     {
         $user = auth('admin')->user();
         abort_unless($user, 403);
+        if (AdminRbac::isSuperAdminOnly($screen)) {
+            abort_unless(AdminRbac::isSuperAdmin($user), 403);
+
+            return;
+        }
         $p = AdminRbac::permissionsForScreen($screen);
         $perm = match ($action) {
             'view' => $p['view'],
@@ -80,6 +87,10 @@ class ScreenCrudController extends Controller
 
         if ($screen === 'android-users') {
             $query->selectRaw('users.*, '.AdminGridQuery::androidUsersLastActivitySql().' as last_activity_at');
+        }
+
+        if ($screen === 'admin-users') {
+            $query->with('roles')->selectRaw("admin_users.*, (SELECT MAX(l.created_at) FROM admin_audit_logs l WHERE l.admin_user_id = admin_users.id AND l.action = 'login') as last_login_at");
         }
 
         AdminGridQuery::apply($query, $request, $screen, $cfg);
@@ -115,7 +126,7 @@ class ScreenCrudController extends Controller
             'cfg' => $cfg,
             'gridFilterOptions' => AdminGridQuery::filterOptions($cfg),
             'canEdit' => $user->can($p['edit']) && empty($cfg['readonly']),
-            'canDelete' => $user->can($p['delete']) && empty($cfg['readonly']),
+            'canDelete' => $user->can($p['delete']) && empty($cfg['readonly']) && empty($cfg['disable_delete']),
             'locationsMapPins' => $locationsMapPins,
             'showTransactionExcelExport' => $screen === 'transactions' && $user->can($p['view']),
             'showTransactionReportExport' => $screen === 'transactions-report' && $user->can($p['view']),
@@ -155,8 +166,12 @@ class ScreenCrudController extends Controller
 
         $model = $cfg['model'];
         $created = $model::create($data);
-        if ($model === AdminUser::class && $request->filled('role_names')) {
-            $created->syncRoles($request->input('role_names', []));
+        if ($created instanceof AdminUser) {
+            $names = array_values($request->input('role_names', []));
+            $created->syncRoles($names);
+            if ($names !== []) {
+                AdminAuditLog::record('updated', 'AdminUser', (string) $created->getKey(), ['roles' => ['', implode(', ', $names)]]);
+            }
         }
         if ($screen === 'android-users' && $created instanceof User) {
             $this->syncAndroidUserLocationPivot($created, $data['location_id'] ?? null);
@@ -224,15 +239,50 @@ class ScreenCrudController extends Controller
             $this->applyImageUpload($request, $data, $item, 'products');
         }
 
-        $item->update($data);
-        if ($model === AdminUser::class) {
-            $item->syncRoles($request->input('role_names', []));
+        if ($item instanceof AdminUser) {
+            $this->updateAdminUser($request, $item, $data);
+        } else {
+            $item->update($data);
         }
         if ($screen === 'android-users' && $item instanceof User) {
             $this->syncAndroidUserLocationPivot($item, $data['location_id'] ?? null);
         }
 
         return redirect()->route('admin.screens.index', $screen)->with('status', 'Actualizado correctamente.');
+    }
+
+    /**
+     * Edita un usuario administrador: aplica las reglas de protección, sincroniza roles (con rastro en la
+     * auditoría) y, si cambia la contraseña, cierra sus otras sesiones.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function updateAdminUser(Request $request, AdminUser $item, array $data): void
+    {
+        $actor = auth('admin')->user();
+        $newRoles = array_values($request->input('role_names', []));
+        $newActive = (bool) ($data['is_active'] ?? false);
+
+        AdminUserGuard::assertChangeAllowed($actor, $item, $newRoles, $newActive);
+
+        $oldRoles = $item->roles->pluck('name')->sort()->values()->all();
+        $passwordChanged = ! empty($data['password']);
+
+        $item->update($data);
+        $item->syncRoles($newRoles);
+
+        sort($newRoles);
+        if ($oldRoles !== $newRoles) {
+            AdminAuditLog::record('updated', 'AdminUser', (string) $item->getKey(), ['roles' => [implode(', ', $oldRoles), implode(', ', $newRoles)]]);
+        }
+
+        if ($passwordChanged) {
+            $item->forceFill(['sessions_revoked_at' => now()])->save();
+            if ($actor->is($item)) {
+                // Cambió su propia contraseña: se cierran las demás sesiones, no esta
+                $request->session()->put(EnsureAdminActive::SESSION_KEY, now()->timestamp + 1);
+            }
+        }
     }
 
     /**
@@ -276,6 +326,7 @@ class ScreenCrudController extends Controller
         $this->authorize($screen, 'delete');
         $cfg = $this->getScreen($screen);
         $this->assertScreenWritable($cfg);
+        abort_if(! empty($cfg['disable_delete']), 404);
         $model = $cfg['model'];
         $model::findOrFail($id)->delete();
 
@@ -471,6 +522,20 @@ class ScreenCrudController extends Controller
             $rules['pin4'] = ['nullable', 'digits:4'];
         }
 
+        if ($screen === 'admin-users') {
+            if (is_string($request->input('email'))) {
+                $request->merge(['email' => strtolower(trim($request->input('email')))]);
+            }
+            $emailUnique = Rule::unique('admin_users', 'email');
+            if ($updating && $request->route('id')) {
+                $emailUnique = $emailUnique->ignore($request->route('id'));
+            }
+            $rules['name'] = ['required', 'string', 'max:255'];
+            $rules['email'] = ['required', 'email:rfc', 'max:255', 'lowercase', $emailUnique];
+            $rules['role_names'] = ['nullable', 'array'];
+            $rules['role_names.*'] = ['string', Rule::exists('roles', 'name')->where('guard_name', 'admin')];
+        }
+
         if ($screen === 'families') {
             $rules['description'] = ['nullable', 'string', 'max:255'];
         }
@@ -498,6 +563,9 @@ class ScreenCrudController extends Controller
         if ($screen === 'promotions') {
             $this->validatePromotionBusinessRules($request, $data);
         }
+
+        // Los roles se sincronizan aparte (no son columnas de admin_users)
+        unset($data['role_names']);
 
         if (isset($data['password']) && $data['password'] !== '') {
             if ($screen === 'admin-users') {

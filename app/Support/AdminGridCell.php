@@ -15,6 +15,7 @@ use App\Models\Subfamily;
 use App\Models\SyncState;
 use App\Models\Transaction;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -114,6 +115,20 @@ class AdminGridCell
             }
 
             return (string) $raw;
+        }
+
+        if ($item instanceof AdminUser) {
+            if ($field === 'roles_list') {
+                return $item->roles->pluck('name')->implode(', ') ?: '—';
+            }
+            if ($field === 'totp_status') {
+                return $item->totp_enabled ? 'Activada' : 'No';
+            }
+            if ($field === 'last_login_at') {
+                $raw = $item->getAttribute('last_login_at');
+
+                return $raw === null || $raw === '' ? 'Nunca' : Format::dateTime(Carbon::parse($raw));
+            }
         }
 
         if ($item instanceof User && $field === 'pin_status') {

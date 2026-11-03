@@ -19,7 +19,16 @@ class RoleRbacMatrixController extends Controller
     {
         $this->authorizeMatrix();
 
-        $role = Role::query()->where('guard_name', 'admin')->orderBy('name')->firstOrFail();
+        // Primer rol editable (el de super-admin tiene todo y no se modifica); sin roles, a crearlos
+        $role = Role::query()
+            ->where('guard_name', 'admin')
+            ->whereNotIn('name', config('admin.super_admin_roles', []))
+            ->orderBy('name')
+            ->first();
+
+        if (! $role) {
+            return redirect()->route('admin.roles.index')->with('status', 'Aún no hay roles editables: crea uno.');
+        }
 
         return redirect()->route('admin.rbac.matrix.edit', $role);
     }
@@ -28,13 +37,18 @@ class RoleRbacMatrixController extends Controller
     {
         $this->authorizeMatrix();
         abort_unless($role->guard_name === 'admin', 404);
+        abort_if(RoleManagementController::isProtected($role), 403, 'El rol de super-admin tiene todos los permisos y no se modifica.');
 
         $this->ensureManagedPermissionsExist();
 
         $role->load('permissions');
         $assigned = $role->permissions->pluck('name')->all();
 
-        $roles = Role::query()->where('guard_name', 'admin')->orderBy('name')->get();
+        $roles = Role::query()
+            ->where('guard_name', 'admin')
+            ->whereNotIn('name', config('admin.super_admin_roles', []))
+            ->orderBy('name')
+            ->get();
 
         return response()->view('admin.rbac.matrix', [
             'role' => $role,
@@ -48,6 +62,7 @@ class RoleRbacMatrixController extends Controller
     {
         $this->authorizeMatrix();
         abort_unless($role->guard_name === 'admin', 404);
+        abort_if(RoleManagementController::isProtected($role), 403, 'El rol de super-admin tiene todos los permisos y no se modifica.');
 
         $this->ensureAllCrudPermissionsExist();
 
@@ -131,7 +146,7 @@ class RoleRbacMatrixController extends Controller
     {
         $user = auth('admin')->user();
         abort_unless($user, 403);
-        abort_unless($user->can('roles.edit'), 403);
+        abort_unless(AdminRbac::isSuperAdmin($user), 403);
     }
 
     private function ensureManagedPermissionsExist(): void

@@ -20,6 +20,7 @@ use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\TransactionPayment;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 
 return [
     // Sin modelo: `rbac` lo expone en la matriz de permisos solo con `dashboard.view`
@@ -885,6 +886,62 @@ return [
             'default_sort' => ['key' => 'type', 'direction' => 'asc'],
         ],
     ],
+    // Usuarios administradores del panel: solo super-admin (no aparece en la matriz de permisos)
+    'admin-users' => [
+        'model' => AdminUser::class,
+        'label' => 'Usuarios administradores',
+        'icon' => 'user-circle',
+        'super_admin_only' => true,
+        // Se desactivan, no se eliminan: conserva el historial y la auditoría
+        'disable_delete' => true,
+        'labels' => [
+            'name' => 'Nombre',
+            'email' => 'Correo',
+            'password' => 'Contraseña',
+            'is_active' => 'Activo',
+            'roles_list' => 'Roles',
+            'totp_status' => 'Verificación en 2 pasos',
+            'last_login_at' => 'Último acceso',
+        ],
+        'fields' => ['name', 'email', 'is_active', 'roles_list', 'totp_status', 'last_login_at', 'password'],
+        'foreign_labels' => [
+            'roles_list' => ['virtual' => true, 'header' => 'Roles'],
+            'totp_status' => ['virtual' => true, 'header' => 'Verificación en 2 pasos'],
+            'last_login_at' => ['virtual' => true, 'header' => 'Último acceso'],
+        ],
+        'grid' => [
+            'exclude_from_grid' => ['password'],
+            'visible_limit' => 8,
+            'filters' => [
+                'is_active' => [
+                    'label' => 'Activo',
+                    'type' => 'select',
+                    'options' => ['' => 'Todos', '1' => 'Sí', '0' => 'No'],
+                    'apply' => ['type' => 'column', 'column' => 'is_active'],
+                ],
+                'role' => [
+                    'label' => 'Rol',
+                    'type' => 'select',
+                    'model' => Role::class,
+                    'order_by' => 'name',
+                    'label_column' => 'name',
+                    'apply' => ['type' => 'whereHas', 'relation' => 'roles', 'column' => 'roles.id'],
+                ],
+            ],
+            'sortable' => ['name', 'email', 'is_active'],
+            'default_sort' => ['key' => 'name', 'direction' => 'asc'],
+        ],
+    ],
+    // Roles: pantalla propia (RoleManagementController); el nombre del ítem y el permiso salen de aquí
+    'roles' => [
+        'label' => 'Roles',
+        'icon' => 'identification',
+        'route' => 'admin.roles.index',
+        'active_pattern' => 'admin.roles.*',
+        'readonly' => true,
+        'super_admin_only' => true,
+    ],
+
     'audit-log' => [
         'model' => AdminAuditLog::class,
         'label' => 'Auditoría',
@@ -916,13 +973,13 @@ return [
                 'action' => [
                     'label' => 'Acción',
                     'type' => 'select',
-                    'options' => ['created' => 'Creación', 'updated' => 'Edición', 'deleted' => 'Eliminación', 'login' => 'Login', 'logout' => 'Logout', 'blocked' => 'Bloqueo', 'unblocked' => 'Reactivación'],
+                    'options' => ['created' => 'Creación', 'updated' => 'Edición', 'deleted' => 'Eliminación', 'login' => 'Login', 'logout' => 'Logout', 'blocked' => 'Bloqueo', 'unblocked' => 'Reactivación', 'sessions_revoked' => 'Sesiones cerradas', 'two_factor_reset' => 'Reinicio de 2FA'],
                     'apply' => ['type' => 'column', 'column' => 'action'],
                 ],
                 'entity_type' => [
                     'label' => 'Entidad',
                     'type' => 'select',
-                    'options' => ['Product' => 'Producto', 'Family' => 'Familia', 'Subfamily' => 'Subfamilia', 'Location' => 'Localidad', 'Device' => 'Dispositivo', 'License' => 'Licencia', 'Shift' => 'Turno', 'User' => 'Usuario POS', 'AdminUser' => 'Admin', 'SystemParameter' => 'Parámetro'],
+                    'options' => ['Product' => 'Producto', 'Family' => 'Familia', 'Subfamily' => 'Subfamilia', 'Location' => 'Localidad', 'Device' => 'Dispositivo', 'License' => 'Licencia', 'Shift' => 'Turno', 'User' => 'Usuario POS', 'AdminUser' => 'Admin', 'Role' => 'Rol', 'SystemParameter' => 'Parámetro'],
                     'apply' => ['type' => 'column', 'column' => 'entity_type'],
                 ],
                 'date_from' => [

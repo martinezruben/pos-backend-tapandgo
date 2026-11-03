@@ -36,7 +36,7 @@ return [
         'key' => 'system',
         'icon' => 'wrench-screwdriver',
         'label' => 'Sistema',
-        'screens' => ['admin-users', 'roles', 'permissions', 'audit-log'],
+        'screens' => ['admin-users', 'roles', 'audit-log'],
     ],
     [
         'key' => 'reports',

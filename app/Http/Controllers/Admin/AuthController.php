@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\EnsureAdminActive;
 use App\Models\AdminUser;
 use App\Models\SystemParameter;
 use Illuminate\Http\Request;
@@ -43,7 +44,8 @@ class AuthController extends Controller
             ])->onlyInput('email');
         }
 
-        if (Auth::guard('admin')->attempt($credentials, $request->boolean('remember'))) {
+        // Solo cuentas activas: una cuenta desactivada responde igual que unas credenciales inválidas
+        if (Auth::guard('admin')->attempt($credentials + ['is_active' => true], $request->boolean('remember'))) {
             RateLimiter::clear($throttleKey);
 
             // 2FA: posponer el login hasta verificar el código TOTP
@@ -61,6 +63,7 @@ class AuthController extends Controller
             }
 
             $request->session()->regenerate();
+            EnsureAdminActive::markSessionStart($request);
 
             return redirect()->intended(route('admin.dashboard'));
         }

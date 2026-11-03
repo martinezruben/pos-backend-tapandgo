@@ -30,12 +30,15 @@
                         @endforeach
                     </select>
                 </div>
-                <button
-                    type="submit"
-                    class="inline-flex shrink-0 items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-primary-700"
-                >
-                    Guardar permisos
-                </button>
+                <div class="flex flex-wrap items-center gap-2">
+                    <a href="{{ route('admin.roles.index') }}" class="snow-btn-secondary">Gestionar roles</a>
+                    <button
+                        type="submit"
+                        class="inline-flex shrink-0 items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-primary-700"
+                    >
+                        Guardar permisos
+                    </button>
+                </div>
             </div>
 
             <div class="overflow-x-auto rounded-lg border border-slate-200">
