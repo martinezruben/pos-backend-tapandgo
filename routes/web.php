@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminTwoFactorController;
+use App\Http\Controllers\Admin\AdminUserSecurityController;
 use App\Http\Controllers\Admin\ApiRequestLogDetailController;
 use App\Http\Controllers\Admin\AuditLogDetailController;
 use App\Http\Controllers\Admin\AuthController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Admin\ProductsMarginExportController;
 use App\Http\Controllers\Admin\ProductsNoMovementExportController;
 use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\ReportsExportController;
+use App\Http\Controllers\Admin\RoleManagementController;
 use App\Http\Controllers\Admin\RoleRbacMatrixController;
 use App\Http\Controllers\Admin\ScreenCrudController;
 use App\Http\Controllers\Admin\SystemSettingsController;
@@ -36,7 +38,7 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::post('/2fa', [AdminTwoFactorController::class, 'verify'])->name('2fa.verify');
     });
 
-    Route::middleware('auth:admin')->group(function (): void {
+    Route::middleware(['auth:admin', 'admin.active'])->group(function (): void {
         Route::get('/', [DashboardController::class, 'commercial'])->name('dashboard');
         Route::get('/dashboard/tecnico', [DashboardController::class, 'technical'])->name('dashboard.technical');
         Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
@@ -65,6 +67,16 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
 
         Route::get('/products/excel/export', [ProductExcelController::class, 'export'])->name('products.excel.export');
         Route::post('/products/excel/import', [ProductExcelController::class, 'import'])->name('products.excel.import');
+
+        Route::post('/admin-users/{adminUser}/reset-2fa', [AdminUserSecurityController::class, 'resetTwoFactor'])->name('admin-users.reset-2fa');
+        Route::post('/admin-users/{adminUser}/revoke-sessions', [AdminUserSecurityController::class, 'revokeSessions'])->name('admin-users.revoke-sessions');
+
+        Route::get('/roles', [RoleManagementController::class, 'index'])->name('roles.index');
+        Route::get('/roles/create', [RoleManagementController::class, 'create'])->name('roles.create');
+        Route::post('/roles', [RoleManagementController::class, 'store'])->name('roles.store');
+        Route::get('/roles/{role}/edit', [RoleManagementController::class, 'edit'])->name('roles.edit');
+        Route::put('/roles/{role}', [RoleManagementController::class, 'update'])->name('roles.update');
+        Route::delete('/roles/{role}', [RoleManagementController::class, 'destroy'])->name('roles.destroy');
 
         Route::get('/rbac', [RoleRbacMatrixController::class, 'index'])->name('rbac.matrix.index');
         Route::get('/rbac/roles/{role}', [RoleRbacMatrixController::class, 'edit'])->name('rbac.matrix.edit');

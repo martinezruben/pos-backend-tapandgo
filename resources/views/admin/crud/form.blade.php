@@ -110,9 +110,13 @@
                         {{ \App\Support\AdminGridCell::headerLabel($field, $cfg) }}
                     </label>
                     @if(str_starts_with($field, 'is_'))
+                        @php
+                            // Un registro nuevo nace activo (como el valor por defecto de la base de datos); el resto de banderas, en No
+                            $boolDefault = $item ? $item->{$field} : ($field === 'is_active' ? 1 : 0);
+                        @endphp
                         <select id="f-{{ $field }}" name="{{ $field }}" class="snow-input">
-                            <option value="1" @selected(old($field, $item?->{$field}) == 1)>Sí</option>
-                            <option value="0" @selected(old($field, $item?->{$field}) == 0)>No</option>
+                            <option value="1" @selected(old($field, $boolDefault) == 1)>Sí</option>
+                            <option value="0" @selected(old($field, $boolDefault) == 0)>No</option>
                         </select>
                     @elseif(!empty($cfg['foreign_labels'][$field]))
                         @php
@@ -130,6 +134,29 @@
                         <input id="f-{{ $field }}" type="password" name="{{ $field }}" value="" placeholder="{{ $item ? 'Dejar vacío para mantener la actual' : 'Contraseña' }}" class="snow-input" autocomplete="new-password">
                         @if($item)
                             <p class="mt-1 text-[10px] text-slate-500">Por seguridad, la contraseña actual no se muestra.</p>
+                        @endif
+                        @if($screen === 'admin-users')
+                            @php
+                                $minLen = max(14, (int) (\App\Models\SystemParameter::query()->value('admin_password_min_length') ?? 8));
+                            @endphp
+                            <div class="mt-1.5 flex flex-wrap items-center gap-2" x-data="{ shown: false }">
+                                <button
+                                    type="button"
+                                    class="snow-btn-secondary"
+                                    x-on:click="
+                                        const sets = ['ABCDEFGHJKLMNPQRSTUVWXYZ', 'abcdefghijkmnopqrstuvwxyz', '23456789', '!@#$%*-_+='];
+                                        const pick = (chars) => chars[crypto.getRandomValues(new Uint32Array(1))[0] % chars.length];
+                                        const all = sets.join('');
+                                        let out = sets.map(pick);
+                                        while (out.length < {{ $minLen }}) out.push(pick(all));
+                                        out = out.sort(() => crypto.getRandomValues(new Uint32Array(1))[0] % 2 - 0.5).join('');
+                                        const input = document.getElementById('f-password');
+                                        input.value = out; input.type = 'text'; shown = true;
+                                    "
+                                >Generar contraseña</button>
+                                <span x-show="shown" x-cloak class="text-[11px] font-medium text-amber-800">Cópiala y comunícasela al usuario: no se vuelve a mostrar.</span>
+                            </div>
+                            <p class="mt-1 text-[10px] text-slate-500">Tú defines la contraseña y se la comunicas al usuario. Al guardarla se cierran sus otras sesiones abiertas.</p>
                         @endif
                     @elseif($field === 'pin4')
                         <div class="mt-0.5 flex flex-col gap-3" x-data="{
@@ -300,6 +327,34 @@
                 <a href="{{ route('admin.screens.index', $screen) }}" class="snow-btn-secondary">Cancelar</a>
             </div>
         </form>
+
+        @if($screen === 'admin-users' && $item)
+            @php
+                $isSelf = auth('admin')->id() === $item->getKey();
+            @endphp
+            <div class="mx-4 mb-4 border-t border-slate-100 pt-3">
+                <h2 class="snow-label">Seguridad de la cuenta</h2>
+                @if($errors->has('security'))
+                    <p class="mb-2 text-xs font-medium text-red-600">{{ $errors->first('security') }}</p>
+                @endif
+                <div class="flex flex-wrap items-center gap-2">
+                    <form method="POST" action="{{ route('admin.admin-users.revoke-sessions', $item) }}" onsubmit="return confirm('¿Cerrar {{ $isSelf ? 'tus otras sesiones' : 'todas las sesiones de este usuario' }}?');">
+                        @csrf
+                        <button type="submit" class="snow-btn-secondary">{{ $isSelf ? 'Cerrar mis otras sesiones' : 'Cerrar sus sesiones' }}</button>
+                    </form>
+                    @if($item->totp_enabled && ! $isSelf)
+                        <form method="POST" action="{{ route('admin.admin-users.reset-2fa', $item) }}" onsubmit="return confirm('¿Reiniciar la verificación en dos pasos de este usuario? Podrá entrar solo con su contraseña hasta que la active de nuevo.');">
+                            @csrf
+                            <button type="submit" class="snow-btn-danger">Reiniciar verificación en 2 pasos</button>
+                        </form>
+                    @endif
+                </div>
+                <p class="mt-1.5 text-[11px] text-slate-500">
+                    Para dejar de dar acceso, desactiva la cuenta (no se eliminan: se conserva el historial y la auditoría).
+                    @if($isSelf) No puedes desactivarte ni quitarte el rol de super-admin a ti mismo. @endif
+                </p>
+            </div>
+        @endif
         @endif
     </div>
 </x-admin.layouts.app>

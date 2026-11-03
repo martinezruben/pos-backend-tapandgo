@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\EnsureAdminActive;
 use App\Models\AdminUser;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
@@ -138,6 +139,7 @@ class AdminTwoFactorController extends Controller
             $request->session()->forget('admin_2fa_id');
             auth('admin')->login($pending, $remember);
             $request->session()->regenerate();
+            EnsureAdminActive::markSessionStart($request);
 
             return redirect()->intended(route('admin.dashboard'));
         }

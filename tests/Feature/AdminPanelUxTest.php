@@ -140,7 +140,11 @@ class AdminPanelUxTest extends TestCase
 
     public function test_rbac_matrix_groups_screens_by_nav_section(): void
     {
-        $res = $this->actingAs($this->admin, 'admin')
+        // La matriz de permisos es solo para super-admin
+        $super = AdminUser::factory()->create();
+        $super->assignRole(Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'admin']));
+
+        $res = $this->actingAs($super, 'admin')
             ->get(route('admin.rbac.matrix.edit', Role::firstOrCreate(['name' => 'grp-role', 'guard_name' => 'admin'])))
             ->assertOk();
 

@@ -79,6 +79,19 @@ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8082/admin/login  # �
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8081             # → 200 (phpMyAdmin)
 ```
 
+### E. Crear el primer administrador
+Una instalación nueva no trae usuarios del panel. Crea el primer super-admin desde la consola (pide la contraseña sin mostrarla; debe cumplir la política configurada, mínimo 8 caracteres por defecto):
+```bash
+docker compose exec app php artisan admin:create admin@tuempresa.com --name="Administrador"
+```
+Luego entra en `http://localhost:8082/admin/login`. Desde **Sistema → Usuarios administradores** y **Sistema → Roles** (solo super-admin) se crean el resto de usuarios y roles.
+
+Si se pierde el acceso:
+```bash
+docker compose exec app php artisan admin:reset-password admin@tuempresa.com --activate --reset-2fa
+```
+Esto cambia la contraseña, reactiva la cuenta, reinicia su verificación en dos pasos y cierra sus sesiones abiertas. Evita `--password=...` en servidores compartidos: queda en el historial de la consola.
+
 ---
 
 ## 4. Puertos (verificar colisiones antes de levantar)

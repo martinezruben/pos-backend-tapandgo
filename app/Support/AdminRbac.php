@@ -10,6 +10,33 @@ use Illuminate\Contracts\Auth\Authenticatable;
  */
 class AdminRbac
 {
+    /**
+     * ¿Es super-admin (tiene alguno de los roles de `config('admin.super_admin_roles')`)?
+     */
+    public static function isSuperAdmin(?Authenticatable $user): bool
+    {
+        if (! $user || ! method_exists($user, 'hasRole')) {
+            return false;
+        }
+
+        foreach (config('admin.super_admin_roles', []) as $role) {
+            if ($user->hasRole($role)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Pantalla reservada a super-admin (`'super_admin_only' => true`): no genera permisos asignables,
+     * no aparece en la matriz RBAC y solo la ven/usan los super-admin (usuarios administradores, roles).
+     */
+    public static function isSuperAdminOnly(string $screen): bool
+    {
+        return ! empty(config("admin_screens.$screen.super_admin_only"));
+    }
+
     public static function resourceKey(string $screen): string
     {
         return str_replace('-', '_', $screen);
@@ -35,6 +62,10 @@ class AdminRbac
      */
     private static function isManaged(mixed $cfg): bool
     {
+        if (is_array($cfg) && ! empty($cfg['super_admin_only'])) {
+            return false;
+        }
+
         return is_array($cfg) && (! empty($cfg['model']) || ! empty($cfg['rbac']));
     }
 
@@ -124,6 +155,9 @@ class AdminRbac
     {
         if (! $user) {
             return false;
+        }
+        if (self::isSuperAdminOnly($screen)) {
+            return self::isSuperAdmin($user);
         }
         $cfg = config("admin_screens.$screen");
         if (! self::isManaged($cfg)) {

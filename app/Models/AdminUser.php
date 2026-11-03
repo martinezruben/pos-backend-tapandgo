@@ -17,7 +17,7 @@ class AdminUser extends Authenticatable
 
     protected $fillable = ['name', 'email', 'password', 'is_active'];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password', 'remember_token', 'totp_secret', 'totp_recovery_codes'];
 
     protected function casts(): array
     {
@@ -25,6 +25,7 @@ class AdminUser extends Authenticatable
             'is_active' => 'boolean',
             'password' => 'hashed',
             'email_verified_at' => 'datetime',
+            'sessions_revoked_at' => 'datetime',
         ];
     }
 

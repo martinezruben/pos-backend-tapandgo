@@ -40,7 +40,7 @@ class AdminNavigation
                     'label' => $screen['label'],
                     'icon' => $screen['icon'] ?? 'squares-2x2',
                     'url' => $route ? route($route) : route('admin.screens.index', $key),
-                    'active' => $currentScreen === $key || ($route && request()->routeIs($route.'*')),
+                    'active' => $currentScreen === $key || ($route && request()->routeIs($screen['active_pattern'] ?? $route.'*')),
                     // Los grids CRUD aceptan ?q= para buscar registros
                     'searchable' => ! $route && ! empty($screen['model']),
                     'searchRank' => ($rank = array_search($key, self::SEARCH_FIRST, true)) === false ? 99 : $rank,
