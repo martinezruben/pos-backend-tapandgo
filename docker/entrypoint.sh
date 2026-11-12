@@ -9,12 +9,24 @@ chmod 1777 /tmp/php
 # Set temp directory environment variable
 export TMPDIR=/tmp/php
 
+# Variables DB_* del .env (solo si no vienen ya en el entorno, p. ej. por env_file de compose).
+# Se leen con grep, sin "source": un valor con & o $ en otra línea del .env no puede romper el script.
+if [ -f .env ]; then
+    for v in DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD; do
+        eval "cur=\${$v:-}"
+        if [ -z "$cur" ]; then
+            val=$(grep -E "^${v}=" .env | tail -n1 | cut -d= -f2- | sed -e 's/^"\(.*\)"$/\1/' -e "s/^'\(.*\)'\$/\1/")
+            [ -n "$val" ] && export "$v=$val"
+        fi
+    done
+fi
+
 # Wait for MySQL to be ready
 echo "Waiting for MySQL..."
 max_retries=30
 retry=0
 # Credenciales desde el entorno (.env vía env_file), no escritas en el script
-while ! php -r 'new PDO("mysql:host=".getenv("DB_HOST").";dbname=".getenv("DB_DATABASE"), getenv("DB_USERNAME"), getenv("DB_PASSWORD"));' 2>/dev/null; do
+while ! php -r 'new PDO("mysql:host=".getenv("DB_HOST").";port=".(getenv("DB_PORT") ?: "3306").";dbname=".getenv("DB_DATABASE"), getenv("DB_USERNAME"), getenv("DB_PASSWORD"));' 2>/dev/null; do
     retry=$((retry + 1))
     if [ $retry -ge $max_retries ]; then
         echo "MySQL connection failed after $max_retries attempts"

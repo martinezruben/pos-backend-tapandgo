@@ -21,8 +21,8 @@ WORKDIR /var/www/html
 COPY --chown=www-data:www-data . .
 
 # Backend deps
-RUN --mount=type=cache,target=/tmp/cache-composer \
-    composer install --no-interaction --no-progress --prefer-dist --no-scripts && \
+# Sin --mount=type=cache: no exige BuildKit (algunos servidores construyen con el builder clásico)
+RUN composer install --no-interaction --no-progress --prefer-dist --no-scripts && \
     composer dump-autoload --optimize --no-scripts && \
     php artisan package:discover --ansi
 
