@@ -18,7 +18,14 @@
                 <h2 id="api-log-detail-title" class="text-sm font-semibold text-slate-900">
                     Detalle de llamada API
                 </h2>
-                <p class="mt-0.5 truncate text-[10px] text-slate-500" x-show="row?.path" x-text="row ? `${row.method} ${row.path}` : ''"></p>
+                <p class="mt-0.5 flex items-center gap-2 text-[11px] text-slate-600" x-show="row?.path">
+                    <span
+                        class="snow-tag shrink-0"
+                        :class="row?.response_status >= 500 ? 'bg-rose-50 text-rose-700' : (row?.response_status >= 400 ? 'bg-amber-50 text-amber-800' : 'bg-emerald-50 text-emerald-800')"
+                        x-text="row?.response_status ?? '—'"
+                    ></span>
+                    <span class="truncate font-mono" x-text="row ? `${row.method} ${row.path}` : ''"></span>
+                </p>
             </div>
             <button
                 type="button"
@@ -38,7 +45,7 @@
 
             <template x-if="!loading && !error && row">
             <div class="space-y-4">
-                    <dl class="grid grid-cols-1 gap-x-4 gap-y-2 text-[10px] sm:grid-cols-2">
+                    <dl class="grid grid-cols-1 gap-x-4 gap-y-2 text-[11px] sm:grid-cols-2">
                         <div class="flex flex-col gap-0.5 sm:col-span-2">
                             <dt class="font-semibold uppercase tracking-wide text-slate-500">ID</dt>
                             <dd class="font-mono text-slate-800" x-text="row.id"></dd>
@@ -74,12 +81,22 @@
                     </dl>
 
                     <div>
-                        <h3 class="mb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Parámetros (JSON)</h3>
-                        <pre class="max-h-[220px] overflow-auto rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-[10px] leading-relaxed text-slate-800 whitespace-pre-wrap break-words font-mono" x-text="jsonBlock(row.parameters_json, row.parameters)"></pre>
+                        <div class="mb-1.5 flex items-center justify-between gap-2">
+                            <h3 class="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">Parámetros enviados</h3>
+                            <button type="button" class="snow-btn-ghost !px-1.5 !py-0.5 text-[11px]" @click="copy('parameters', jsonBlock(row.parameters_json, row.parameters))" x-text="copied === 'parameters' ? 'Copiado' : 'Copiar'"></button>
+                        </div>
+                        <p x-show="row.parameters_truncated" x-cloak class="mb-1 text-[11px] font-medium text-amber-800">Los parámetros se guardaron recortados.</p>
+                        <pre tabindex="0" class="max-h-[22vh] overflow-auto rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-[11px] leading-relaxed text-slate-800 whitespace-pre-wrap break-words font-mono" x-text="jsonBlock(row.parameters_json, row.parameters)"></pre>
                     </div>
                     <div>
-                        <h3 class="mb-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Respuesta (JSON / cuerpo)</h3>
-                        <pre class="max-h-[280px] overflow-auto rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-[10px] leading-relaxed text-slate-800 whitespace-pre-wrap break-words font-mono" x-text="jsonBlock(row.response_json, row.response_summary)"></pre>
+                        <div class="mb-1.5 flex items-center justify-between gap-2">
+                            <h3 class="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">Respuesta del sistema</h3>
+                            <button type="button" class="snow-btn-ghost !px-1.5 !py-0.5 text-[11px]" @click="copy('response', jsonBlock(row.response_json, row.response_summary))" x-text="copied === 'response' ? 'Copiado' : 'Copiar'"></button>
+                        </div>
+                        <p x-show="row.response_truncated" x-cloak class="mb-1 text-[11px] font-medium text-amber-800">
+                            La respuesta se guardó recortada (<span x-text="row.response_chars"></span> caracteres): el log no conserva el cuerpo completo.
+                        </p>
+                        <pre tabindex="0" class="max-h-[40vh] overflow-auto rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-[11px] leading-relaxed text-slate-800 whitespace-pre-wrap break-words font-mono" x-text="jsonBlock(row.response_json, row.response_summary)"></pre>
                     </div>
                 </div>
             </template>

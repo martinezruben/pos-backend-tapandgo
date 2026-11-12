@@ -8,6 +8,7 @@ use App\Models\License;
 use App\Models\Location;
 use App\Support\AppVersion;
 use App\Support\DevicePairingToken;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -62,34 +63,45 @@ class AuthController extends Controller
 
         $validityDays = max(1, (int) config('pos.new_license_validity_days', 365));
 
-        $result = DB::transaction(function () use ($fingerprint, $location, $validityDays): array {
-            $device = Device::create([
-                'location_id' => $location->id,
-                'device_fingerprint' => $fingerprint,
-                'name' => null,
-                'is_enabled' => true,
-                'registered_at' => now(),
-            ]);
+        try {
+            $result = DB::transaction(function () use ($fingerprint, $location, $validityDays): array {
+                $device = Device::create([
+                    'location_id' => $location->id,
+                    'device_fingerprint' => $fingerprint,
+                    'name' => null,
+                    'is_enabled' => true,
+                    'registered_at' => now(),
+                ]);
 
-            $license = License::create([
-                'device_id' => $device->id,
-                'valid_from' => now(),
-                'valid_to' => now()->addDays($validityDays),
-                'status' => 'ACTIVE',
-            ]);
+                $license = License::create([
+                    'device_id' => $device->id,
+                    'valid_from' => now(),
+                    'valid_to' => now()->addDays($validityDays),
+                    'status' => 'ACTIVE',
+                ]);
 
-            $device->tokens()->delete();
-            $plainToken = $device->createToken('pos-device')->plainTextToken;
+                $device->tokens()->delete();
+                $plainToken = $device->createToken('pos-device')->plainTextToken;
 
-            return [
-                'device_id' => $device->id,
-                'token' => $plainToken,
-                'license_key' => $license->license_key,
-                'location_id' => $device->location_id,
-                'location_name' => $location->name,
-                ...$this->licenseValidityForJson($license),
-            ];
-        });
+                return [
+                    'device_id' => $device->id,
+                    'token' => $plainToken,
+                    'license_key' => $license->license_key,
+                    'location_id' => $device->location_id,
+                    'location_name' => $location->name,
+                    ...$this->licenseValidityForJson($license),
+                ];
+            });
+        } catch (UniqueConstraintViolationException) {
+            // Carrera: otra petición registró esta huella entre la consulta y el insert. Se responde como dispositivo existente.
+            $existing = Device::with(['location', 'activeLicense'])->where('device_fingerprint', $fingerprint)->first();
+            if ($existing === null) {
+                throw new \RuntimeException('Huella duplicada sin dispositivo asociado.');
+            }
+            AppVersion::record($existing, $request);
+
+            return $this->jsonTokenForExistingDeviceAfterPairing($existing);
+        }
 
         AppVersion::record(Device::query()->findOrFail($result['device_id']), $request);
         unset($result['device_id']);
