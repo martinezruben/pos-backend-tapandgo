@@ -53,6 +53,35 @@ class SensitiveData
     }
 
     /**
+     * Resumen legible de la respuesta del catálogo (GET /api/sync/pull): marca de tiempo, licencia
+     * (enmascarada) y cuántos registros trae cada lista, en vez del catálogo completo recortado a
+     * media lista. Devuelve null si la respuesta no tiene la forma esperada.
+     */
+    public static function summarizeCatalog(?string $json, int $limit): ?string
+    {
+        if ($json === null || $json === '' || strlen($json) > self::MAX_DECODE_BYTES * 16) {
+            return null;
+        }
+
+        $decoded = json_decode($json, true);
+        if (! is_array($decoded) || ! is_array($decoded['data'] ?? null)) {
+            return null;
+        }
+
+        $data = [];
+        foreach ($decoded['data'] as $name => $value) {
+            $data[$name] = is_array($value) && array_is_list($value)
+                ? ['registros' => count($value)]
+                : $value;
+        }
+
+        $summary = self::mask(array_merge($decoded, ['data' => $data, '_resumen' => 'El log guarda solo el conteo de registros del catálogo, no su contenido.']));
+        $encoded = json_encode($summary, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+
+        return $encoded === false ? null : (mb_strlen($encoded) > $limit ? mb_substr($encoded, 0, $limit).'…' : $encoded);
+    }
+
+    /**
      * JSON enmascarado y recortado a `$limit` caracteres. Si el contenido no es
      * JSON (o es demasiado grande para revisarlo) no se guarda: podría contener
      * credenciales que no se pueden ocultar.

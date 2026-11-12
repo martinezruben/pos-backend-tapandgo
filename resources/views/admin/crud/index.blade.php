@@ -349,7 +349,9 @@
 </div>
 @elseif($apiLogDetail)
     @include('admin.crud.partials.api-request-log-detail-modal')
-@include('admin.crud.partials.audit-log-detail-modal')
+</div>
+@elseif($auditLogDetail)
+    @include('admin.crud.partials.audit-log-detail-modal')
 </div>
 @elseif($transactionLineItems)
     @include('admin.crud.partials.transaction-line-items-modal')

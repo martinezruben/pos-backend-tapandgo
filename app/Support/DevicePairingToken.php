@@ -50,18 +50,16 @@ final class DevicePairingToken
         if (strlen($normalized) !== 6) {
             return null;
         }
-        $entry = Cache::get(self::codeKey($normalized));
+        // pull() lee y borra en un solo paso: dos peticiones simultáneas con el mismo código no pueden ganar ambas.
+        $entry = Cache::pull(self::codeKey($normalized));
         if (! is_array($entry) || empty($entry['location_id'])) {
             return null;
         }
         if ((int) ($entry['expires_at'] ?? 0) < now()->getTimestamp()) {
-            Cache::forget(self::codeKey($normalized));
-
             return null;
         }
         $locationId = (string) $entry['location_id'];
         self::forgetLocationKeys($locationId);
-        Cache::forget(self::codeKey($normalized));
 
         return $locationId;
     }

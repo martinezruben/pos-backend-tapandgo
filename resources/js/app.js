@@ -235,6 +235,27 @@ document.addEventListener('alpine:init', () => {
         loading: false,
         error: '',
         row: null,
+        copied: '',
+
+        async copy(kind, text) {
+            try {
+                await navigator.clipboard.writeText(String(text ?? ''));
+            } catch {
+                // Sin permiso del portapapeles (p. ej. HTTP): se selecciona el texto en un área temporal
+                const area = document.createElement('textarea');
+                area.value = String(text ?? '');
+                document.body.appendChild(area);
+                area.select();
+                document.execCommand('copy');
+                area.remove();
+            }
+            this.copied = kind;
+            setTimeout(() => {
+                if (this.copied === kind) {
+                    this.copied = '';
+                }
+            }, 1500);
+        },
 
         jsonBlock(formatted, raw) {
             const hasFormatted =

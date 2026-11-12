@@ -33,6 +33,10 @@ class ApiRequestLogDetailController extends Controller
             'response_status' => $log->response_status,
             'response_summary' => $log->response_summary,
             'response_json' => self::formatJsonish($log->response_summary),
+            // El log guarda la respuesta recortada: se avisa en el modal para no leerla como completa
+            'response_truncated' => self::isTruncated($log->response_summary),
+            'response_chars' => $log->response_summary !== null ? mb_strlen($log->response_summary) : 0,
+            'parameters_truncated' => self::isTruncated($log->parameters),
             'location_id' => $log->location_id !== null ? (string) $log->location_id : null,
             'location_name' => $log->location !== null
                 ? AdminGridCell::display($log, 'location_id', $cfg)
@@ -47,6 +51,11 @@ class ApiRequestLogDetailController extends Controller
             'created_at' => $log->created_at?->toIso8601String(),
             'updated_at' => $log->updated_at?->toIso8601String(),
         ]);
+    }
+
+    private static function isTruncated(?string $raw): bool
+    {
+        return $raw !== null && str_ends_with($raw, '…') && json_decode($raw) === null;
     }
 
     private static function formatJsonish(?string $raw): string

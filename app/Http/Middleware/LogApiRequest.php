@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 class LogApiRequest
 {
     /** Máximo de caracteres guardados de la respuesta. */
-    private const RESPONSE_LIMIT = 2000;
+    private const RESPONSE_LIMIT = 8000;
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -73,7 +73,10 @@ class LogApiRequest
 
         $status = $response->getStatusCode();
         $content = $response->getContent();
-        $summary = SensitiveData::maskJson(is_string($content) ? $content : null, self::RESPONSE_LIMIT);
+        $content = is_string($content) ? $content : null;
+        // El catálogo (pull) es enorme: se guarda su resumen por conteos, no un recorte ilegible
+        $summary = ($status === 200 && $request->is('api/sync/pull') ? SensitiveData::summarizeCatalog($content, self::RESPONSE_LIMIT) : null)
+            ?? SensitiveData::maskJson($content, self::RESPONSE_LIMIT);
 
         ApiRequestLog::create([
             'method' => strtoupper($request->method()),
