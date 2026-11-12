@@ -9,12 +9,15 @@ use App\Models\AdminUser;
 use App\Models\Device;
 use App\Models\Family;
 use App\Models\Location;
+use App\Models\Product;
+use App\Models\Subfamily;
 use App\Models\User;
 use App\Services\AdminUserGuard;
 use App\Services\ImageThumbnailService;
 use App\Support\AdminGridCell;
 use App\Support\AdminGridQuery;
 use App\Support\AdminRbac;
+use App\Support\Format;
 use App\Support\LocationMapSyncPins;
 use App\Support\PasswordPolicy;
 use Illuminate\Database\Eloquent\Model;
@@ -147,6 +150,7 @@ class ScreenCrudController extends Controller
             'cfg' => $cfg,
             'foreignSelectOptions' => $this->foreignSelectOptionsForForm($cfg),
             'roles' => Role::where('guard_name', 'admin')->orderBy('name')->get(),
+            'promotionCatalog' => $screen === 'promotions' ? $this->promotionCatalog() : null,
         ]);
     }
 
@@ -203,6 +207,7 @@ class ScreenCrudController extends Controller
             'cfg' => $cfg,
             'foreignSelectOptions' => $this->foreignSelectOptionsForForm($cfg),
             'roles' => Role::where('guard_name', 'admin')->orderBy('name')->get(),
+            'promotionCatalog' => $screen === 'promotions' ? $this->promotionCatalog() : null,
         ]);
     }
 
@@ -331,6 +336,28 @@ class ScreenCrudController extends Controller
         $model::findOrFail($id)->delete();
 
         return back()->with('status', 'Eliminado correctamente.');
+    }
+
+    /**
+     * Catálogo (familias, subfamilias, productos con precio) que usa el asistente de promociones.
+     *
+     * @return array{families: list<array<string, mixed>>, subfamilies: list<array<string, mixed>>, products: list<array<string, mixed>>}
+     */
+    private function promotionCatalog(): array
+    {
+        return [
+            'families' => Family::query()->orderBy('name')->get(['id', 'name'])
+                ->map(fn (Family $f) => ['id' => $f->id, 'name' => $f->name])->all(),
+            'subfamilies' => Subfamily::query()->orderBy('name')->get(['id', 'name', 'family_id'])
+                ->map(fn (Subfamily $s) => ['id' => $s->id, 'name' => $s->name, 'family_id' => $s->family_id])->all(),
+            'products' => Product::query()->orderBy('name')->get(['id', 'name', 'sku', 'price', 'subfamily_id'])
+                ->map(fn (Product $p) => [
+                    'id' => $p->id,
+                    'name' => $p->name !== '' ? $p->name : (string) $p->sku,
+                    'price' => (float) $p->price,
+                    'subfamily_id' => $p->subfamily_id,
+                ])->all(),
+        ];
     }
 
     /**
@@ -561,7 +588,7 @@ class ScreenCrudController extends Controller
         }
 
         if ($screen === 'promotions') {
-            $this->validatePromotionBusinessRules($request, $data);
+            $data = $this->validatePromotionBusinessRules($request, $data);
         }
 
         // Los roles se sincronizan aparte (no son columnas de admin_users)
@@ -615,11 +642,6 @@ class ScreenCrudController extends Controller
     }
 
     /**
-     * Reglas de negocio de promociones (tras la validación base de campos).
-     *
-     * @param  array<string, mixed>  $data
-     */
-    /**
      * @param  class-string<Model>  $modelClass
      * @return list<string>
      */
@@ -633,24 +655,22 @@ class ScreenCrudController extends Controller
             ->all();
     }
 
-    private function validatePromotionBusinessRules(Request $request, array $data): void
+    /**
+     * Reglas de negocio de promociones (tras la validación base de campos).
+     * Devuelve los datos normalizados (BUNDLE guarda valor 0; el resto no guarda cantidades).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function validatePromotionBusinessRules(Request $request, array $data): array
     {
         $fail = function (string $field, string $message): void {
             throw ValidationException::withMessages([$field => $message]);
         };
 
-        // PERCENT: valor expresado en %
-        if (($data['type'] ?? null) === 'PERCENT' && (float) ($data['value'] ?? 0) > 100) {
-            $fail('value', 'El porcentaje no puede superar 100.');
-        }
+        $type = $data['type'] ?? null;
 
-        // BUNDLE no usa «valor» (usa cantidades); el resto exige valor > 0
-        if (($data['type'] ?? null) === 'BUNDLE') {
-            $data['value'] = 0;
-        } elseif (! isset($data['value']) || (float) $data['value'] <= 0) {
-            $fail('value', 'El valor de la promoción es requerido y debe ser mayor que cero.');
-        }
-
+        // Alcance: un solo objetivo (producto, subfamilia o familia) o ninguno (global)
         $scopeCount = collect(['product_id', 'subfamily_id', 'family_id'])
             ->filter(fn ($f) => ! empty($data[$f]))
             ->count();
@@ -659,15 +679,41 @@ class ScreenCrudController extends Controller
             $fail('family_id', 'La promoción debe aplicar a un solo objetivo: producto, subfamilia o familia.');
         }
 
-        if (in_array($data['type'] ?? null, ['PRICE', 'BUNDLE'], true) && $scopeCount === 0) {
+        if (in_array($type, ['PRICE', 'BUNDLE'], true) && $scopeCount === 0) {
             $fail('family_id', 'Este tipo de promoción requiere definir un producto, subfamilia o familia (no puede ser global).');
         }
 
-        if (($data['type'] ?? null) === 'BUNDLE') {
+        $product = ! empty($data['product_id']) ? Product::query()->find($data['product_id']) : null;
+        $value = isset($data['value']) ? (float) $data['value'] : 0.0;
+
+        if ($type === 'BUNDLE') {
+            // «Lleva N paga M» no usa valor: se guarda en 0 (no queda un importe huérfano)
+            $data['value'] = 0;
             $buy = isset($data['buy_qty']) ? (float) $data['buy_qty'] : 0.0;
             $pay = isset($data['pay_qty']) ? (float) $data['pay_qty'] : 0.0;
             if ($buy < 1 || $pay < 1 || floor($buy) != $buy || floor($pay) != $pay || $pay >= $buy) {
                 $fail('buy_qty', 'Para «lleva N paga M» ambas cantidades deben ser enteros ≥ 1 y «lleva» mayor que «paga» (ej. 2x1).');
+            }
+        } else {
+            if ($value <= 0) {
+                $fail('value', 'El valor de la promoción es requerido y debe ser mayor que cero.');
+            }
+            if ($type === 'PERCENT' && $value > 100) {
+                $fail('value', 'El porcentaje no puede superar 100.');
+            }
+            // Cantidades de «lleva/paga» solo aplican a BUNDLE
+            $data['buy_qty'] = null;
+            $data['pay_qty'] = null;
+
+            // Con un producto concreto, el descuento/oferta debe ser menor a su precio de lista (por unidad)
+            if ($product !== null) {
+                $list = (float) $product->price;
+                if ($type === 'AMOUNT' && $value >= $list) {
+                    $fail('value', 'El descuento por unidad ('.Format::money($value).') debe ser menor al precio del producto ('.Format::money($list).').');
+                }
+                if ($type === 'PRICE' && $value >= $list) {
+                    $fail('value', 'El precio de oferta ('.Format::money($value).') debe ser menor al precio de lista ('.Format::money($list).').');
+                }
             }
         }
 
@@ -675,5 +721,7 @@ class ScreenCrudController extends Controller
             && strtotime((string) $data['ends_at']) < strtotime((string) $data['starts_at'])) {
             $fail('ends_at', 'La fecha final no puede ser anterior a la inicial.');
         }
+
+        return $data;
     }
 }

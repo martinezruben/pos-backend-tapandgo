@@ -1,6 +1,7 @@
 import './bootstrap';
 
 import Alpine from 'alpinejs';
+import { money } from './format';
 
 window.Alpine = Alpine;
 
@@ -35,6 +36,200 @@ document.addEventListener('alpine:init', () => {
                 apply();
             });
         },
+    }));
+
+    // Asistente de promociones: tipo -> alcance (familia > subfamilia > producto) -> parámetros -> resumen.
+    // Los datos se envían en inputs ocultos para que viajen aunque el paso no esté visible.
+    Alpine.data('promotionWizard', (cfg) => ({
+        step: cfg.startStep || 1,
+        catalog: cfg.catalog,
+        serverErrors: cfg.errors || {},
+        type: cfg.type || '',
+        scopeType: cfg.scopeType || 'GLOBAL',
+        familyId: cfg.familyId || '',
+        subfamilyId: cfg.subfamilyId || '',
+        productId: cfg.productId || '',
+        value: cfg.value ?? '',
+        buyQty: cfg.buyQty ?? '',
+        payQty: cfg.payQty ?? '',
+        name: cfg.name || '',
+        nameTouched: !!cfg.name,
+        simQty: 3,
+        simPrice: 50,
+        types: [
+            { key: 'BUNDLE', title: 'Lleva N, paga M', desc: 'Ej. 2x1 o 3x2: se llevan varias unidades y se paga menos.', example: 'Llevas 2, pagas 1' },
+            { key: 'PERCENT', title: '% de descuento', desc: 'Un porcentaje menos sobre el precio de lista.', example: '15 % menos en cada unidad' },
+            { key: 'AMOUNT', title: 'Monto fijo de descuento', desc: 'Una cantidad en pesos que se resta a cada unidad.', example: 'RD$10 menos por unidad' },
+            { key: 'PRICE', title: 'Precio de oferta', desc: 'Cada unidad pasa a costar un precio fijo menor.', example: 'Cada unidad a RD$40' },
+        ],
+        steps: ['Tipo', 'Alcance', 'Parámetros', 'Resumen'],
+
+        init() {
+            const p = this.product;
+            if (p) {
+                this.subfamilyId = p.subfamily_id || this.subfamilyId;
+            }
+            const sf = this.subfamilies.find((x) => x.id === this.subfamilyId);
+            if (sf) {
+                this.familyId = sf.family_id || this.familyId;
+            }
+            if (this.priceRef !== null) {
+                this.simPrice = this.priceRef;
+            }
+            const firstError = Object.keys(this.serverErrors)[0];
+            if (firstError) {
+                this.step = this.stepOfField(firstError);
+            }
+        },
+
+        stepOfField(f) {
+            if (f === 'type') return 1;
+            if (['product_id', 'subfamily_id', 'family_id'].includes(f)) return 2;
+            if (['value', 'buy_qty', 'pay_qty'].includes(f)) return 3;
+            return 4;
+        },
+
+        get hasBeenReviewed() { return this.step === 4; },
+        get isBundle() { return this.type === 'BUNDLE'; },
+        get scopes() {
+            const noGlobal = ['PRICE', 'BUNDLE'].includes(this.type);
+            return [
+                { key: 'GLOBAL', label: 'Todos los productos', disabled: noGlobal, hint: noGlobal ? 'Este tipo requiere un objetivo concreto.' : '' },
+                { key: 'FAMILY', label: 'Una familia', disabled: false, hint: '' },
+                { key: 'SUBFAMILY', label: 'Una subfamilia', disabled: false, hint: '' },
+                { key: 'PRODUCT', label: 'Un producto', disabled: false, hint: '' },
+            ];
+        },
+        get families() { return this.catalog.families; },
+        get subfamilies() {
+            return this.catalog.subfamilies.filter((s) => !this.familyId || s.family_id === this.familyId);
+        },
+        get products() {
+            const subIds = this.subfamilyId
+                ? [this.subfamilyId]
+                : this.familyId ? this.catalog.subfamilies.filter((s) => s.family_id === this.familyId).map((s) => s.id) : null;
+            return this.catalog.products.filter((p) => !subIds || subIds.includes(p.subfamily_id));
+        },
+        get product() { return this.catalog.products.find((p) => p.id === this.productId) || null; },
+        get priceRef() { return this.scopeType === 'PRODUCT' && this.product ? this.product.price : null; },
+
+        pickType(key) {
+            this.type = key;
+            if (['PRICE', 'BUNDLE'].includes(key) && this.scopeType === 'GLOBAL') {
+                this.scopeType = 'FAMILY';
+            }
+        },
+        pickScope(key) {
+            this.scopeType = key;
+            if (key === 'GLOBAL') { this.familyId = ''; this.subfamilyId = ''; this.productId = ''; }
+            if (key === 'FAMILY') { this.subfamilyId = ''; this.productId = ''; }
+            if (key === 'SUBFAMILY') { this.productId = ''; }
+        },
+        onFamilyChange() {
+            if (this.subfamilyId && !this.subfamilies.some((s) => s.id === this.subfamilyId)) { this.subfamilyId = ''; }
+            if (this.productId && !this.products.some((p) => p.id === this.productId)) { this.productId = ''; }
+        },
+        onSubfamilyChange() {
+            const sf = this.catalog.subfamilies.find((s) => s.id === this.subfamilyId);
+            if (sf) { this.familyId = sf.family_id; }
+            if (this.productId && !this.products.some((p) => p.id === this.productId)) { this.productId = ''; }
+        },
+        onProductChange() {
+            // La familia y la subfamilia se deducen del producto: no pueden contradecirlo
+            const p = this.product;
+            if (p) {
+                this.subfamilyId = p.subfamily_id || '';
+                const sf = this.catalog.subfamilies.find((s) => s.id === this.subfamilyId);
+                this.familyId = sf ? sf.family_id : '';
+                this.simPrice = p.price;
+            }
+        },
+
+        get scopeName() {
+            if (this.scopeType === 'PRODUCT') return this.product?.name || '';
+            if (this.scopeType === 'SUBFAMILY') return this.catalog.subfamilies.find((s) => s.id === this.subfamilyId)?.name || '';
+            if (this.scopeType === 'FAMILY') return this.families.find((f) => f.id === this.familyId)?.name || '';
+            return 'todos los productos';
+        },
+        get scopePhrase() {
+            const n = this.scopeName;
+            return { GLOBAL: 'todos los productos', FAMILY: `la familia ${n}`, SUBFAMILY: `la subfamilia ${n}`, PRODUCT: n }[this.scopeType];
+        },
+
+        get scopeOk() {
+            return this.scopeType === 'GLOBAL'
+                ? !['PRICE', 'BUNDLE'].includes(this.type)
+                : this.scopeType === 'FAMILY' ? !!this.familyId
+                : this.scopeType === 'SUBFAMILY' ? !!this.subfamilyId
+                : !!this.productId;
+        },
+        get paramError() {
+            const v = Number(this.value);
+            if (this.isBundle) {
+                const b = Number(this.buyQty); const p = Number(this.payQty);
+                if (!Number.isInteger(b) || !Number.isInteger(p) || b < 2 || p < 1) return 'Indica «lleva» y «paga» como números enteros (ej. 2 y 1).';
+                if (p >= b) return '«Paga» debe ser menor que «lleva».';
+                return '';
+            }
+            if (!(v > 0)) return 'Indica un valor mayor que cero.';
+            if (this.type === 'PERCENT' && v > 100) return 'El porcentaje no puede superar 100.';
+            if (this.priceRef !== null && ['AMOUNT', 'PRICE'].includes(this.type) && v >= this.priceRef) {
+                return `Debe ser menor que el precio de lista (${money(this.priceRef)}).`;
+            }
+            return '';
+        },
+        get stepOk() {
+            return [null, !!this.type, this.scopeOk, this.paramError === '', this.name.trim() !== ''];
+        },
+        go(n) {
+            // Solo se puede avanzar si los pasos previos están completos
+            for (let i = 1; i < n; i++) { if (!this.stepOk[i]) { this.step = i; return; } }
+            this.step = n;
+            if (n === 4 && !this.nameTouched) { this.name = this.suggestedName; }
+        },
+
+        get suggestedName() {
+            const n = this.scopeType === 'GLOBAL' ? 'Todo' : this.scopeName;
+            const v = Number(this.value);
+            return {
+                BUNDLE: `${n} ${this.buyQty}x${this.payQty}`,
+                PERCENT: `${n} ${v}% off`,
+                AMOUNT: `${n} -${money(v)}`,
+                PRICE: `${n} a ${money(v)}`,
+            }[this.type] || '';
+        },
+        get summary() {
+            const v = Number(this.value);
+            const t = this.scopePhrase;
+            return {
+                BUNDLE: `Lleva ${this.buyQty} y paga ${this.payQty} en ${t}.`,
+                PERCENT: `${v} % de descuento por unidad en ${t}.`,
+                AMOUNT: `${money(v)} de descuento por unidad en ${t}.`,
+                PRICE: `Precio de oferta de ${money(v)} por unidad en ${t}.`,
+            }[this.type] || '';
+        },
+        get sim() {
+            const q = Math.max(1, Math.floor(Number(this.simQty) || 1));
+            const price = Number(this.simPrice) || 0;
+            const v = Number(this.value);
+            let pay = price * q;
+            let note = '';
+            if (this.type === 'BUNDLE') {
+                const b = Number(this.buyQty); const m = Number(this.payQty);
+                const groups = Math.floor(q / b);
+                const rest = q - groups * b;
+                pay = (groups * m + rest) * price;
+                note = `${groups} grupo(s) de ${b} (pagas ${m} c/u) + ${rest} suelta(s) a precio normal.`;
+            } else if (this.type === 'PERCENT') {
+                pay = price * (1 - v / 100) * q;
+            } else if (this.type === 'AMOUNT') {
+                pay = Math.max(price - v, 0) * q;
+            } else if (this.type === 'PRICE') {
+                pay = v * q;
+            }
+            return { q, normal: price * q, pay, saved: price * q - pay, note };
+        },
+        money,
     }));
 
     Alpine.data('locationPairingToken', () => ({

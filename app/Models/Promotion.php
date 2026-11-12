@@ -83,7 +83,7 @@ class Promotion extends Model
             'AMOUNT' => sprintf('Descuento fijo de %s en %s.', rtrim(rtrim((string) $this->value, '0'), '.'), $scope),
             'PRICE' => sprintf('Precio de oferta en %s: paga %s por unidad.', $scope, rtrim(rtrim((string) $this->value, '0'), '.')),
             'BUNDLE' => sprintf(
-                'Lleva %d unidades del mismo producto y paga %d. Las unidades van al mismo precio de lista, salvo precio de oferta fijado en la promoción.',
+                'Lleva %d unidades del mismo producto y paga %d. Las unidades van al mismo precio de lista por unidad.',
                 (int) $this->buy_qty,
                 (int) $this->pay_qty,
             ),

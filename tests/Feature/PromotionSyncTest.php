@@ -375,7 +375,7 @@ class PromotionSyncTest extends TestCase
         $desc = $auto->effectiveDescription();
         $this->assertStringContainsString('mismo producto', $desc);
         $this->assertStringContainsString('mismo precio', $desc);
-        $this->assertStringContainsString('precio de oferta', $desc);
+        $this->assertStringNotContainsString('precio de oferta', $desc);
     }
 
     public function test_promotions_grid_filters_by_family(): void
@@ -392,5 +392,61 @@ class PromotionSyncTest extends TestCase
             ->assertOk()
             ->assertSee('Con familia')
             ->assertDontSee('Global promo');
+    }
+
+    public function test_promotion_data_is_normalized_per_type(): void
+    {
+        $admin = $this->promoManager();
+        $family = Family::create(['name' => 'Bebidas']);
+        $this->actingAs($admin, 'admin');
+
+        // BUNDLE: el valor enviado se descarta y se guarda en 0
+        $this->post(route('admin.screens.store', 'promotions'), [
+            'name' => '2x1 Bebidas', 'type' => 'BUNDLE', 'value' => '40', 'buy_qty' => '2', 'pay_qty' => '1',
+            'family_id' => $family->id, 'is_active' => '1',
+        ])->assertSessionHasNoErrors();
+        $this->assertEquals(0, Promotion::where('name', '2x1 Bebidas')->value('value'));
+
+        // PERCENT: las cantidades lleva/paga no se guardan
+        $this->post(route('admin.screens.store', 'promotions'), [
+            'name' => '10 Bebidas', 'type' => 'PERCENT', 'value' => '10', 'buy_qty' => '2', 'pay_qty' => '1',
+            'family_id' => $family->id, 'is_active' => '1',
+        ])->assertSessionHasNoErrors();
+        $pct = Promotion::where('name', '10 Bebidas')->first();
+        $this->assertNull($pct->buy_qty);
+        $this->assertNull($pct->pay_qty);
+    }
+
+    public function test_amount_and_price_must_be_below_product_list_price(): void
+    {
+        $admin = $this->promoManager();
+        $family = Family::create(['name' => 'F P']);
+        $subfamily = Subfamily::create(['family_id' => $family->id, 'name' => 'S P']);
+        $product = Product::create(['sku' => 'SKU-LP', 'name' => 'Coca Cola 600ml', 'subfamily_id' => $subfamily->id, 'price' => 50, 'tax_rate' => 0, 'is_active' => true]);
+        $this->actingAs($admin, 'admin');
+
+        $this->post(route('admin.screens.store', 'promotions'), [
+            'name' => 'Oferta cara', 'type' => 'PRICE', 'value' => '50', 'product_id' => $product->id, 'is_active' => '1',
+        ])->assertSessionHasErrors('value');
+
+        $this->post(route('admin.screens.store', 'promotions'), [
+            'name' => 'Descuento excesivo', 'type' => 'AMOUNT', 'value' => '60', 'product_id' => $product->id, 'is_active' => '1',
+        ])->assertSessionHasErrors('value');
+
+        $this->post(route('admin.screens.store', 'promotions'), [
+            'name' => 'Oferta ok', 'type' => 'PRICE', 'value' => '40', 'product_id' => $product->id, 'is_active' => '1',
+        ])->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('promotions', ['name' => 'Oferta ok', 'product_id' => $product->id]);
+    }
+
+    public function test_promotion_wizard_renders_for_create_and_edit(): void
+    {
+        $admin = $this->promoManager();
+        $family = Family::create(['name' => 'Bebidas W']);
+        $promo = Promotion::create(['name' => 'W', 'type' => 'PERCENT', 'value' => 10, 'family_id' => $family->id, 'is_active' => true]);
+        $this->actingAs($admin, 'admin');
+
+        $this->get(route('admin.screens.create', 'promotions'))->assertOk()->assertSee('promotionWizard', false)->assertSee('Bebidas W');
+        $this->get(route('admin.screens.edit', ['promotions', $promo->id]))->assertOk()->assertSee('promotionWizard', false);
     }
 }

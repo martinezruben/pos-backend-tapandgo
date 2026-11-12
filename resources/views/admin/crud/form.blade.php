@@ -93,6 +93,8 @@
                     </form>
                 </div>
             </div>
+        @elseif(($screen ?? null) === 'promotions' && isset($promotionCatalog))
+            @include('admin.crud.partials.promotion-wizard')
         @else
         <form method="POST" action="{{ $item ? route('admin.screens.update', [$screen, $item->getKey()]) : route('admin.screens.store', $screen) }}" class="grid grid-cols-1 gap-3 px-4 py-4 md:grid-cols-2 md:gap-x-4 md:gap-y-3" @if(in_array($screen, ['families', 'products'])) enctype="multipart/form-data" @endif x-data="selectCascade">
             @csrf
