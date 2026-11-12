@@ -184,7 +184,7 @@ MYSQL_ROOT_PASSWORD=<aleatoria>
    docker compose -p kopagpos --profile https up -d
    php artisan config:clear   # dentro del contenedor app
    ```
-4. Cierra el puerto `8082` al exterior (firewall), o publícalo solo en `127.0.0.1`, para que todo el tráfico pase por Caddy. `TRUSTED_PROXIES=*` solo es seguro si la app no es accesible directamente.
+4. Cierra el puerto `8082` al exterior (firewall), o publícalo solo en `127.0.0.1`, para que todo el tráfico pase por Caddy. `TRUSTED_PROXIES=*` solo es seguro si la app no es accesible directamente; si puedes, usa la IP o red del proxy (`TRUSTED_PROXIES=172.18.0.0/16`, lista separada por comas) para que ningún cliente pueda falsear su IP con `X-Forwarded-For`. No edites `bootstrap/app.php` para esto.
 
 Caddy obtiene y renueva los certificados de Let's Encrypt solo y agrega HSTS. Nginx ya envía `X-Frame-Options`, `X-Content-Type-Options` y `Referrer-Policy`.
 

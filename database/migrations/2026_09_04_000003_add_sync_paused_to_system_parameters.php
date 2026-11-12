@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('system_parameters', function (Blueprint $table) {
-            $table->boolean('sync_paused')->default(false)->after('pos_min_special_chars');
+            $table->boolean('sync_paused')->default(false);
         });
 
         DB::table('system_parameters')->update(['sync_paused' => false]);
