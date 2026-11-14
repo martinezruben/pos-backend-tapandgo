@@ -42,12 +42,12 @@ export default {
                 'act-in': 'actIn 0.38s ease-out both',
             },
             boxShadow: {
-                xs: '0 1px 2px 0 rgb(25 26 41 / 0.05)',
-                snow: '0 1px 3px 0 rgb(25 26 41 / 0.1)',
-                'snow-md': '0 4px 6px -1px rgb(25 26 41 / 0.06), 0 2px 4px -2px rgb(25 26 41 / 0.05)',
-                'snow-lg': '0 10px 15px -3px rgb(25 26 41 / 0.06), 0 4px 6px -4px rgb(25 26 41 / 0.05)',
-                hope: '0 1px 3px 0 rgb(84 102 142 / 0.08), 0 4px 12px -2px rgb(25 26 41 / 0.06)',
-                'hope-card': '0 1px 2px 0 rgb(25 26 41 / 0.04), 0 8px 24px -4px rgb(25 26 41 / 0.08)',
+                xs: '0 1px 2px 0 rgb(20 29 39 / 0.05)',
+                snow: '0 1px 3px 0 rgb(20 29 39 / 0.1)',
+                'snow-md': '0 4px 6px -1px rgb(20 29 39 / 0.06), 0 2px 4px -2px rgb(20 29 39 / 0.05)',
+                'snow-lg': '0 10px 15px -3px rgb(20 29 39 / 0.06), 0 4px 6px -4px rgb(20 29 39 / 0.05)',
+                hope: '0 1px 3px 0 rgb(238 108 35 / 0.08), 0 4px 12px -2px rgb(20 29 39 / 0.06)',
+                'hope-card': '0 1px 2px 0 rgb(20 29 39 / 0.04), 0 8px 24px -4px rgb(20 29 39 / 0.08)',
             },
             scale: {
                 '125': '1.25',

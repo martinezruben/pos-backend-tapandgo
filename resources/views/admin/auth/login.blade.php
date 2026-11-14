@@ -9,15 +9,15 @@
 </head>
 <body class="h-full bg-canvas font-sans text-sm text-slate-600 antialiased">
 <div class="flex min-h-full flex-col lg:flex-row">
-    <div class="flex flex-1 flex-col justify-between gap-8 bg-primary-900 px-8 py-12 text-white lg:max-w-[50%] lg:px-16 lg:py-12">
+    <div class="flex flex-1 flex-col justify-between gap-8 bg-snow-800 px-8 py-12 text-white lg:max-w-[50%] lg:px-16 lg:py-12">
         <div class="flex items-center gap-3">
             <span class="flex h-[42px] w-[42px] items-center justify-center rounded-xl bg-primary-400 text-primary-900"><svg class="h-[22px] w-[22px]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z" /></svg></span>
             <span class="text-xl font-bold tracking-wide">{{ strtoupper(config('app.name', 'Tap&Go')) }}</span>
         </div>
         <div class="flex max-w-lg flex-col gap-7">
             <h1 class="text-4xl font-bold leading-[1.08] tracking-tight lg:text-[44px]">Todo tu negocio, en un solo panel.</h1>
-            <p class="text-[17px] text-primary-200">Administra localidades, catálogo, ventas y dispositivos desde cualquier lugar.</p>
-            <ul class="flex flex-col gap-4 text-[15px] text-primary-100">
+            <p class="text-[17px] text-slate-300">Administra localidades, catálogo, ventas y dispositivos desde cualquier lugar.</p>
+            <ul class="flex flex-col gap-4 text-[15px] text-slate-200">
                 <li class="flex items-center gap-3.5"><span class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10"><svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M18 17V9M13 17V5M8 17v-3" /></svg></span>Ventas y márgenes en tiempo real</li>
                 <li class="flex items-center gap-3.5"><span class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10"><svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M8 16H3v5" /></svg></span>Sincronización de todos tus POS</li>
                 <li class="flex items-center gap-3.5"><span class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10"><svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></svg></span>Roles, licencias y auditoría</li>

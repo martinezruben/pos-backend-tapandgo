@@ -96,5 +96,5 @@
 .location-picker-pin {
     background: none !important;
     border: none !important;
-    filter: drop-shadow(0 4px 8px rgb(25 26 41 / 0.25));
+    filter: drop-shadow(0 4px 8px rgb(20 29 39 / 0.25));
 }
