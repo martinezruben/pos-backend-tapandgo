@@ -13,13 +13,13 @@
         @endif
 
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-100 text-left text-xs">
+            <table data-sort-table class="min-w-full divide-y divide-slate-200 text-left text-sm">
                 <thead class="snow-table-head">
                     <tr>
                         <th class="px-4 py-2 font-semibold">Rol</th>
                         <th class="px-4 py-2 text-right font-semibold">Usuarios</th>
                         <th class="px-4 py-2 text-right font-semibold">Permisos</th>
-                        <th class="px-4 py-2 text-right font-semibold">Acciones</th>
+                        <th class="px-4 py-2 text-right font-semibold" data-nosort>Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">

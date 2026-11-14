@@ -1,5 +1,5 @@
 <x-admin.layouts.app :title="$cfg['label']">
-    <div class="snow-card {{ in_array($screen ?? null, ['locations', 'promotions'], true) ? 'max-w-6xl' : 'max-w-4xl' }}">
+    <div class="snow-card {{ in_array($screen ?? null, ['locations', 'promotions', 'licenses', 'families', 'products'], true) ? 'max-w-6xl' : 'max-w-4xl' }}">
         <div class="border-b border-slate-200 bg-snow-25 px-4 py-4 sm:px-6">
             <h2 class="text-lg font-semibold text-slate-800">{{ $item ? 'Editar' : 'Crear' }} · {{ $cfg['label'] }}</h2>
             <p class="mt-0.5 text-sm text-slate-500">
@@ -93,6 +93,8 @@
                     </form>
                 </div>
             </div>
+        @elseif(in_array($screen ?? null, ['licenses', 'families', 'subfamilies', 'products'], true))
+            @include('admin.crud.partials.'.$screen.'-form')
         @elseif(($screen ?? null) === 'locations')
             @include('admin.crud.partials.location-form')
         @elseif(($screen ?? null) === 'promotions' && isset($promotionCatalog))

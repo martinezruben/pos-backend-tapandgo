@@ -15,7 +15,7 @@
                 <p class="text-[11px] text-slate-500">Productos activos sin ventas cobradas (PAID) en el periodo. Los que nunca se han vendido aparecen primero.</p>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-100 text-left text-xs">
+                <table data-sort-table class="min-w-full divide-y divide-slate-200 text-left text-sm">
                     <thead class="snow-table-head">
                         <tr>
                             <th class="px-4 py-2 font-semibold">Producto</th>

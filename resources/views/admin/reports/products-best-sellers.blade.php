@@ -16,7 +16,7 @@
                 <p class="text-[10px] text-slate-500">Ventas cobradas (PAID) del periodo, ordenadas por cantidad vendida</p>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-100 text-left text-[11px]">
+                <table data-sort-table class="min-w-full divide-y divide-slate-200 text-left text-sm">
                     <thead class="snow-table-head">
                         <tr>
                             <th class="px-4 py-2 font-semibold">Producto</th>
