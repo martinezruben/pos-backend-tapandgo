@@ -17,7 +17,7 @@
                 ['Cobertura de costos', $summary['coverage_pct'] === null ? '—' : \App\Support\Format::percent($summary['coverage_pct'], 0), 'de las ventas del periodo tiene costo'],
             ] as [$label, $value, $sub])
                 <div class="snow-card p-3.5">
-                    <p class="font-mono text-[11px] font-semibold uppercase tracking-wider text-slate-500">{{ $label }}</p>
+                    <p class="text-xs font-medium text-slate-500">{{ $label }}</p>
                     <p class="mt-1.5 text-xl font-bold tabular-nums text-slate-900">{{ $value }}</p>
                     @if ($sub)
                         <p class="mt-0.5 text-[11px] text-slate-500">{{ $sub }}</p>

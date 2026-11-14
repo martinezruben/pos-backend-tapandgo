@@ -47,42 +47,42 @@
             <div class="space-y-4">
                     <dl class="grid grid-cols-1 gap-x-4 gap-y-2 text-[11px] sm:grid-cols-2">
                         <div class="flex flex-col gap-0.5 sm:col-span-2">
-                            <dt class="font-semibold uppercase tracking-wide text-slate-500">ID</dt>
+                            <dt class="font-semibold tracking-wide text-slate-500">ID</dt>
                             <dd class="font-mono text-slate-800" x-text="row.id"></dd>
                         </div>
                         <div class="flex flex-col gap-0.5">
-                            <dt class="font-semibold uppercase tracking-wide text-slate-500">Fecha/hora</dt>
+                            <dt class="font-semibold tracking-wide text-slate-500">Fecha/hora</dt>
                             <dd class="text-slate-800" x-text="row.created_at ?? '—'"></dd>
                         </div>
                         <div class="flex flex-col gap-0.5">
-                            <dt class="font-semibold uppercase tracking-wide text-slate-500">HTTP</dt>
+                            <dt class="font-semibold tracking-wide text-slate-500">HTTP</dt>
                             <dd class="text-slate-800" x-text="row.response_status != null ? String(row.response_status) : '—'"></dd>
                         </div>
                         <div class="flex flex-col gap-0.5">
-                            <dt class="font-semibold uppercase tracking-wide text-slate-500">Duración (ms)</dt>
+                            <dt class="font-semibold tracking-wide text-slate-500">Duración (ms)</dt>
                             <dd class="text-slate-800" x-text="row.duration_ms != null ? String(row.duration_ms) : '—'"></dd>
                         </div>
                         <div class="flex flex-col gap-0.5">
-                            <dt class="font-semibold uppercase tracking-wide text-slate-500">IP</dt>
+                            <dt class="font-semibold tracking-wide text-slate-500">IP</dt>
                             <dd class="font-mono text-slate-800" x-text="row.ip_address ?? '—'"></dd>
                         </div>
                         <div class="flex flex-col gap-0.5 sm:col-span-2">
-                            <dt class="font-semibold uppercase tracking-wide text-slate-500">Localidad</dt>
+                            <dt class="font-semibold tracking-wide text-slate-500">Localidad</dt>
                             <dd class="text-slate-800" x-text="row.location_name ?? (row.location_id ?? '—')"></dd>
                         </div>
                         <div class="flex flex-col gap-0.5 sm:col-span-2">
-                            <dt class="font-semibold uppercase tracking-wide text-slate-500">Dispositivo</dt>
+                            <dt class="font-semibold tracking-wide text-slate-500">Dispositivo</dt>
                             <dd class="text-slate-800" x-text="row.device_label ?? (row.device_id ?? '—')"></dd>
                         </div>
                         <div class="flex flex-col gap-0.5 sm:col-span-2">
-                            <dt class="font-semibold uppercase tracking-wide text-slate-500">Huella</dt>
+                            <dt class="font-semibold tracking-wide text-slate-500">Huella</dt>
                             <dd class="break-all font-mono text-slate-800" x-text="row.device_fingerprint ?? '—'"></dd>
                         </div>
                     </dl>
 
                     <div>
                         <div class="mb-1.5 flex items-center justify-between gap-2">
-                            <h3 class="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">Parámetros enviados</h3>
+                            <h3 class="text-xs font-bold text-slate-500">Parámetros enviados</h3>
                             <button type="button" class="snow-btn-ghost !px-1.5 !py-0.5 text-[11px]" @click="copy('parameters', jsonBlock(row.parameters_json, row.parameters))" x-text="copied === 'parameters' ? 'Copiado' : 'Copiar'"></button>
                         </div>
                         <p x-show="row.parameters_truncated" x-cloak class="mb-1 text-[11px] font-medium text-amber-800">Los parámetros se guardaron recortados.</p>
@@ -90,7 +90,7 @@
                     </div>
                     <div>
                         <div class="mb-1.5 flex items-center justify-between gap-2">
-                            <h3 class="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">Respuesta del sistema</h3>
+                            <h3 class="text-xs font-bold text-slate-500">Respuesta del sistema</h3>
                             <button type="button" class="snow-btn-ghost !px-1.5 !py-0.5 text-[11px]" @click="copy('response', jsonBlock(row.response_json, row.response_summary))" x-text="copied === 'response' ? 'Copiado' : 'Copiar'"></button>
                         </div>
                         <p x-show="row.response_truncated" x-cloak class="mb-1 text-[11px] font-medium text-amber-800">

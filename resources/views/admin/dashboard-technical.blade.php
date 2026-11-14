@@ -62,7 +62,7 @@
                                     @elseif ($row['direction'] === 'Push')
                                         <span class="text-base font-bold leading-none">↑</span>
                                     @else
-                                        <span class="px-0.5 text-[10px] font-bold uppercase tracking-wider">API</span>
+                                        <span class="px-0.5 text-xs font-bold ">API</span>
                                     @endif
                                 </div>
                                 <div class="relative min-w-0 flex-1 py-1.5 pr-2">
@@ -81,7 +81,7 @@
                                             <span class="truncate">{{ $row['device'] }}</span>
                                         </span>
                                         <span
-                                            class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1 {{ $dirBadge }}"
+                                            class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-bold tracking-wide ring-1 {{ $dirBadge }}"
                                         >
                                             {{ $row['direction'] }}
                                         </span>

@@ -9,13 +9,13 @@
     $border = match ($tone) {
         'warn' => 'border-amber-300 ring-1 ring-amber-200/70',
         'bad' => 'border-rose-300 ring-1 ring-rose-200/70',
-        default => $featured ? 'border-primary-300 ring-1 ring-primary-100' : 'border-slate-200/90',
+        default => $featured ? 'border-primary-300 ring-1 ring-primary-100' : 'border-slate-200',
     };
     $value = match ($tone) {
         'warn' => 'text-amber-700',
         'bad' => 'text-rose-700',
         'good' => 'text-emerald-700',
-        default => $featured ? 'text-primary-800' : 'text-slate-900',
+        default => $featured ? 'text-primary-800' : 'text-slate-800',
     };
     $iconBox = match ($tone) {
         'warn' => 'border-amber-200 bg-amber-50 text-amber-600',
@@ -26,13 +26,13 @@
 @endphp
 <{{ $tag }}
     @if ($modal) type="button" x-data x-on:click="$dispatch('open-modal', '{{ $modal }}')" aria-haspopup="dialog" @endif
-    class="snow-card w-full p-3.5 text-left transition hover:shadow-[0_8px_30px_-8px_rgba(15,23,42,0.12)] {{ $border }}
+    class="snow-card w-full p-5 text-left transition hover:shadow-[0_8px_30px_-8px_rgba(26,18,14,0.12)] {{ $border }}
         {{ $modal ? 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500' : '' }}"
 >
     <div class="flex items-start justify-between gap-2">
         <div class="min-w-0">
-            <p class="font-mono text-[11px] font-semibold uppercase leading-tight tracking-wider text-slate-500">{{ $card['label'] }}</p>
-            <p class="mt-1.5 font-bold tabular-nums leading-tight tracking-tight {{ $featured ? 'text-2xl' : 'text-xl' }} {{ $value }}">{{ $card['value'] }}</p>
+            <p class="text-sm font-medium leading-5 text-slate-500">{{ $card['label'] }}</p>
+            <p class="mt-3 font-bold tabular-nums leading-tight tracking-tight {{ $featured ? 'text-3xl' : 'text-3xl' }} {{ $value }}">{{ $card['value'] }}</p>
             @if (! empty($card['sub']))
                 <p class="mt-0.5 text-[11px] leading-tight {{ $modal ? 'font-semibold text-primary-700 underline decoration-dotted underline-offset-2' : 'text-slate-500' }}">{{ $card['sub'] }}</p>
             @endif
