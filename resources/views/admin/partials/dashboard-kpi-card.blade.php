@@ -26,7 +26,7 @@
 @endphp
 <{{ $tag }}
     @if ($modal) type="button" x-data x-on:click="$dispatch('open-modal', '{{ $modal }}')" aria-haspopup="dialog" @endif
-    class="snow-card w-full p-5 text-left transition hover:shadow-[0_8px_30px_-8px_rgba(26,18,14,0.12)] {{ $border }}
+    class="snow-card w-full p-5 text-left transition hover:shadow-[0_8px_30px_-8px_rgba(25,26,41,0.12)] {{ $border }}
         {{ $modal ? 'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500' : '' }}"
 >
     <div class="flex items-start justify-between gap-2">
