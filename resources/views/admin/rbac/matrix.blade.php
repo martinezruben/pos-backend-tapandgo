@@ -51,7 +51,7 @@
                             <th class="whitespace-nowrap px-2 py-1.5 text-center font-semibold">Eliminar</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100 bg-white">
+                    <tbody class="divide-y divide-slate-100 bg-snow-25">
                         @foreach($screenGroups as $group)
                             <tr class="bg-slate-50/80">
                                 <td colspan="4" class="sticky left-0 z-[1] bg-slate-50/95 px-2 py-1 text-xs font-bold text-slate-500 shadow-[1px_0_0_0_rgb(241_245_249)]">
@@ -64,7 +64,7 @@
                                 $ro = $s['readonly'];
                             @endphp
                             <tr class="hover:bg-slate-50/80">
-                                <td class="sticky left-0 z-[1] bg-white px-2 py-1 align-middle font-medium text-slate-800 shadow-[1px_0_0_0_rgb(241_245_249)]">
+                                <td class="sticky left-0 z-[1] bg-snow-25 px-2 py-1 align-middle font-medium text-slate-800 shadow-[1px_0_0_0_rgb(241_245_249)]">
                                     <span class="block truncate" title="{{ $s['key'] }}">{{ $s['label'] }}</span>
                                     @if($ro)
                                         <span class="text-[9px] font-normal text-slate-500">(solo lectura)</span>
@@ -75,7 +75,7 @@
                                         type="checkbox"
                                         name="permissions[]"
                                         value="{{ $p['view'] }}"
-                                        class="h-3.5 w-3.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                                        class="h-3.5 w-3.5 rounded border-slate-300 text-primary-400 focus:ring-primary-500"
                                         @checked(isset($assignedSet[$p['view']]))
                                     >
                                 </td>
@@ -87,7 +87,7 @@
                                             type="checkbox"
                                             name="permissions[]"
                                             value="{{ $p['edit'] }}"
-                                            class="h-3.5 w-3.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                                            class="h-3.5 w-3.5 rounded border-slate-300 text-primary-400 focus:ring-primary-500"
                                             @checked(isset($assignedSet[$p['edit']]))
                                         >
                                     @endif
@@ -100,7 +100,7 @@
                                             type="checkbox"
                                             name="permissions[]"
                                             value="{{ $p['delete'] }}"
-                                            class="h-3.5 w-3.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                                            class="h-3.5 w-3.5 rounded border-slate-300 text-primary-400 focus:ring-primary-500"
                                             @checked(isset($assignedSet[$p['delete']]))
                                         >
                                     @endif

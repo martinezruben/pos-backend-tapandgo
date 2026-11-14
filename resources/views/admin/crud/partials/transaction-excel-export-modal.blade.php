@@ -2,7 +2,7 @@
 <div
     x-show="open"
     x-cloak
-    class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/45 p-3 backdrop-blur-[2px] sm:p-4"
+    class="fixed inset-0 z-[110] flex items-center justify-center bg-black/45 p-3 backdrop-blur-[2px] sm:p-4"
     @click.self="open = false"
     @keydown.escape.window="open = false"
     role="dialog"
@@ -10,7 +10,7 @@
     aria-labelledby="tx-excel-export-title"
 >
     <div
-        class="flex w-full max-w-md flex-col overflow-hidden rounded-[14px] bg-white shadow-2xl ring-1 ring-black/5"
+        class="flex w-full max-w-md flex-col overflow-hidden rounded-[14px] bg-snow-25 shadow-2xl ring-1 ring-black/5"
         @click.stop
     >
         <div class="flex shrink-0 items-start justify-between gap-2 border-b border-slate-100 px-4 py-3 sm:px-5">
@@ -78,7 +78,7 @@
         <div class="flex shrink-0 flex-col gap-2 border-t border-slate-100 bg-slate-50/80 px-4 py-2.5 sm:flex-row sm:justify-end sm:px-5">
             <button
                 type="button"
-                class="w-full rounded-lg border border-slate-200 bg-white py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 sm:w-auto sm:px-4"
+                class="w-full rounded-lg border border-slate-200 bg-snow-25 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 sm:w-auto sm:px-4"
                 @click="open = false"
                 :disabled="loading"
             >

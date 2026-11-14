@@ -2,14 +2,14 @@
 <div
     x-show="open"
     x-cloak
-    class="fixed inset-0 z-[110] flex items-center justify-center bg-snow-800/50 p-3 backdrop-blur-[2px] sm:p-4"
+    class="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 p-3 backdrop-blur-[2px] sm:p-4"
     @click.self="open = false"
     @keydown.escape.window="open = false"
     role="dialog"
     aria-modal="true"
     aria-labelledby="product-excel-title"
 >
-    <div class="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-snow-lg ring-1 ring-black/5" @click.stop>
+    <div class="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-snow-25 shadow-snow-lg ring-1 ring-black/5" @click.stop>
         <div class="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4 sm:px-6">
             <div>
                 <h2 id="product-excel-title" class="text-lg font-semibold text-slate-800">Importar / Exportar productos</h2>
@@ -23,7 +23,7 @@
         <div class="space-y-5 overflow-y-auto px-5 py-5 sm:px-6">
             <ol class="space-y-4">
                 <li class="flex gap-3">
-                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-50 text-sm font-semibold text-primary-700">1</span>
+                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-50 text-sm font-semibold text-primary-300">1</span>
                     <div class="min-w-0 flex-1">
                         <p class="font-medium text-slate-800">Exporta el catálogo</p>
                         <p class="text-sm text-slate-500">Un .xlsx con todos los productos (id, SKU, código de barras, nombre, subfamilia, precio, costo, IVA, estado) y una hoja «Instrucciones».</p>
@@ -31,7 +31,7 @@
                     </div>
                 </li>
                 <li class="flex gap-3">
-                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-50 text-sm font-semibold text-primary-700">2</span>
+                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-50 text-sm font-semibold text-primary-300">2</span>
                     <div class="min-w-0 flex-1 text-sm text-slate-600">
                         <p class="font-medium text-slate-800">Edita el archivo</p>
                         <ul class="mt-1 list-disc space-y-1 pl-5">
@@ -42,7 +42,7 @@
                     </div>
                 </li>
                 <li class="flex gap-3">
-                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-50 text-sm font-semibold text-primary-700">3</span>
+                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-50 text-sm font-semibold text-primary-300">3</span>
                     <div class="min-w-0 flex-1">
                         <p class="font-medium text-slate-800">Importa el archivo</p>
                         <p class="text-sm text-slate-500">Se actualizan los productos existentes y se crean los nuevos. No se elimina ningún producto. Las filas con errores se omiten y se listan al terminar.</p>

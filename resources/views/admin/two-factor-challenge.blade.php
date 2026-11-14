@@ -13,7 +13,7 @@
         </style>
     </head>
     <body>
-        <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+        <div class="w-full max-w-sm rounded-xl bg-snow-25 p-6 shadow-xl">
             <h1 class="text-base font-semibold text-slate-900">Verificación en dos pasos</h1>
             <p class="mt-1 text-xs text-slate-500">Ingresa el código de 6 dígitos de tu app de autenticación, o un código de recuperación.</p>
 

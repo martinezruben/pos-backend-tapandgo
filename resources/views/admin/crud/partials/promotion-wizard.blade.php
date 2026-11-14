@@ -69,8 +69,8 @@
         <template x-for="(label, i) in steps" :key="i">
             <li>
                 <button type="button" @click="go(i + 1)" class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 transition"
-                    :class="step === i + 1 ? 'border-primary-500 bg-primary-50 text-primary-800' : (step > i + 1 ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-500')">
-                    <span class="flex h-4 w-4 items-center justify-center rounded-full bg-white text-[10px] ring-1 ring-current" x-text="step > i + 1 ? '✓' : i + 1"></span>
+                    :class="step === i + 1 ? 'border-primary-500 bg-primary-50 text-primary-300' : (step > i + 1 ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-snow-25 text-slate-500')">
+                    <span class="flex h-4 w-4 items-center justify-center rounded-full bg-snow-25 text-[10px] ring-1 ring-current" x-text="step > i + 1 ? '✓' : i + 1"></span>
                     <span x-text="label"></span>
                 </button>
             </li>
@@ -86,7 +86,7 @@
                 <div class="mt-3 grid gap-2 sm:grid-cols-2">
                     <template x-for="t in types" :key="t.key">
                         <button type="button" @click="pickType(t.key)" class="rounded-lg border p-3 text-left transition"
-                            :class="type === t.key ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-300' : 'border-slate-200 bg-white hover:border-primary-300'">
+                            :class="type === t.key ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-300' : 'border-slate-200 bg-snow-25 hover:border-primary-300'">
                             <span class="block text-[13px] font-bold text-slate-900" x-text="t.title"></span>
                             <span class="mt-0.5 block text-[11px] text-slate-600" x-text="t.desc"></span>
                             <span class="mt-1.5 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-700" x-text="t.example"></span>
@@ -103,7 +103,7 @@
                     <template x-for="s in scopes" :key="s.key">
                         <button type="button" :disabled="s.disabled" @click="pickScope(s.key)" :title="s.hint"
                             class="rounded-full border px-3 py-1 text-[12px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-40"
-                            :class="scopeType === s.key ? 'border-primary-500 bg-primary-50 text-primary-800' : 'border-slate-200 bg-white text-slate-700 hover:border-primary-300'"
+                            :class="scopeType === s.key ? 'border-primary-500 bg-primary-50 text-primary-300' : 'border-slate-200 bg-snow-25 text-slate-700 hover:border-primary-300'"
                             x-text="s.label"></button>
                     </template>
                 </div>
@@ -172,7 +172,7 @@
                     <div class="md:col-span-2">
                         <label class="snow-label" for="f-name">Nombre</label>
                         <input id="f-name" type="text" name="name" maxlength="120" class="snow-input" x-model="name" @input="nameTouched = true">
-                        <button type="button" class="mt-1 text-[11px] font-semibold text-primary-700 hover:underline" @click="name = suggestedName; nameTouched = true">Usar nombre sugerido</button>
+                        <button type="button" class="mt-1 text-[11px] font-semibold text-primary-300 hover:underline" @click="name = suggestedName; nameTouched = true">Usar nombre sugerido</button>
                     </div>
                     <div>
                         <label class="snow-label" for="f-starts_at">Vigente desde</label>
@@ -192,7 +192,7 @@
                 </div>
 
                 <div class="mt-4 rounded-lg border border-primary-200 bg-primary-50/60 p-3">
-                    <p class="text-xs font-medium text-primary-800">Así quedará</p>
+                    <p class="text-xs font-medium text-primary-300">Así quedará</p>
                     <p class="mt-1 text-[13px] font-semibold text-slate-900" x-text="summary"></p>
                 </div>
             </section>

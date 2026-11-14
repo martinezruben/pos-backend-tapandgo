@@ -15,13 +15,13 @@
         'warn' => 'text-amber-700',
         'bad' => 'text-rose-700',
         'good' => 'text-emerald-700',
-        default => $featured ? 'text-primary-800' : 'text-slate-800',
+        default => $featured ? 'text-primary-300' : 'text-slate-800',
     };
     $iconBox = match ($tone) {
         'warn' => 'border-amber-200 bg-amber-50 text-amber-600',
         'bad' => 'border-rose-200 bg-rose-50 text-rose-600',
         'good' => 'border-emerald-200 bg-emerald-50 text-emerald-600',
-        default => $featured ? 'border-primary-200 bg-primary-50 text-primary-600' : 'border-slate-200 bg-slate-50 text-slate-500',
+        default => $featured ? 'border-primary-200 bg-primary-50 text-primary-400' : 'border-slate-200 bg-slate-50 text-slate-500',
     };
 @endphp
 <{{ $tag }}
@@ -34,7 +34,7 @@
             <p class="text-sm font-medium leading-5 text-slate-500">{{ $card['label'] }}</p>
             <p class="mt-3 font-bold tabular-nums leading-tight tracking-tight {{ $featured ? 'text-3xl' : 'text-3xl' }} {{ $value }}">{{ $card['value'] }}</p>
             @if (! empty($card['sub']))
-                <p class="mt-0.5 text-[11px] leading-tight {{ $modal ? 'font-semibold text-primary-700 underline decoration-dotted underline-offset-2' : 'text-slate-500' }}">{{ $card['sub'] }}</p>
+                <p class="mt-0.5 text-[11px] leading-tight {{ $modal ? 'font-semibold text-primary-300 underline decoration-dotted underline-offset-2' : 'text-slate-500' }}">{{ $card['sub'] }}</p>
             @endif
         </div>
         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border {{ $iconBox }}">

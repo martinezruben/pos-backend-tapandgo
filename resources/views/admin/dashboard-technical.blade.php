@@ -52,7 +52,7 @@
                             style="animation-delay: {{ min($loop->index * 45, 360) }}ms"
                         >
                             <div
-                                class="group relative flex gap-2 overflow-hidden rounded-xl border border-slate-200/80 bg-white pl-2 transition duration-200 hover:border-slate-300 hover:bg-slate-50/60 {{ $strip }} border-l-[3px]"
+                                class="group relative flex gap-2 overflow-hidden rounded-xl border border-slate-200/80 bg-snow-25 pl-2 transition duration-200 hover:border-slate-300 hover:bg-slate-50/60 {{ $strip }} border-l-[3px]"
                             >
                                 <div
                                     class="relative mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border {{ $iconBox }}"

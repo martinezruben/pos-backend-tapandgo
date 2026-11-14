@@ -1,6 +1,12 @@
 import { money } from './format';
 import { chart as chartColors } from '../theme/colors';
 
+// Valores por defecto de ApexCharts para el tema oscuro
+window.Apex = {
+    chart: { background: 'transparent', foreColor: chartColors.axis },
+    tooltip: { theme: chartColors.tooltip },
+};
+
 // Cantidad de etiquetas del eje X según el ancho: en móvil no se amontonan las 30 fechas
 function tickAmountFor(el, count) {
     // Descuenta el espacio de los ejes Y (~120px) y deja ~85px por fecha
@@ -202,6 +208,7 @@ function mountFamilyDonut(ApexCharts, el, familyMix, palette) {
         },
         labels: empty ? ['Sin datos'] : familyMix.labels,
         series: empty ? [1] : familyMix.series,
+        stroke: { width: 2, colors: [chartColors.surface] },
         colors: empty
             ? [chartColors.grid]
             : (palette ?? chartColors.series),

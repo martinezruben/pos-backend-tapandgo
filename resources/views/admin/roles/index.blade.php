@@ -28,7 +28,7 @@
                             <td class="px-4 py-2.5 font-medium text-slate-800">
                                 {{ $role->name }}
                                 @if ($role->is_protected)
-                                    <span class="snow-tag ml-1 bg-primary-50 text-primary-800" title="Acceso total; no se puede modificar">Super-admin</span>
+                                    <span class="snow-tag ml-1 bg-primary-50 text-primary-300" title="Acceso total; no se puede modificar">Super-admin</span>
                                 @endif
                             </td>
                             <td class="px-4 py-2.5 text-right tabular-nums text-slate-700">{{ $role->users_count }}</td>

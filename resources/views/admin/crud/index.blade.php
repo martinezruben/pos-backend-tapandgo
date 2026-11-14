@@ -35,13 +35,13 @@
 @endif
     <div class="snow-card overflow-hidden">
         <form method="GET" action="{{ route('admin.screens.index', $screen) }}" class="border-b border-slate-100">
-            <div class="flex flex-col gap-1.5 bg-white px-2 py-1.5 sm:flex-row sm:items-center sm:justify-between sm:px-3">
+            <div class="flex flex-col gap-1.5 bg-snow-25 px-2 py-1.5 sm:flex-row sm:items-center sm:justify-between sm:px-3">
                 <div class="flex flex-wrap items-center gap-0.5">
                     @if(($showTransactionExcelExport ?? false))
                         <div x-data="transactionExcelModal(@js($transactionExportLocations ?? []))" class="inline-flex items-center gap-0.5">
                             <button
                                 type="button"
-                                class="inline-flex h-9 items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-600 shadow-sm transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+                                class="inline-flex h-9 items-center gap-1 rounded-lg border border-slate-300 bg-snow-25 px-3 text-xs font-medium text-slate-600 shadow-sm transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-300"
                                 title="Exportar transacciones a Excel"
                                 @click="open = true"
                             >
@@ -55,7 +55,7 @@
                         <div x-data="transactionsReportModal(@js($transactionExportLocations ?? []))" class="inline-flex items-center gap-0.5">
                             <button
                                 type="button"
-                                class="inline-flex h-9 items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-600 shadow-sm transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+                                class="inline-flex h-9 items-center gap-1 rounded-lg border border-slate-300 bg-snow-25 px-3 text-xs font-medium text-slate-600 shadow-sm transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-300"
                                 title="Descargar reporte de transacciones (opcional: detalle de líneas)"
                                 @click="open = true"
                             >
@@ -77,7 +77,7 @@
                             <div x-data="{ open: false }" class="inline-flex">
                                 <button
                                     type="button"
-                                    class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 shadow-xs transition hover:bg-snow-50"
+                                    class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-300 bg-snow-25 px-3 text-xs font-medium text-slate-700 shadow-xs transition hover:bg-snow-50"
                                     title="Exportar o importar productos con Excel"
                                     @click="open = true"
                                 >
@@ -128,7 +128,7 @@
                         </div>
                     @endforeach
                     <button type="submit" class="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-xs transition hover:bg-primary-700">Aplicar</button>
-                    <a href="{{ route('admin.screens.index', $screen) }}" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-snow-100 hover:text-primary-700">Limpiar</a>
+                    <a href="{{ route('admin.screens.index', $screen) }}" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-snow-100 hover:text-primary-300">Limpiar</a>
                 </div>
             @endif
         </form>
@@ -165,7 +165,7 @@
                             type="button"
                             data-map-filter="{{ $key }}"
                             aria-pressed="true"
-                            class="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 shadow-sm transition hover:border-primary-300"
+                            class="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-snow-25 px-2 py-1 text-[11px] font-medium text-slate-700 shadow-sm transition hover:border-primary-300"
                         >
                             <span class="flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white {{ $st['dot'] }}" aria-hidden="true">{{ $st['glyph'] }}</span>
                             {{ $st['label'] }}
@@ -188,7 +188,7 @@
                 @if (count($locationsMapPins ?? []) > 0)
                     <details class="mt-2 text-[11px] text-slate-700">
                         <summary class="cursor-pointer font-semibold text-slate-600">Ver estado en lista</summary>
-                        <ul id="admin-locations-map-list" class="mt-1.5 divide-y divide-slate-100 rounded-md border border-slate-200 bg-white">
+                        <ul id="admin-locations-map-list" class="mt-1.5 divide-y divide-slate-100 rounded-md border border-slate-200 bg-snow-25">
                             @foreach ($locationsMapPins as $pin)
                                 <li data-loc-id="{{ $pin['id'] }}" class="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 px-2.5 py-1.5">
                                     <span class="font-medium text-slate-800">{{ $pin['name'] }}</span>
@@ -232,7 +232,7 @@
                             @if($isSortable)
                                 <a
                                     href="{{ \App\Support\AdminGridQuery::sortUrl($screen, $f, $activeSort, $activeDir) }}"
-                                    class="group flex h-11 w-full items-center gap-1.5 px-4 text-inherit transition-colors hover:bg-slate-200/60 hover:text-slate-800 {{ $isActiveSort ? 'text-primary-700' : '' }}"
+                                    class="group flex h-11 w-full items-center gap-1.5 px-4 text-inherit transition-colors hover:bg-slate-200/60 hover:text-slate-800 {{ $isActiveSort ? 'text-primary-300' : '' }}"
                                     title="Ordenar por {{ \App\Support\AdminGridCell::headerLabel($f, $cfg) }}"
                                 >
                                     <span>{{ \App\Support\AdminGridCell::headerLabel($f, $cfg) }}</span>
@@ -249,7 +249,7 @@
                     <th class="h-11 w-px whitespace-nowrap px-4 py-2 text-right text-xs font-medium">{{ __('Acciones') }}</th>
                 </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200 bg-white">
+                <tbody class="divide-y divide-slate-200 bg-snow-25">
                 @foreach($items as $item)
                     <tr class="transition-colors hover:bg-snow-50">
                         @foreach($visibleFields as $f)

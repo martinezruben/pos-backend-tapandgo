@@ -54,7 +54,7 @@
                 default => ['bg' => 'bg-amber-50', 'ink' => 'text-amber-900', 'dot' => 'bg-amber-500', 'text' => $raw],
             };
         } elseif ($field === 'role' && is_string($raw)) {
-            $variant = ['bg' => 'bg-primary-50', 'ink' => 'text-primary-700', 'dot' => 'bg-primary-500', 'text' => $raw];
+            $variant = ['bg' => 'bg-primary-50', 'ink' => 'text-primary-300', 'dot' => 'bg-primary-500', 'text' => $raw];
         } else {
             $variant = ['bg' => 'bg-snow-50', 'ink' => 'text-snow-700', 'dot' => 'bg-snow-400', 'text' => is_scalar($raw) || $raw === null ? (string) $raw : '—'];
         }

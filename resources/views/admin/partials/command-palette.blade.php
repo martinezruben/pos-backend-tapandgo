@@ -14,13 +14,13 @@
     <div
         x-show="open"
         x-cloak
-        class="fixed inset-0 z-[60] flex items-start justify-center bg-slate-900/40 px-4 pt-[12vh] backdrop-blur-sm"
+        class="fixed inset-0 z-[60] flex items-start justify-center bg-black/40 px-4 pt-[12vh] backdrop-blur-sm"
         x-on:click.self="close()"
         role="dialog"
         aria-modal="true"
         aria-label="Buscar en el panel"
     >
-        <div class="w-full max-w-lg overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl" x-on:keydown="onKey($event)">
+        <div class="w-full max-w-lg overflow-hidden rounded-xl border border-slate-200 bg-snow-25 shadow-2xl" x-on:keydown="onKey($event)">
             <div class="flex items-center gap-2 border-b border-slate-100 px-3">
                 <svg class="h-4 w-4 shrink-0 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
                 <input
@@ -41,7 +41,7 @@
                         <a
                             :href="r.url"
                             class="flex items-center justify-between gap-3 px-3 py-2 text-[12.5px]"
-                            :class="i === cursor ? 'bg-primary-50 text-primary-800' : 'text-slate-700 hover:bg-slate-50'"
+                            :class="i === cursor ? 'bg-primary-50 text-primary-300' : 'text-slate-700 hover:bg-slate-50'"
                             x-on:mouseenter="cursor = i"
                         >
                             <span class="min-w-0 truncate" x-text="r.label"></span>

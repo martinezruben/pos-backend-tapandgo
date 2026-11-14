@@ -114,7 +114,7 @@
                     <button type="button" role="switch" :aria-checked="active.toString()" aria-label="Producto activo" @click="active = !active"
                         class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-600/25"
                         :class="active ? 'bg-primary-600' : 'bg-slate-300'">
-                        <span class="inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="active ? 'translate-x-6' : 'translate-x-1'"></span>
+                        <span class="inline-block h-5 w-5 rounded-full bg-snow-25 shadow-sm transition-transform" :class="active ? 'translate-x-6' : 'translate-x-1'"></span>
                     </button>
                 </div>
                 <div class="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-snow-50 px-4 py-3">
@@ -125,7 +125,7 @@
                     <button type="button" role="switch" :aria-checked="favorite.toString()" aria-label="Favorito" @click="favorite = !favorite"
                         class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-600/25"
                         :class="favorite ? 'bg-primary-600' : 'bg-slate-300'">
-                        <span class="inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="favorite ? 'translate-x-6' : 'translate-x-1'"></span>
+                        <span class="inline-block h-5 w-5 rounded-full bg-snow-25 shadow-sm transition-transform" :class="favorite ? 'translate-x-6' : 'translate-x-1'"></span>
                     </button>
                 </div>
             </x-admin.form.section>
@@ -134,7 +134,7 @@
                 <x-admin.form.section title="Etiqueta · código de barras" description="Se genera a partir del código parametrizado (EAN-13 o Code 128).">
                     <div class="inline-flex w-fit flex-col items-center gap-1 rounded-xl border border-slate-200 bg-white px-4 py-3">
                         <img src="data:image/png;base64,{{ $barcodePng }}" alt="Código de barras {{ $barcode }}" class="h-14 w-auto" width="220">
-                        <span class="font-mono text-xs tracking-[0.2em] text-slate-800">{{ $barcode }}</span>
+                        <span class="font-mono text-xs tracking-[0.2em] text-black">{{ $barcode }}</span>
                     </div>
                 </x-admin.form.section>
             @endif

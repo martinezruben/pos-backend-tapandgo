@@ -10,7 +10,7 @@
             'fileName' => 'ingresos-por-metodo-de-pago',
         ])
 
-        <div class="snow-card overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-hope-card">
+        <div class="snow-card overflow-hidden rounded-xl border border-slate-200/90 bg-snow-25 shadow-hope-card">
             <div class="border-b border-slate-100 px-4 py-3">
                 <h3 class="text-sm font-semibold text-slate-900">Ingresos por método de pago</h3>
                 <p class="text-[10px] text-slate-500">Ventas cobradas (PAID) del periodo según la fecha de la venta</p>
