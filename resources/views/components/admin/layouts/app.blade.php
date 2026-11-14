@@ -6,6 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <title>{{ $title }} — {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -20,7 +21,7 @@
         <button type="button" class="rounded-md p-1.5 text-white/70 hover:bg-white/10" @click="mobileNav = true" aria-label="Abrir menú">
             <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
         </button>
-        <span class="text-sm font-bold tracking-wide text-side-title">{{ config('app.name', 'Tap&Go') }}</span>
+        <span class="flex items-center gap-2 text-side-title"><x-brand-mark size="h-7 w-7" icon="h-4 w-4" rounded="rounded-lg" /><x-brand-wordmark class="text-base" /></span>
         <span class="w-8"></span>
     </div>
     <div
