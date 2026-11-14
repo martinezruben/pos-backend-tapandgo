@@ -26,7 +26,7 @@
     <div
         x-show="mobileNav"
         x-cloak
-        class="fixed inset-0 z-50 bg-primary-900/50 backdrop-blur-sm lg:hidden"
+        class="fixed inset-0 z-50 bg-snow-800/60 backdrop-blur-sm lg:hidden"
         @click="mobileNav = false"
         @keydown.escape.window="mobileNav = false"
     ></div>

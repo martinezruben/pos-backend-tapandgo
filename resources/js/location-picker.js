@@ -1,10 +1,11 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { primary } from '../theme/colors';
 
 // Selector de ubicación del formulario de localidades: clic en el mapa o arrastrar el pin
 // rellena latitud/longitud; escribir las coordenadas mueve el pin.
 const DEFAULT_CENTER = [18.7357, -70.1627]; // República Dominicana
-const BRAND = '#6b4a2e';
+const BRAND = primary[600];
 
 function pinIcon() {
     return L.divIcon({
