@@ -1,5 +1,6 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
+import { canvas, neutral, primary, side } from './resources/theme/colors.js';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -25,51 +26,11 @@ export default {
                  * fondo crema, tinta café, una sola tinta de acento,
                  * el color se reserva para estado/acción, no para el cromo.
                  */
-                canvas: '#fbf8f4',
-                snow: {
-                    25: '#ffffff',
-                    50: '#f5efe8',
-                    100: '#efe7dd',
-                    200: '#e6dacb',
-                    300: '#d5c4ae',
-                    400: '#a39d94',
-                    500: '#66635c',
-                    600: '#4a4a46',
-                    700: '#3a2418',
-                    800: '#1a120e',
-                    900: '#110b08',
-                },
-                slate: {
-                    50: '#f5efe8',
-                    100: '#efe7dd',
-                    200: '#e6dacb',
-                    300: '#d5c4ae',
-                    400: '#a39d94',
-                    500: '#66635c',
-                    600: '#4a4a46',
-                    700: '#3a2418',
-                    800: '#1a120e',
-                    900: '#110b08',
-                },
-                /** Marca Tap&Go: café (#6b4a2e) sobre crema; 600 = color de marca */
-                primary: {
-                    25: '#fbf8f4',
-                    50: '#f7f2ec',
-                    100: '#ede3d7',
-                    200: '#d5c4ae',
-                    300: '#c2a689',
-                    400: '#a88462',
-                    500: '#8a6a48',
-                    600: '#6b4a2e',
-                    700: '#573b23',
-                    800: '#3a2418',
-                    900: '#1a120e',
-                },
-                /** Acento secundario (botones alternativos, charts) */
-                hope: {
-                    teal: '#0d9488',
-                    cyan: '#06b6d4',
-                },
+                canvas,
+                snow: neutral,
+                slate: neutral,
+                primary,
+                side,
             },
             keyframes: {
                 actIn: {

@@ -2,8 +2,8 @@
     // Mismas páginas y permisos que el buscador (App\Support\AdminNavigation)
     $navGroups = \App\Support\AdminNavigation::groups(auth('admin')->user());
     $navLinkClasses = fn (bool $active) => 'group flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors '
-        . ($active ? 'bg-slate-700 text-[#f3ebe1]' : 'text-slate-300 hover:bg-slate-700/60 hover:text-[#f3ebe1]');
-    $navIconClasses = fn (bool $active) => 'h-5 w-5 shrink-0 ' . ($active ? 'text-primary-400' : 'text-[#a8998a] group-hover:text-slate-200');
+        . ($active ? 'bg-slate-700 text-side-title' : 'text-slate-300 hover:bg-slate-700/60 hover:text-side-title');
+    $navIconClasses = fn (bool $active) => 'h-5 w-5 shrink-0 ' . ($active ? 'text-primary-400' : 'text-side-muted group-hover:text-slate-200');
 @endphp
 
 @if($navGroups !== [])
@@ -15,7 +15,7 @@
         <div>
             <button
                 type="button"
-                class="flex w-full items-center justify-between gap-1 rounded-lg px-3 pb-2 pt-0.5 text-left text-xs font-medium text-[#a8998a] hover:text-slate-200"
+                class="flex w-full items-center justify-between gap-1 rounded-lg px-3 pb-2 pt-0.5 text-left text-xs font-medium text-side-muted hover:text-slate-200"
                 :aria-expanded="groups['{{ $group['key'] }}'] ? 'true' : 'false'"
                 @click="groups['{{ $group['key'] }}'] = !groups['{{ $group['key'] }}']"
             >
