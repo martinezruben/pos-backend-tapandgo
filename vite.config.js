@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/dashboard.js',
                 'resources/js/admin-locations-map.js',
+                'resources/js/location-picker.js',
             ],
             refresh: true,
         }),

@@ -237,13 +237,7 @@ class AdminGridQuery
         $base = $cfg['model'];
         $table = (new $base)->getTable();
 
-        if ($grid === []) {
-            self::defaultTableSort($query, $table);
-
-            return;
-        }
-
-        $sortable = $grid['sortable'] ?? [];
+        $sortable = self::sortableFields($cfg);
         $default = $grid['default_sort'] ?? ['key' => 'updated_at', 'direction' => 'desc'];
 
         if ($sortable === []) {
@@ -271,6 +265,10 @@ class AdminGridQuery
             return;
         }
 
+        if (self::applyForeignLabelSort($query, $cfg, $table, $sort, $dir)) {
+            return;
+        }
+
         if (Schema::hasColumn($table, $sort)) {
             $query->orderBy($table.'.'.$sort, $dir);
 
@@ -280,6 +278,66 @@ class AdminGridQuery
         if (Schema::hasColumn($table, $default['key'])) {
             $query->orderBy($table.'.'.$default['key'], $default['direction'] === 'asc' ? 'asc' : 'desc');
         }
+    }
+
+    /**
+     * Campos por los que se puede ordenar al pulsar el encabezado: los declarados en `grid.sortable`
+     * más todo campo del grid que sea una columna real o una etiqueta de relación (se ordena por su nombre).
+     *
+     * @return list<string>
+     */
+    public static function sortableFields(array $cfg): array
+    {
+        /** @var Model $base */
+        $base = $cfg['model'];
+        $table = (new $base)->getTable();
+        $exclude = $cfg['grid']['exclude_from_grid'] ?? [];
+        $out = $cfg['grid']['sortable'] ?? [];
+
+        foreach ($cfg['fields'] ?? [] as $field) {
+            if (in_array($field, $exclude, true) || in_array($field, $out, true)) {
+                continue;
+            }
+            $foreign = $cfg['foreign_labels'][$field] ?? null;
+            if (is_array($foreign) && ! empty($foreign['virtual'])) {
+                continue;
+            }
+            if (Schema::hasColumn($table, $field) && ! in_array($field, ['password', 'pin', 'pin4', 'pin_sha384', 'pin4_sha384', 'pin4_enc', 'remember_token'], true)) {
+                $out[] = $field;
+            }
+        }
+
+        return $out;
+    }
+
+    /** Ordena una columna FK por el texto de su relación (p. ej. Localidad por nombre, no por UUID). */
+    private static function applyForeignLabelSort(Builder $query, array $cfg, string $table, string $sort, string $dir): bool
+    {
+        $foreign = $cfg['foreign_labels'][$sort] ?? null;
+        if (! is_array($foreign) || empty($foreign['relation']) || ! Schema::hasColumn($table, $sort)) {
+            return false;
+        }
+
+        /** @var Model $base */
+        $base = $cfg['model'];
+        $relation = (new $base)->{$foreign['relation']}();
+        $related = $relation->getRelated();
+        $relatedTable = $related->getTable();
+
+        $column = collect([$foreign['attribute'] ?? null, $foreign['fallback_attribute'] ?? null, 'name'])
+            ->first(fn ($c) => is_string($c) && Schema::hasColumn($relatedTable, $c));
+        if ($column === null) {
+            return false;
+        }
+
+        $query->orderBy(
+            $related->newQuery()->select($relatedTable.'.'.$column)
+                ->whereColumn($relatedTable.'.'.$related->getKeyName(), $table.'.'.$sort)
+                ->limit(1),
+            $dir
+        );
+
+        return true;
     }
 
     private static function defaultTableSort(Builder $query, string $table): void

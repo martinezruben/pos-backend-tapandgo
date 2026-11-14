@@ -1,8 +1,8 @@
 <x-admin.layouts.app :title="$cfg['label']">
-    <div class="snow-card max-w-4xl">
-        <div class="border-b border-slate-100 bg-gradient-to-r from-slate-50/80 to-white px-4 py-2.5">
-            <h2 class="text-sm font-bold text-slate-900">{{ $item ? 'Editar' : 'Crear' }} · {{ $cfg['label'] }}</h2>
-            <p class="mt-0.5 text-[11px] text-slate-500">
+    <div class="snow-card {{ in_array($screen ?? null, ['locations', 'promotions'], true) ? 'max-w-6xl' : 'max-w-4xl' }}">
+        <div class="border-b border-slate-200 bg-snow-25 px-4 py-4 sm:px-6">
+            <h2 class="text-lg font-semibold text-slate-800">{{ $item ? 'Editar' : 'Crear' }} · {{ $cfg['label'] }}</h2>
+            <p class="mt-0.5 text-sm text-slate-500">
                 @if(($screen ?? null) === 'devices' && $item)
                     Puedes editar el nombre, restablecer la última sincronización y bloquear o reactivar el acceso (con motivo).
                 @else
@@ -93,6 +93,8 @@
                     </form>
                 </div>
             </div>
+        @elseif(($screen ?? null) === 'locations')
+            @include('admin.crud.partials.location-form')
         @elseif(($screen ?? null) === 'promotions' && isset($promotionCatalog))
             @include('admin.crud.partials.promotion-wizard')
         @else

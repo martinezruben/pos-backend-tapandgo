@@ -91,3 +91,10 @@
         @apply focus:border-primary-300 focus:outline-none focus:ring-4 focus:ring-primary-600/20;
     }
 }
+
+/* Pin del selector de ubicación (formulario de localidades) */
+.location-picker-pin {
+    background: none !important;
+    border: none !important;
+    filter: drop-shadow(0 4px 8px rgb(26 18 14 / 0.25));
+}
