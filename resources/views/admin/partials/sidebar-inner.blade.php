@@ -5,11 +5,9 @@
 @endphp
 <div class="flex h-full min-h-0 flex-col text-side-text">
     <div class="flex shrink-0 items-center gap-3 px-5 pb-5 pt-6">
-        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-gradient text-white">
-            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z" /></svg>
-        </span>
+        <x-brand-mark />
         <div class="min-w-0 leading-tight">
-            <p class="truncate text-lg font-bold text-side-title">{{ strtoupper(config('app.name', 'Tap&Go')) }}</p>
+            <p class="truncate text-lg text-side-title"><x-brand-wordmark /> <small class="text-xs font-medium text-side-muted">POS</small></p>
             <p class="truncate text-xs text-side-muted">Panel de administración</p>
         </div>
     </div>

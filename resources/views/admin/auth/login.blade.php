@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <title>Iniciar sesión — {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -12,8 +13,8 @@
     <div class="flex flex-1 flex-col justify-between gap-8 relative overflow-hidden bg-canvas bg-hero-glow px-8 py-12 text-white lg:max-w-[50%] lg:px-16 lg:py-12">
         <div class="pointer-events-none absolute inset-0 bg-grid-lines [background-size:48px_48px]" aria-hidden="true"></div>
         <div class="relative flex items-center gap-3">
-            <span class="flex h-[42px] w-[42px] items-center justify-center rounded-xl bg-brand-gradient text-white"><svg class="h-[22px] w-[22px]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z" /></svg></span>
-            <span class="text-xl font-bold tracking-wide">{{ strtoupper(config('app.name', 'Tap&Go')) }}</span>
+            <x-brand-mark size="h-[42px] w-[42px]" icon="h-[22px] w-[22px]" />
+            <x-brand-wordmark class="text-xl" />
         </div>
         <div class="relative flex max-w-lg flex-col gap-7">
             <h1 class="bg-headline-gradient bg-clip-text text-4xl font-bold leading-[1.08] tracking-tight text-transparent lg:text-[44px]">Todo tu negocio, en un solo panel.</h1>
