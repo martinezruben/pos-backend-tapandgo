@@ -35,25 +35,25 @@
             <div x-show="!loading && !error && row" class="space-y-4">
                 <dl class="grid grid-cols-1 gap-x-4 gap-y-2 text-[10px] sm:grid-cols-2">
                     <div class="flex flex-col gap-0.5">
-                        <dt class="font-semibold uppercase tracking-wide text-slate-500">Fecha / hora</dt>
+                        <dt class="font-semibold tracking-wide text-slate-500">Fecha / hora</dt>
                         <dd class="tabular-nums text-slate-800" x-text="row?.created_at ?? '—'"></dd>
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <dt class="font-semibold uppercase tracking-wide text-slate-500">Acción</dt>
+                        <dt class="font-semibold tracking-wide text-slate-500">Acción</dt>
                         <dd class="text-slate-800" x-text="row ? actionLabel(row.action) : '—'"></dd>
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <dt class="font-semibold uppercase tracking-wide text-slate-500">Usuario admin</dt>
+                        <dt class="font-semibold tracking-wide text-slate-500">Usuario admin</dt>
                         <dd class="text-slate-800" x-text="row?.admin_name ?? '—'"></dd>
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <dt class="font-semibold uppercase tracking-wide text-slate-500">IP</dt>
+                        <dt class="font-semibold tracking-wide text-slate-500">IP</dt>
                         <dd class="tabular-nums text-slate-800" x-text="row?.ip ?? '—'"></dd>
                     </div>
                 </dl>
 
                 <div>
-                    <h3 class="mb-1 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Cambios</h3>
+                    <h3 class="mb-1 text-xs font-bold text-slate-500">Cambios</h3>
                     <template x-if="row && changeEntries(row.changes).length">
                         <table class="min-w-full divide-y divide-slate-100 text-left text-[10px]">
                             <thead class="snow-table-head">

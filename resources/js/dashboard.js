@@ -1,4 +1,5 @@
 import { money } from './format';
+import { chart } from '../theme/colors';
 
 // Cantidad de etiquetas del eje X según el ancho: en móvil no se amontonan las 30 fechas
 function tickAmountFor(el, count) {
@@ -61,7 +62,7 @@ function mountSalesArea(ApexCharts, el, initial, onPeriodChange) {
                 stops: [0, 92, 100],
             },
         },
-        colors: ['#2563eb', '#22d3ee'],
+        colors: chart.series.slice(0, 2),
         series: [
             { name: 'Ventas', data: initial.sales },
             { name: 'Transacciones', data: initial.transactions, yAxisIndex: 1 },
@@ -70,7 +71,7 @@ function mountSalesArea(ApexCharts, el, initial, onPeriodChange) {
             categories: initial.labels,
             tickAmount: tickAmountFor(el, initial.labels.length),
             labels: {
-                style: { colors: '#64748b', fontSize: '11px' },
+                style: { colors: chart.axis, fontSize: '11px' },
                 rotate: 0,
                 hideOverlappingLabels: true,
             },
@@ -79,23 +80,23 @@ function mountSalesArea(ApexCharts, el, initial, onPeriodChange) {
         },
         yaxis: [
             {
-                title: { text: 'Ventas ($)', style: { color: '#64748b', fontSize: '11px' } },
+                title: { text: 'Ventas ($)', style: { color: chart.axis, fontSize: '11px' } },
                 labels: {
-                    style: { colors: '#64748b', fontSize: '11px' },
+                    style: { colors: chart.axis, fontSize: '11px' },
                     formatter: fmtMoney,
                 },
             },
             {
                 opposite: true,
-                title: { text: 'Tickets', style: { color: '#64748b', fontSize: '11px' } },
+                title: { text: 'Tickets', style: { color: chart.axis, fontSize: '11px' } },
                 labels: {
-                    style: { colors: '#64748b', fontSize: '11px' },
+                    style: { colors: chart.axis, fontSize: '11px' },
                     formatter: (v) => `${Math.round(v)}`,
                 },
             },
         ],
         grid: {
-            borderColor: '#e2e8f0',
+            borderColor: chart.grid,
             strokeDashArray: 4,
             padding: { left: 8, right: 8 },
         },
@@ -160,26 +161,26 @@ function mountSalesHeatmap(ApexCharts, el, heatmap) {
         },
         series: buildSeries(current(), metric()),
         // Una sola tinta (la del acento): más oscuro = más ventas
-        colors: ['#1e4b8d'],
+        colors: [chart.series[0]],
         dataLabels: { enabled: false },
-        stroke: { width: 2, colors: ['#fbfcfe'] },
+        stroke: { width: 2, colors: [chart.surface] },
         plotOptions: {
             heatmap: { radius: 3, enableShades: true, shadeIntensity: 0.85, useFillColorAsStroke: false },
         },
         xaxis: {
             type: 'category',
-            labels: { style: { colors: '#64748b', fontSize: '11px' }, rotate: 0 },
-            title: { text: 'Hora del día', style: { color: '#64748b', fontSize: '11px' } },
+            labels: { style: { colors: chart.axis, fontSize: '11px' }, rotate: 0 },
+            title: { text: 'Hora del día', style: { color: chart.axis, fontSize: '11px' } },
             tooltip: { enabled: false },
         },
-        yaxis: { labels: { style: { colors: '#64748b', fontSize: '11px' } } },
+        yaxis: { labels: { style: { colors: chart.axis, fontSize: '11px' } } },
         grid: { padding: { left: 4, right: 8 } },
         legend: { show: false },
         tooltip: {
             theme: 'light',
             y: { formatter: (v) => fmt(v) },
         },
-        noData: { text: 'Sin ventas en este periodo', style: { color: '#64748b', fontSize: '12px' } },
+        noData: { text: 'Sin ventas en este periodo', style: { color: chart.axis, fontSize: '12px' } },
     });
     chart.render();
 
@@ -202,8 +203,8 @@ function mountFamilyDonut(ApexCharts, el, familyMix, palette) {
         labels: empty ? ['Sin datos'] : familyMix.labels,
         series: empty ? [1] : familyMix.series,
         colors: empty
-            ? ['#e2e8f0']
-            : (palette ?? ['#2563eb', '#22d3ee', '#38bdf8', '#0ea5e9', '#6366f1', '#8b5cf6']),
+            ? [chart.grid]
+            : (palette ?? chart.series),
         plotOptions: {
             pie: {
                 donut: {
@@ -313,7 +314,7 @@ function mountSyncStacked(ApexCharts, el, syncByDay) {
             },
         },
         dataLabels: { enabled: false },
-        colors: ['#2563eb', '#f43f5e'],
+        colors: [chart.series[0], chart.negative],
         series: [
             { name: 'Correctas', data: success },
             { name: 'Fallidas', data: failed },
@@ -323,7 +324,7 @@ function mountSyncStacked(ApexCharts, el, syncByDay) {
             categories: categories.length ? categories : Array.from({ length: n }, (_, i) => String(i + 1)),
             tickAmount: tickAmountFor(el, n),
             labels: {
-                style: { colors: '#64748b', fontSize: '11px' },
+                style: { colors: chart.axis, fontSize: '11px' },
                 rotate: -35,
                 rotateAlways: n > 7,
                 hideOverlappingLabels: true,
@@ -336,18 +337,18 @@ function mountSyncStacked(ApexCharts, el, syncByDay) {
             max: yMax,
             forceNiceScale: true,
             labels: {
-                style: { colors: '#64748b', fontSize: '11px' },
+                style: { colors: chart.axis, fontSize: '11px' },
                 formatter: (v) => `${Math.round(v)}`,
             },
         },
-        grid: { borderColor: '#e2e8f0', strokeDashArray: 4, padding: { top: 0, right: 8, bottom: 0, left: 4 } },
+        grid: { borderColor: chart.grid, strokeDashArray: 4, padding: { top: 0, right: 8, bottom: 0, left: 4 } },
         legend: { position: 'top', horizontalAlign: 'right', fontSize: '11px' },
         tooltip: { shared: true, theme: 'light', intersect: false },
         noData: {
             text: 'Sin sincronizaciones en este periodo',
             align: 'center',
             verticalAlign: 'middle',
-            style: { color: '#64748b', fontSize: '12px' },
+            style: { color: chart.axis, fontSize: '12px' },
         },
         states: {
             hover: { filter: { type: 'darken', value: 0.08 } },
@@ -387,7 +388,7 @@ async function init() {
 
     const paymentEl = document.querySelector('[data-chart="payment-donut"]');
     if (paymentEl && data.paymentMix) {
-        mountFamilyDonut(ApexCharts, paymentEl, data.paymentMix, ['#059669', '#0ea5e9', '#8b5cf6', '#f59e0b']);
+        mountFamilyDonut(ApexCharts, paymentEl, data.paymentMix, chart.series.slice(0, 4));
     }
 
     const syncEl = document.querySelector('[data-chart="sync-stacked"]');

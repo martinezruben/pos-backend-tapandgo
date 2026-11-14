@@ -36,7 +36,7 @@
                         <div x-data="transactionExcelModal(@js($transactionExportLocations ?? []))" class="inline-flex items-center gap-0.5">
                             <button
                                 type="button"
-                                class="inline-flex h-7 items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 text-[10px] font-semibold text-slate-600 shadow-sm transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+                                class="inline-flex h-9 items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-600 shadow-sm transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
                                 title="Exportar transacciones a Excel"
                                 @click="open = true"
                             >
@@ -50,7 +50,7 @@
                         <div x-data="transactionsReportModal(@js($transactionExportLocations ?? []))" class="inline-flex items-center gap-0.5">
                             <button
                                 type="button"
-                                class="inline-flex h-7 items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 text-[10px] font-semibold text-slate-600 shadow-sm transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+                                class="inline-flex h-9 items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-600 shadow-sm transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
                                 title="Descargar reporte de transacciones (opcional: detalle de líneas)"
                                 @click="open = true"
                             >
@@ -71,7 +71,7 @@
                         @if($productExcel ?? false)
                             <a
                                 href="{{ route('admin.products.excel.export') }}"
-                                class="inline-flex h-7 items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 text-[10px] font-semibold text-slate-600 shadow-sm transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+                                class="inline-flex h-9 items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-600 shadow-sm transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
                                 title="Exportar todos los productos a Excel"
                             >
                                 <svg class="h-3 w-3 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
@@ -105,10 +105,10 @@
             </div>
 
             @if($gridFilters !== [])
-                <div class="flex flex-wrap items-end gap-1.5 border-t border-slate-50 bg-slate-50/70 px-2 py-3 sm:px-3 sm:py-3.5" x-data="selectCascade">
+                <div class="flex flex-wrap items-end gap-1.5 border-t border-slate-200 bg-snow-50 px-4 py-4 sm:px-6" x-data="selectCascade">
                     @foreach($gridFilters as $param => $fdef)
-                        <div class="flex min-w-[7rem] flex-col gap-0.5">
-                            <label class="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-500" for="flt-{{ $param }}">{{ $fdef['label'] ?? $param }}</label>
+                        <div class="flex min-w-[8rem] flex-col gap-1.5">
+                            <label class="text-sm font-medium text-slate-700" for="flt-{{ $param }}">{{ $fdef['label'] ?? $param }}</label>
                             @if(($fdef['type'] ?? '') === 'date')
                                 <input
                                     id="flt-{{ $param }}"
@@ -126,8 +126,8 @@
                             @endif
                         </div>
                     @endforeach
-                    <button type="submit" class="rounded-md bg-primary-600 px-2 py-1 text-[10px] font-semibold text-white shadow-sm transition hover:bg-primary-700">Aplicar</button>
-                    <a href="{{ route('admin.screens.index', $screen) }}" class="rounded-md py-1 text-[10px] font-medium text-slate-500 hover:text-primary-600">Limpiar</a>
+                    <button type="submit" class="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-xs transition hover:bg-primary-700">Aplicar</button>
+                    <a href="{{ route('admin.screens.index', $screen) }}" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-snow-100 hover:text-primary-700">Limpiar</a>
                 </div>
             @endif
         </form>
@@ -137,11 +137,11 @@
             <div class="border-b border-slate-100 bg-gradient-to-b from-slate-50/90 to-white px-2 py-2 sm:px-3">
                 <div class="mb-1.5 flex flex-wrap items-end justify-between gap-2">
                     <div>
-                        <h3 class="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">Mapa de localidades</h3>
+                        <h3 class="text-xs font-bold text-slate-500">Mapa de localidades</h3>
                         <p class="text-[11px] text-slate-500">Mismos filtros que la tabla · el número es la cantidad de dispositivos activos · el estado se actualiza cada minuto</p>
                     </div>
                     <div class="flex min-w-0 flex-col gap-0.5 sm:items-end">
-                        <label for="admin-locations-map-period" class="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">Sync exitosa en</label>
+                        <label for="admin-locations-map-period" class="text-xs font-bold text-slate-500">Sync exitosa en</label>
                         <select id="admin-locations-map-period" class="hope-filter-select max-w-full py-1 text-[11px] sm:min-w-[12rem]">
                             <option value="today" selected>Hoy</option>
                             <option value="yesterday">Ayer</option>
@@ -216,11 +216,11 @@
         @enderror
 
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[640px] border-collapse text-left text-[10px] leading-tight">
-                <thead class="sticky top-0 z-10 border-b border-slate-100 bg-slate-50/95 backdrop-blur-sm">
+            <table class="w-full min-w-[640px] border-collapse text-left text-sm leading-5">
+                <thead class="sticky top-0 z-10 border-b border-slate-200 bg-slate-100">
                 <tr class="snow-table-head">
                     @foreach($visibleFields as $f)
-                        <th class="whitespace-nowrap px-2 py-1 font-semibold">
+                        <th class="h-11 whitespace-nowrap px-4 py-2 text-xs font-medium">
                             @if(in_array($f, $sortable, true))
                                 <a href="{{ \App\Support\AdminGridQuery::sortUrl($screen, $f, request('sort'), request('dir')) }}" class="inline-flex items-center gap-1 text-inherit hover:text-primary-600">
                                     <span>{{ \App\Support\AdminGridCell::headerLabel($f, $cfg) }}</span>
@@ -233,14 +233,14 @@
                             @endif
                         </th>
                     @endforeach
-                    <th class="w-px whitespace-nowrap px-2 py-1 text-right">{{ __('Acciones') }}</th>
+                    <th class="h-11 w-px whitespace-nowrap px-4 py-2 text-right text-xs font-medium">{{ __('Acciones') }}</th>
                 </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 bg-white">
+                <tbody class="divide-y divide-slate-200 bg-white">
                 @foreach($items as $item)
-                    <tr class="transition-colors hover:bg-slate-50/90">
+                    <tr class="transition-colors hover:bg-snow-50">
                         @foreach($visibleFields as $f)
-                            <td class="max-w-[12rem] px-2 py-1 align-middle text-slate-800">
+                            <td class="max-w-[14rem] px-4 py-3 align-middle text-slate-800">
                                 @if($f === 'image_url' && ! empty($item->image_url))
                                                                 <img src="{{ \App\Services\ImageThumbnailService::displayUrl($item->image_url) }}" alt="" class="h-7 w-7 shrink-0 rounded object-cover ring-1 ring-slate-200" width="28" height="28">
                                                             @elseif($f === 'image_url')

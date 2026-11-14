@@ -192,7 +192,7 @@
                 </div>
 
                 <div class="mt-4 rounded-lg border border-primary-200 bg-primary-50/60 p-3">
-                    <p class="text-[11px] font-semibold uppercase tracking-wider text-primary-800">Así quedará</p>
+                    <p class="text-xs font-medium text-primary-800">Así quedará</p>
                     <p class="mt-1 text-[13px] font-semibold text-slate-900" x-text="summary"></p>
                 </div>
             </section>
@@ -207,12 +207,12 @@
 
         {{-- Panel lateral: resumen en vivo + simulador --}}
         <aside class="h-fit rounded-lg border border-slate-200 bg-slate-50/70 p-3 text-[12px]">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Resumen</p>
+            <p class="text-xs font-bold text-slate-500">Resumen</p>
             <p class="mt-1 text-slate-800" x-show="type && scopeOk && paramError === ''" x-text="summary"></p>
             <p class="mt-1 text-slate-500" x-show="!(type && scopeOk && paramError === '')">Completa los pasos para ver la promoción.</p>
 
             <div class="mt-3 border-t border-slate-200 pt-3" x-show="type && scopeOk && paramError === ''">
-                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Simulador</p>
+                <p class="text-xs font-bold text-slate-500">Simulador</p>
                 <div class="mt-1.5 grid grid-cols-2 gap-2">
                     <label class="block"><span class="snow-label">Cantidad</span><input type="number" min="1" step="1" class="snow-input" x-model="simQty"></label>
                     <label class="block"><span class="snow-label">Precio lista</span><input type="number" min="0" step="0.01" class="snow-input" x-model="simPrice" :readonly="priceRef !== null"></label>

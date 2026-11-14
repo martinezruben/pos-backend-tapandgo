@@ -29,7 +29,7 @@
             {{-- Las cifras se reutilizan hasta 60 s (DashboardController::CACHE_SECONDS) --}}
             <span class="hidden shrink-0 text-[11px] text-slate-500 md:inline" title="Las cifras se recalculan cada minuto">Actualizado {{ $generatedAt }}</span>
         @endisset
-        <label for="dash-location" class="shrink-0 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Localidad</label>
+        <label for="dash-location" class="shrink-0 text-xs font-medium text-slate-500">Localidad</label>
         <select
             id="dash-location"
             name="location_id"
