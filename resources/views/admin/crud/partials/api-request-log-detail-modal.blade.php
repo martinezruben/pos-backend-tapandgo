@@ -2,7 +2,7 @@
 <div
     x-show="open"
     x-cloak
-    class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/45 p-3 backdrop-blur-[2px] sm:p-4"
+    class="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 p-3 backdrop-blur-[2px] sm:p-4"
     @click.self="closeDetail()"
     @keydown.escape.window="closeDetail()"
     role="dialog"
@@ -10,7 +10,7 @@
     aria-labelledby="api-log-detail-title"
 >
     <div
-        class="flex max-h-[min(92vh,720px)] w-full max-w-3xl flex-col overflow-hidden rounded-[14px] bg-white shadow-2xl ring-1 ring-black/5"
+        class="flex max-h-[min(92vh,720px)] w-full max-w-3xl flex-col overflow-hidden rounded-[14px] bg-snow-25 shadow-2xl ring-1 ring-black/5"
         @click.stop
     >
         <div class="flex shrink-0 items-start justify-between gap-2 border-b border-slate-100 px-4 py-3 sm:px-5">

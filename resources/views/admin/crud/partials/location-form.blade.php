@@ -31,7 +31,7 @@
             {{-- Datos generales --}}
             <section class="flex flex-col gap-4">
                 <div class="flex items-center gap-3">
-                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-600">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-400">
                         <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9l1.5-5h15L21 9M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M4 12v9h16v-9M9 21v-5h6v5" /></svg>
                     </span>
                     <div>
@@ -87,7 +87,7 @@
                         class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-600/25"
                         :class="active ? 'bg-primary-600' : 'bg-slate-300'"
                     >
-                        <span class="inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="active ? 'translate-x-6' : 'translate-x-1'"></span>
+                        <span class="inline-block h-5 w-5 rounded-full bg-snow-25 shadow-sm transition-transform" :class="active ? 'translate-x-6' : 'translate-x-1'"></span>
                     </button>
                 </div>
                 @if($item)

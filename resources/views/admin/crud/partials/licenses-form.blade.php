@@ -64,7 +64,7 @@
                             :aria-checked="(status === '{{ $key }}').toString()"
                             @click="status = '{{ $key }}'"
                             class="rounded-xl border p-3 text-left transition focus:outline-none focus-visible:ring-4 focus-visible:ring-primary-600/25"
-                            :class="status === '{{ $key }}' ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-300' : 'border-slate-200 bg-white hover:border-primary-300'"
+                            :class="status === '{{ $key }}' ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-300' : 'border-slate-200 bg-snow-25 hover:border-primary-300'"
                         >
                             <span class="flex items-center gap-2 text-sm font-semibold text-slate-800">
                                 <span class="h-2.5 w-2.5 rounded-full {{ ['green' => 'bg-green-500', 'slate' => 'bg-slate-400', 'yellow' => 'bg-yellow-500', 'red' => 'bg-red-500'][$tone] }}"></span>{{ $label }}

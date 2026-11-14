@@ -16,7 +16,7 @@
 <a href="#contenido" class="sr-only z-[60] rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white focus:not-sr-only focus:fixed focus:left-2 focus:top-2">Saltar al contenido</a>
 <div class="min-h-full lg:flex" x-data="{ mobileNav: false }">
     {{-- Mobile --}}
-    <div class="sticky top-0 z-40 flex items-center justify-between border-b border-slate-200 bg-snow-800 px-2 py-2 shadow-sm lg:hidden">
+    <div class="sticky top-0 z-40 flex items-center justify-between border-b border-slate-200 bg-side-bg px-2 py-2 shadow-sm lg:hidden">
         <button type="button" class="rounded-md p-1.5 text-white/70 hover:bg-white/10" @click="mobileNav = true" aria-label="Abrir menú">
             <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
         </button>
@@ -26,7 +26,7 @@
     <div
         x-show="mobileNav"
         x-cloak
-        class="fixed inset-0 z-50 bg-snow-800/60 backdrop-blur-sm lg:hidden"
+        class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm lg:hidden"
         @click="mobileNav = false"
         @keydown.escape.window="mobileNav = false"
     ></div>
@@ -36,9 +36,9 @@
         x-transition:enter="transition ease-out duration-200"
         x-transition:enter-start="-translate-x-full"
         x-transition:enter-end="translate-x-0"
-        class="fixed inset-y-0 left-0 z-50 flex w-[min(16.5rem,100vw)] flex-col bg-snow-800 shadow-hope-card lg:hidden"
+        class="fixed inset-y-0 left-0 z-50 flex w-[min(16.5rem,100vw)] flex-col bg-side-bg shadow-hope-card lg:hidden"
     >
-        <div class="flex h-12 items-center justify-between border-b border-slate-700 px-3">
+        <div class="flex h-12 items-center justify-between border-b border-side-border px-3">
             <span class="text-sm font-bold tracking-tight text-white">Menú</span>
             <button type="button" class="rounded-lg p-1.5 text-white/60 hover:bg-white/10" @click="mobileNav = false" aria-label="Cerrar">
                 <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
@@ -50,7 +50,7 @@
     </aside>
 
     {{-- Desktop sidebar --}}
-    <aside class="hidden w-[264px] shrink-0 flex-col border-r border-slate-700 bg-snow-800 lg:flex lg:sticky lg:top-0 lg:h-screen">
+    <aside class="hidden w-[264px] shrink-0 flex-col border-r border-side-border bg-side-bg lg:flex lg:sticky lg:top-0 lg:h-screen">
         @include('admin.partials.sidebar-inner')
     </aside>
 
@@ -60,7 +60,7 @@
             <div class="flex h-[72px] items-center justify-between gap-2 sm:gap-3">
                 <div class="min-w-0 flex items-center gap-2">
                     <nav class="flex min-w-0 items-center gap-2 text-sm" aria-label="Miga de pan">
-                        <a href="{{ route('admin.dashboard') }}" class="shrink-0 font-medium text-slate-500 hover:text-primary-700">Panel</a>
+                        <a href="{{ route('admin.dashboard') }}" class="shrink-0 font-medium text-slate-500 hover:text-primary-300">Panel</a>
                         <svg class="h-4 w-4 shrink-0 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6" /></svg>
                         <span class="truncate font-medium text-slate-800">{{ $title }}</span>
                     </nav>
@@ -84,7 +84,7 @@
                     <a href="{{ route('admin.2fa.show') }}" class="snow-icon-btn h-11 w-11" title="Verificación en dos pasos" aria-label="Verificación en dos pasos">
                         <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
                     </a>
-                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-50 text-sm font-semibold text-primary-700" title="{{ auth('admin')->user()?->name }}">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-50 text-sm font-semibold text-primary-300" title="{{ auth('admin')->user()?->name }}">
                         {{ collect(explode(' ', auth('admin')->user()?->name ?? '?'))->map(fn ($p) => mb_substr($p, 0, 1))->take(2)->implode('') }}
                     </span>
                 </div>

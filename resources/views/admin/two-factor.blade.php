@@ -4,7 +4,7 @@
             <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">{{ session('status') }}</div>
         @endif
 
-        <div class="snow-card rounded-xl border border-slate-200/90 bg-white p-4 shadow-hope-card">
+        <div class="snow-card rounded-xl border border-slate-200/90 bg-snow-25 p-4 shadow-hope-card">
             <h2 class="text-sm font-semibold text-slate-900">Verificación en dos pasos (TOTP)</h2>
             <p class="mt-1 text-[11px] text-slate-500">
                 Protege tu cuenta con un código de 6 dígitos que se renueva cada 30 segundos en tu app de autenticación
@@ -18,10 +18,10 @@
 
         @if(!auth('admin')->user()->totp_enabled)
             @if($qrSvg)
-                <div class="snow-card rounded-xl border border-slate-200/90 bg-white p-4 shadow-hope-card">
+                <div class="snow-card rounded-xl border border-slate-200/90 bg-snow-25 p-4 shadow-hope-card">
                     <h3 class="text-xs font-semibold text-slate-900">1. Escanea el código con tu app</h3>
                     <div class="mt-2 flex flex-col items-center gap-2 sm:flex-row sm:items-start">
-                        <div class="shrink-0 rounded-lg border border-slate-200 bg-white p-2">{!! $qrSvg !!}</div>
+                        <div class="shrink-0 rounded-lg border border-slate-200 bg-snow-25 p-2">{!! $qrSvg !!}</div>
                         <div class="min-w-0 text-[11px] text-slate-600">
                             <p>Si no puedes escanear, ingresa esta clave manualmente:</p>
                             <code class="mt-1 block break-all rounded bg-slate-50 px-2 py-1 font-mono text-[10px] text-slate-800">{{ $secretText }}</code>
@@ -42,7 +42,7 @@
                     </form>
                 </div>
             @else
-                <div class="snow-card rounded-xl border border-slate-200/90 bg-white p-4 shadow-hope-card">
+                <div class="snow-card rounded-xl border border-slate-200/90 bg-snow-25 p-4 shadow-hope-card">
                     <a href="{{ route('admin.2fa.show') }}" class="snow-btn-primary inline-block">Comenzar configuración</a>
                 </div>
             @endif
@@ -59,7 +59,7 @@
                 </div>
             @endif
 
-            <div class="snow-card rounded-xl border border-slate-200/90 bg-white p-4 shadow-hope-card">
+            <div class="snow-card rounded-xl border border-slate-200/90 bg-snow-25 p-4 shadow-hope-card">
                 <h3 class="text-xs font-semibold text-slate-900">Desactivar 2FA</h3>
                 <form method="POST" action="{{ route('admin.2fa.disable') }}" class="mt-2 flex flex-wrap items-start gap-2">
                     @csrf

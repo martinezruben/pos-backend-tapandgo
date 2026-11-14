@@ -29,7 +29,7 @@
         <input id="rf-to" type="date" name="date_to" value="{{ $dateTo }}" class="hope-filter-select">
     </div>
     <button type="submit" class="rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-xs transition hover:bg-primary-700">Aplicar</button>
-    <a href="{{ route($route) }}" class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-snow-100 hover:text-primary-700">Limpiar</a>
+    <a href="{{ route($route) }}" class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-snow-100 hover:text-primary-300">Limpiar</a>
 
     <div class="relative ml-auto" x-data="{ open: false }" x-on:click.outside="open = false" x-on:keydown.escape="open = false">
         <button
@@ -37,7 +37,7 @@
             x-on:click="open = !open"
             :aria-expanded="open"
             aria-haspopup="menu"
-            class="inline-flex h-11 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 shadow-xs transition hover:bg-snow-50"
+            class="inline-flex h-11 items-center gap-2 rounded-lg border border-slate-300 bg-snow-25 px-4 text-sm font-medium text-slate-700 shadow-xs transition hover:bg-snow-50"
         >
             <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
             <span x-text="$store.reportExport?.busy ? 'Exportando…' : 'Exportar'">Exportar</span>
@@ -47,14 +47,14 @@
             x-show="open"
             x-transition.opacity
             role="menu"
-            class="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-snow-lg"
+            class="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-slate-200 bg-snow-25 py-1 shadow-snow-lg"
             style="display: none"
         >
             @foreach (collect(['excel' => 'Excel (.xlsx)', 'csv' => 'CSV (.csv)', 'pdf' => 'PDF (.pdf)'])->only(array_keys($exports)) as $format => $label)
                 <button
                     type="button"
                     role="menuitem"
-                    class="block w-full px-4 py-2.5 text-left text-sm text-slate-700 hover:bg-primary-50 hover:text-primary-700"
+                    class="block w-full px-4 py-2.5 text-left text-sm text-slate-700 hover:bg-primary-50 hover:text-primary-300"
                     x-on:click="open = false; exportReport('{{ $format }}')"
                 >{{ $label }}</button>
             @endforeach

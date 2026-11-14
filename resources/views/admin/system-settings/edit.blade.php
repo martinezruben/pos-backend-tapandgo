@@ -13,7 +13,7 @@
 
             <section>
                 <h2 class="mb-2 text-xs font-bold text-slate-500">Usuarios backend (panel admin)</h2>
-                <div class="space-y-3 rounded-lg border border-slate-100 bg-white p-3">
+                <div class="space-y-3 rounded-lg border border-slate-100 bg-snow-25 p-3">
                     <div class="flex flex-col gap-0.5 sm:max-w-xs">
                         <label for="admin_password_min_length" class="text-[8px] font-bold text-slate-500">Longitud mínima</label>
                         <input
@@ -43,7 +43,7 @@
                                     type="checkbox"
                                     name="{{ $field }}"
                                     value="1"
-                                    class="h-3.5 w-3.5 rounded border-slate-300 text-primary-600"
+                                    class="h-3.5 w-3.5 rounded border-slate-300 text-primary-400"
                                     @checked(old($field, $params->{$field}))
                                 >
                                 <span>{{ $label }}</span>
@@ -55,7 +55,7 @@
 
             <section>
                 <h2 class="mb-2 text-xs font-bold text-slate-500">Usuarios POS (app / Android)</h2>
-                <div class="space-y-3 rounded-lg border border-slate-100 bg-white p-3">
+                <div class="space-y-3 rounded-lg border border-slate-100 bg-snow-25 p-3">
                     <div class="flex flex-col gap-0.5 sm:max-w-xs">
                         <label for="pos_password_min_length" class="text-[8px] font-bold text-slate-500">Longitud mínima</label>
                         <input
@@ -85,7 +85,7 @@
                                     type="checkbox"
                                     name="{{ $field }}"
                                     value="1"
-                                    class="h-3.5 w-3.5 rounded border-slate-300 text-primary-600"
+                                    class="h-3.5 w-3.5 rounded border-slate-300 text-primary-400"
                                     @checked(old($field, $params->{$field}))
                                 >
                                 <span>{{ $label }}</span>
@@ -97,7 +97,7 @@
 
             <section>
                 <h2 class="mb-2 text-xs font-bold text-slate-500">Login panel (backend)</h2>
-                <div class="grid grid-cols-1 gap-3 rounded-lg border border-slate-100 bg-white p-3 sm:grid-cols-2">
+                <div class="grid grid-cols-1 gap-3 rounded-lg border border-slate-100 bg-snow-25 p-3 sm:grid-cols-2">
                     <div class="flex flex-col gap-0.5">
                         <label for="admin_max_failed_login_attempts" class="text-[8px] font-bold text-slate-500">Intentos fallidos antes de bloquear</label>
                         <input
@@ -136,12 +136,12 @@
 
             <section>
                 <h2 class="mb-2 text-xs font-bold text-slate-500">Sincronización</h2>
-                <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-100 bg-white p-3 text-[11px] text-slate-700">
+                <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-100 bg-snow-25 p-3 text-[11px] text-slate-700">
                     <input
                         type="checkbox"
                         name="sync_paused"
                         value="1"
-                        class="h-3.5 w-3.5 rounded border-slate-300 text-primary-600"
+                        class="h-3.5 w-3.5 rounded border-slate-300 text-primary-400"
                         @checked(old('sync_paused', $params->sync_paused))
                     >
                     <span>
@@ -149,7 +149,7 @@
                         <span class="block text-[9px] text-slate-500">Detiene push/pull de los dispositivos (login y reportes siguen operativos). Útil durante migraciones o incidencias.</span>
                     </span>
                 </label>
-                <div class="mt-2 rounded-lg border border-slate-100 bg-white p-3">
+                <div class="mt-2 rounded-lg border border-slate-100 bg-snow-25 p-3">
                     <label for="min_app_version" class="snow-label">Versión mínima de la app</label>
                     <input
                         id="min_app_version"
@@ -170,13 +170,13 @@
 
             <section x-data="{ activeTab: 'general' }">
                 <h2 class="mb-2 text-xs font-bold text-slate-500">Correos (SMTP / Office 365)</h2>
-                <div class="rounded-lg border border-slate-100 bg-white overflow-hidden">
+                <div class="rounded-lg border border-slate-100 bg-snow-25 overflow-hidden">
                     <!-- Tabs -->
                     <div class="flex border-b border-slate-100 bg-slate-50/50 overflow-x-auto">
-                        <button type="button" @click="activeTab = 'general'" :class="{ 'border-b-2 border-primary-600 bg-white text-primary-600' : activeTab === 'general', 'text-slate-600 hover:text-slate-900' : activeTab !== 'general' }" class="flex-1 px-3 py-2 text-xs font-semibold transition whitespace-nowrap">General</button>
-                        <button type="button" @click="activeTab = 'smtp'" :class="{ 'border-b-2 border-primary-600 bg-white text-primary-600' : activeTab === 'smtp', 'text-slate-600 hover:text-slate-900' : activeTab !== 'smtp' }" class="flex-1 px-3 py-2 text-xs font-semibold transition whitespace-nowrap">SMTP</button>
-                        <button type="button" @click="activeTab = 'office365'" :class="{ 'border-b-2 border-primary-600 bg-white text-primary-600' : activeTab === 'office365', 'text-slate-600 hover:text-slate-900' : activeTab !== 'office365' }" class="flex-1 px-3 py-2 text-xs font-semibold transition whitespace-nowrap">Office 365</button>
-                        <button type="button" @click="activeTab = 'contingency'" :class="{ 'border-b-2 border-primary-600 bg-white text-primary-600' : activeTab === 'contingency', 'text-slate-600 hover:text-slate-900' : activeTab !== 'contingency' }" class="flex-1 px-3 py-2 text-xs font-semibold transition whitespace-nowrap">Contingencia</button>
+                        <button type="button" @click="activeTab = 'general'" :class="{ 'border-b-2 border-primary-600 bg-snow-25 text-primary-400' : activeTab === 'general', 'text-slate-600 hover:text-slate-900' : activeTab !== 'general' }" class="flex-1 px-3 py-2 text-xs font-semibold transition whitespace-nowrap">General</button>
+                        <button type="button" @click="activeTab = 'smtp'" :class="{ 'border-b-2 border-primary-600 bg-snow-25 text-primary-400' : activeTab === 'smtp', 'text-slate-600 hover:text-slate-900' : activeTab !== 'smtp' }" class="flex-1 px-3 py-2 text-xs font-semibold transition whitespace-nowrap">SMTP</button>
+                        <button type="button" @click="activeTab = 'office365'" :class="{ 'border-b-2 border-primary-600 bg-snow-25 text-primary-400' : activeTab === 'office365', 'text-slate-600 hover:text-slate-900' : activeTab !== 'office365' }" class="flex-1 px-3 py-2 text-xs font-semibold transition whitespace-nowrap">Office 365</button>
+                        <button type="button" @click="activeTab = 'contingency'" :class="{ 'border-b-2 border-primary-600 bg-snow-25 text-primary-400' : activeTab === 'contingency', 'text-slate-600 hover:text-slate-900' : activeTab !== 'contingency' }" class="flex-1 px-3 py-2 text-xs font-semibold transition whitespace-nowrap">Contingencia</button>
                     </div>
 
                     <!-- Tab Content -->
@@ -295,7 +295,7 @@
                                         type="checkbox"
                                         name="contingency_enabled"
                                         value="1"
-                                        class="h-3.5 w-3.5 rounded border-slate-300 text-primary-600"
+                                        class="h-3.5 w-3.5 rounded border-slate-300 text-primary-400"
                                         @checked(old('contingency_enabled', $params->contingency_enabled))
                                     >
                                     <span class="font-semibold">Habilitar notificaciones de contingencia</span>

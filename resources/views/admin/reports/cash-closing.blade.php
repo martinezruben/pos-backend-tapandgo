@@ -1,6 +1,6 @@
 <x-admin.layouts.app :title="'Cierre de caja'">
     <div class="space-y-4 pb-6">
-        <form method="GET" action="{{ route('admin.cierre-caja.index') }}" class="snow-card flex flex-wrap items-end gap-2 rounded-xl border border-slate-200/90 bg-white p-3 shadow-hope-card">
+        <form method="GET" action="{{ route('admin.cierre-caja.index') }}" class="snow-card flex flex-wrap items-end gap-2 rounded-xl border border-slate-200/90 bg-snow-25 p-3 shadow-hope-card">
             <div class="flex min-w-[9rem] flex-col gap-0.5">
                 <label class="text-[8px] font-bold text-slate-500" for="cc-loc">Localidad</label>
                 <select id="cc-loc" name="filter[location_id]" class="hope-filter-select">
@@ -18,17 +18,17 @@
                 <input id="cc-to" type="date" name="filter[date_to]" value="{{ $filterDateTo }}" class="hope-filter-select">
             </div>
             <button type="submit" class="rounded-md bg-primary-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-primary-700">Aplicar</button>
-            <a href="{{ route('admin.cierre-caja.index') }}" class="rounded-md py-1.5 text-[11px] font-medium text-slate-500 hover:text-primary-600">Limpiar</a>
+            <a href="{{ route('admin.cierre-caja.index') }}" class="rounded-md py-1.5 text-[11px] font-medium text-slate-500 hover:text-primary-400">Limpiar</a>
             @if($canExport ?? false)
                 <a href="{{ route('admin.cierre-caja.export', request()->query()) }}"
-                   class="ml-auto inline-flex h-8 items-center gap-1 rounded-md border border-slate-200 bg-white px-3 text-[11px] font-semibold text-slate-600 shadow-sm transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700">
+                   class="ml-auto inline-flex h-8 items-center gap-1 rounded-md border border-slate-200 bg-snow-25 px-3 text-[11px] font-semibold text-slate-600 shadow-sm transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-300">
                     <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
                     Excel
                 </a>
             @endif
         </form>
 
-        <div class="snow-card overflow-x-auto rounded-xl border border-slate-200/90 bg-white shadow-hope-card">
+        <div class="snow-card overflow-x-auto rounded-xl border border-slate-200/90 bg-snow-25 shadow-hope-card">
             <div class="border-b border-slate-100 px-4 py-3">
                 <h3 class="text-sm font-semibold text-slate-900">Arqueo por turno</h3>
                 <p class="text-[10px] text-slate-500">Turnos con transacciones PAID emparejadas por localidad + nº de turno + ventana de tiempo · Turnos abiertos se calculan «hasta ahora»</p>

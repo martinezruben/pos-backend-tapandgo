@@ -9,7 +9,7 @@
 @endphp
 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
     @if ($tabs->count() > 1)
-        <nav class="flex gap-1 rounded-lg border border-slate-200/90 bg-white p-1 shadow-sm sm:inline-flex" aria-label="Dashboards">
+        <nav class="flex gap-1 rounded-lg border border-slate-200/90 bg-snow-25 p-1 shadow-sm sm:inline-flex" aria-label="Dashboards">
             @foreach ($tabs as $tab)
                 @php($active = request()->routeIs($tab['route']))
                 <a

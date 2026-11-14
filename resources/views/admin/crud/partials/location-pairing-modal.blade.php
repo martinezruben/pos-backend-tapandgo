@@ -2,7 +2,7 @@
 <div
     x-show="open"
     x-cloak
-    class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-[2px]"
+    class="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px]"
     @click.self="closeModal()"
     @keydown.escape.window="closeModal()"
     role="dialog"
