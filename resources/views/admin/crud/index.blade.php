@@ -10,7 +10,12 @@
     $visibleFields = array_slice($gridFieldList, 0, max(1, $visibleLimit));
     $gridFilterOptions = $gridFilterOptions ?? [];
     $gridFilters = $cfg['grid']['filters'] ?? [];
-    $sortable = $cfg['grid']['sortable'] ?? [];
+    $sortable = \App\Support\AdminGridQuery::sortableFields($cfg);
+    $defaultSort = $cfg['grid']['default_sort'] ?? ['key' => 'updated_at', 'direction' => 'desc'];
+    $activeSort = in_array(request('sort'), $sortable, true) ? request('sort') : $defaultSort['key'];
+    $activeDir = in_array(request('sort'), $sortable, true)
+        ? (strtolower((string) request('dir')) === 'asc' ? 'asc' : 'desc')
+        : (($defaultSort['direction'] ?? 'desc') === 'asc' ? 'asc' : 'desc');
     $locationPairing = $screen === 'locations' && ($canEdit ?? false);
     $apiLogDetail = $screen === 'api-request-logs';
     $auditLogDetail = $screen === 'audit-log';
@@ -220,13 +225,25 @@
                 <thead class="sticky top-0 z-10 border-b border-slate-200 bg-slate-100">
                 <tr class="snow-table-head">
                     @foreach($visibleFields as $f)
-                        <th class="h-11 whitespace-nowrap px-4 py-2 text-xs font-medium">
-                            @if(in_array($f, $sortable, true))
-                                <a href="{{ \App\Support\AdminGridQuery::sortUrl($screen, $f, request('sort'), request('dir')) }}" class="inline-flex items-center gap-1 text-inherit hover:text-primary-600">
+                        @php
+                            $isSortable = in_array($f, $sortable, true);
+                            $isActiveSort = $isSortable && $activeSort === $f;
+                        @endphp
+                        <th
+                            class="h-11 whitespace-nowrap text-xs font-medium {{ $isSortable ? 'p-0' : 'px-4 py-2' }}"
+                            @if($isSortable) aria-sort="{{ $isActiveSort ? ($activeDir === 'asc' ? 'ascending' : 'descending') : 'none' }}" @endif
+                        >
+                            @if($isSortable)
+                                <a
+                                    href="{{ \App\Support\AdminGridQuery::sortUrl($screen, $f, $activeSort, $activeDir) }}"
+                                    class="group flex h-11 w-full items-center gap-1.5 px-4 text-inherit transition-colors hover:bg-slate-200/60 hover:text-slate-800 {{ $isActiveSort ? 'text-primary-700' : '' }}"
+                                    title="Ordenar por {{ \App\Support\AdminGridCell::headerLabel($f, $cfg) }}"
+                                >
                                     <span>{{ \App\Support\AdminGridCell::headerLabel($f, $cfg) }}</span>
-                                    @if(request('sort') === $f)
-                                        <span class="font-normal text-primary-600" aria-hidden="true">{{ request('dir') === 'asc' ? '↑' : '↓' }}</span>
-                                    @endif
+                                    <svg class="h-3.5 w-3.5 shrink-0" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="m4.5 6.5 3.5-3.5 3.5 3.5" class="{{ $isActiveSort && $activeDir === 'asc' ? 'opacity-100' : 'opacity-30 group-hover:opacity-60' }}" />
+                                        <path d="m4.5 9.5 3.5 3.5 3.5-3.5" class="{{ $isActiveSort && $activeDir === 'desc' ? 'opacity-100' : 'opacity-30 group-hover:opacity-60' }}" />
+                                    </svg>
                                 </a>
                             @else
                                 {{ \App\Support\AdminGridCell::headerLabel($f, $cfg) }}

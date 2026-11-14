@@ -221,7 +221,7 @@ function initLocationsMap() {
     if (latlngs.length > 0) {
         map.fitBounds(latlngs, { padding: [36, 36], maxZoom: 14 });
     } else {
-        map.setView([4.65, -74.05], 5);
+        map.setView([18.7357, -70.1627], 7);
     }
 
     setTimeout(() => {
