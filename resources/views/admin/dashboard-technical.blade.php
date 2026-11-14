@@ -121,7 +121,7 @@
             </button>
         </div>
         <div class="max-h-[60vh] overflow-y-auto">
-            <table class="min-w-full divide-y divide-slate-100 text-left text-xs">
+            <table data-sort-table class="min-w-full divide-y divide-slate-200 text-left text-sm">
                 <thead class="snow-table-head"><tr><th class="px-4 py-2 font-semibold">Localidad</th><th class="px-4 py-2 font-semibold">En contingencia desde</th></tr></thead>
                 <tbody class="divide-y divide-slate-50">
                     @forelse ($contingencies as $row)
@@ -141,7 +141,7 @@
             </button>
         </div>
         <div class="max-h-[60vh] overflow-y-auto">
-            <table class="min-w-full divide-y divide-slate-100 text-left text-xs">
+            <table data-sort-table class="min-w-full divide-y divide-slate-200 text-left text-sm">
                 <thead class="snow-table-head"><tr><th class="px-4 py-2 font-semibold">Dispositivo</th><th class="px-4 py-2 font-semibold">Localidad</th><th class="px-4 py-2 font-semibold">Horas sin sync</th></tr></thead>
                 <tbody class="divide-y divide-slate-50">
                     @forelse ($devicesNoSync as $row)
@@ -161,7 +161,7 @@
             </button>
         </div>
         <div class="max-h-[60vh] overflow-y-auto">
-            <table class="min-w-full divide-y divide-slate-100 text-left text-xs">
+            <table data-sort-table class="min-w-full divide-y divide-slate-200 text-left text-sm">
                 <thead class="snow-table-head"><tr><th class="px-4 py-2 font-semibold">Dispositivo</th><th class="px-4 py-2 font-semibold">Localidad</th><th class="px-4 py-2 font-semibold">Vence</th></tr></thead>
                 <tbody class="divide-y divide-slate-50">
                     @forelse ($licensesExpiring as $row)
@@ -190,7 +190,7 @@
             @endif
         </p>
         <div class="max-h-[60vh] overflow-y-auto">
-            <table class="min-w-full divide-y divide-slate-100 text-left text-xs">
+            <table data-sort-table class="min-w-full divide-y divide-slate-200 text-left text-sm">
                 <thead class="snow-table-head"><tr><th class="px-4 py-2 font-semibold">Usuario</th><th class="px-4 py-2 font-semibold">Nombre</th><th class="px-4 py-2 font-semibold">Rol</th><th class="px-4 py-2 font-semibold">Localidades</th></tr></thead>
                 <tbody class="divide-y divide-slate-50">
                     @forelse ($usersNoPin['rows'] as $row)
@@ -213,7 +213,7 @@
             </button>
         </div>
         <div class="max-h-[60vh] overflow-y-auto">
-            <table class="min-w-full divide-y divide-slate-100 text-left text-xs">
+            <table data-sort-table class="min-w-full divide-y divide-slate-200 text-left text-sm">
                 <thead class="snow-table-head"><tr><th class="px-4 py-2 font-semibold">Dispositivo</th><th class="px-4 py-2 font-semibold">Localidad</th><th class="px-4 py-2 font-semibold">Versión</th><th class="px-4 py-2 font-semibold">Mínima</th></tr></thead>
                 <tbody class="divide-y divide-slate-50">
                     @forelse ($outdatedDevices as $row)

@@ -1,4 +1,5 @@
 import './bootstrap';
+import './table-sort';
 
 import Alpine from 'alpinejs';
 import { money } from './format';

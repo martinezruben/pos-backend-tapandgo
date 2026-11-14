@@ -95,6 +95,13 @@
             @if(session('status'))
                 <div class="mb-4 rounded-xl border border-green-500/40 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
                     {{ session('status') }}
+                    @if(session('import_errors'))
+                        <ul class="mt-2 list-disc space-y-0.5 pl-5 font-normal text-slate-700">
+                            @foreach(session('import_errors') as $err)
+                                <li>{{ $err }}</li>
+                            @endforeach
+                        </ul>
+                    @endif
                 </div>
             @endif
             {{ $slot }}

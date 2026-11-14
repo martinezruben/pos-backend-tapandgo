@@ -34,42 +34,42 @@
                 <p class="text-[10px] text-slate-500">Turnos con transacciones PAID emparejadas por localidad + nº de turno + ventana de tiempo · Turnos abiertos se calculan «hasta ahora»</p>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-100 text-left text-[11px]">
+                <table data-sort-table class="min-w-full divide-y divide-slate-200 text-left text-sm">
                     <thead class="snow-table-head">
                         <tr>
-                            <th class="px-3 py-2 font-semibold">Localidad</th>
-                            <th class="px-3 py-2 font-semibold">Dispositivo</th>
-                            <th class="px-3 py-2 font-semibold">Usuario</th>
-                            <th class="px-3 py-2 font-semibold">Turno</th>
-                            <th class="px-3 py-2 font-semibold">Inicio / Fin</th>
-                            <th class="px-3 py-2 font-semibold text-right">Efectivo</th>
-                            <th class="px-3 py-2 font-semibold text-right">Tarjeta</th>
-                            <th class="px-3 py-2 font-semibold text-right">Transf.</th>
-                            <th class="px-3 py-2 font-semibold text-right">Otro</th>
-                            <th class="px-3 py-2 font-semibold text-right">Total ventas</th>
-                            <th class="px-3 py-2 font-semibold text-right">Efectivo esp.</th>
-                            <th class="px-3 py-2 font-semibold text-right">Declarado</th>
-                            <th class="px-3 py-2 font-semibold text-right">Diferencia</th>
+                            <th class="px-4 py-3 font-semibold">Localidad</th>
+                            <th class="px-4 py-3 font-semibold">Dispositivo</th>
+                            <th class="px-4 py-3 font-semibold">Usuario</th>
+                            <th class="px-4 py-3 font-semibold">Turno</th>
+                            <th class="px-4 py-3 font-semibold">Inicio / Fin</th>
+                            <th class="px-4 py-3 font-semibold text-right">Efectivo</th>
+                            <th class="px-4 py-3 font-semibold text-right">Tarjeta</th>
+                            <th class="px-4 py-3 font-semibold text-right">Transf.</th>
+                            <th class="px-4 py-3 font-semibold text-right">Otro</th>
+                            <th class="px-4 py-3 font-semibold text-right">Total ventas</th>
+                            <th class="px-4 py-3 font-semibold text-right">Efectivo esp.</th>
+                            <th class="px-4 py-3 font-semibold text-right">Declarado</th>
+                            <th class="px-4 py-3 font-semibold text-right">Diferencia</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-50">
                         @forelse ($rows as $r)
                             <tr class="hover:bg-slate-50/80">
-                                <td class="px-3 py-2.5 font-medium text-slate-800">{{ $r['location'] }}</td>
-                                <td class="px-3 py-2.5 text-slate-600">{{ $r['device'] }}</td>
-                                <td class="px-3 py-2.5 text-slate-600">{{ $r['user'] }}</td>
-                                <td class="px-3 py-2.5 tabular-nums text-slate-700">#{{ $r['shift_number'] }}</td>
+                                <td class="px-4 py-3.5 font-medium text-slate-800">{{ $r['location'] }}</td>
+                                <td class="px-4 py-3.5 text-slate-600">{{ $r['device'] }}</td>
+                                <td class="px-4 py-3.5 text-slate-600">{{ $r['user'] }}</td>
+                                <td class="px-4 py-3.5 tabular-nums text-slate-700">#{{ $r['shift_number'] }}</td>
                                 <td class="whitespace-nowrap px-3 py-2.5 text-[10px] tabular-nums text-slate-500">
                                     {{ $r['start_time']?->format('d/m H:i') ?? '—' }} → {{ $r['end_time']?->format('d/m H:i') ?? 'abierto' }}
                                 </td>
-                                <td class="px-3 py-2.5 text-right tabular-nums text-slate-700">${{ number_format($r['methods']['CASH'], 2) }}</td>
-                                <td class="px-3 py-2.5 text-right tabular-nums text-slate-700">${{ number_format($r['methods']['CARD'], 2) }}</td>
-                                <td class="px-3 py-2.5 text-right tabular-nums text-slate-700">${{ number_format($r['methods']['TRANSFER'], 2) }}</td>
-                                <td class="px-3 py-2.5 text-right tabular-nums text-slate-700">${{ number_format($r['methods']['OTHER'], 2) }}</td>
-                                <td class="px-3 py-2.5 text-right font-semibold tabular-nums text-slate-900">${{ number_format($r['total_sales'], 2) }}</td>
-                                <td class="px-3 py-2.5 text-right tabular-nums text-slate-700">${{ number_format($r['expected_cash'], 2) }}</td>
-                                <td class="px-3 py-2.5 text-right tabular-nums text-slate-700">{{ $r['closing_balance'] === null ? '—' : '$'.number_format($r['closing_balance'], 2) }}</td>
-                                <td class="px-3 py-2.5 text-right">
+                                <td class="px-4 py-3.5 text-right tabular-nums text-slate-700">${{ number_format($r['methods']['CASH'], 2) }}</td>
+                                <td class="px-4 py-3.5 text-right tabular-nums text-slate-700">${{ number_format($r['methods']['CARD'], 2) }}</td>
+                                <td class="px-4 py-3.5 text-right tabular-nums text-slate-700">${{ number_format($r['methods']['TRANSFER'], 2) }}</td>
+                                <td class="px-4 py-3.5 text-right tabular-nums text-slate-700">${{ number_format($r['methods']['OTHER'], 2) }}</td>
+                                <td class="px-4 py-3.5 text-right font-semibold tabular-nums text-slate-900">${{ number_format($r['total_sales'], 2) }}</td>
+                                <td class="px-4 py-3.5 text-right tabular-nums text-slate-700">${{ number_format($r['expected_cash'], 2) }}</td>
+                                <td class="px-4 py-3.5 text-right tabular-nums text-slate-700">{{ $r['closing_balance'] === null ? '—' : '$'.number_format($r['closing_balance'], 2) }}</td>
+                                <td class="px-4 py-3.5 text-right">
                                     @if($r['difference'] === null)
                                         <span class="text-[10px] text-slate-500">sin declarar</span>
                                     @else
