@@ -12,6 +12,9 @@
 <div class="flex min-h-full flex-col lg:flex-row">
     <div class="flex flex-1 flex-col justify-between gap-8 relative overflow-hidden bg-canvas bg-hero-glow px-8 py-12 text-white lg:max-w-[50%] lg:px-16 lg:py-12">
         <div class="pointer-events-none absolute inset-0 bg-grid-lines [background-size:48px_48px]" aria-hidden="true"></div>
+        {{-- Escena 3D de tapandgo.noxutech.com: translúcida y desvanecida hacia los bordes --}}
+        <img src="{{ asset('images/tapandgo-3d.webp') }}" alt="" aria-hidden="true" loading="eager"
+            class="pointer-events-none absolute -right-16 bottom-4 w-[125%] max-w-none select-none opacity-[0.4] mix-blend-screen [mask-image:radial-gradient(ellipse_75%_75%_at_60%_60%,#000_30%,transparent_78%)] lg:w-[115%]">
         <div class="relative flex items-center gap-3">
             <x-brand-mark size="h-[42px] w-[42px]" icon="h-[22px] w-[22px]" />
             <x-brand-wordmark class="text-xl" />
