@@ -69,6 +69,9 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::post('/products/excel/import', [ProductExcelController::class, 'import'])->name('products.excel.import');
         Route::post('/products/excel/preview', [ProductExcelController::class, 'preview'])->name('products.excel.preview');
         Route::post('/products/excel/apply', [ProductExcelController::class, 'apply'])->name('products.excel.apply');
+        Route::get('/products/excel/imports', [ProductExcelController::class, 'history'])->name('products.excel.history');
+        Route::get('/products/excel/imports/{import}', [ProductExcelController::class, 'show'])->name('products.excel.show');
+        Route::get('/products/excel/imports/{import}/report', [ProductExcelController::class, 'report'])->name('products.excel.report');
 
         Route::post('/admin-users/{adminUser}/reset-2fa', [AdminUserSecurityController::class, 'resetTwoFactor'])->name('admin-users.reset-2fa');
         Route::post('/admin-users/{adminUser}/revoke-sessions', [AdminUserSecurityController::class, 'revokeSessions'])->name('admin-users.revoke-sessions');

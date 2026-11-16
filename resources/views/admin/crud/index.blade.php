@@ -68,10 +68,11 @@
                     @if(($canEdit ?? false) && empty($cfg['disable_create'] ?? false))
                         <a
                             href="{{ route('admin.screens.create', $screen) }}"
-                            class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-primary-600 text-white shadow-sm transition hover:bg-primary-700"
-                            title="Añadir"
+                            class="snow-btn-primary !min-h-[2.25rem] !gap-1.5 !px-3.5 !py-1.5"
+                            title="Adicionar {{ \Illuminate\Support\Str::lower($cfg['label']) }}"
                         >
-                            <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                            <svg class="h-4 w-4 shrink-0 opacity-80" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" /></svg>
+                            Adicionar
                         </a>
                         @if($productExcel ?? false)
                             <div x-data="{ open: false }" class="inline-flex">

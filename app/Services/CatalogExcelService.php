@@ -6,6 +6,7 @@ use App\Models\Family;
 use App\Models\Product;
 use App\Models\Subfamily;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -23,6 +24,9 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  */
 class CatalogExcelService
 {
+    /** @var array<string, array{family: ?string, subfamily: ?string}> */
+    private array $labelCache = [];
+
     public const SHEET_PRODUCTS = 'Productos';
 
     public const SHEET_SUBFAMILIES = 'Subfamilias';
@@ -208,7 +212,7 @@ class CatalogExcelService
 
     /**
      * @param  array{create_missing?: bool, dry_run?: bool, can_families?: bool, can_subfamilies?: bool}  $options
-     * @return array{sheets: array<string, array{created: int, updated: int, errors: int}>, errors: list<string>, warnings: list<string>, moved: int, ignored: list<string>}
+     * @return array{sheets: array<string, array<string, int>>, rows: list<array<string, mixed>>, errors: list<string>, warnings: list<string>, moved: int, ignored: list<string>}
      */
     public function import(string $path, array $options = []): array
     {
@@ -222,10 +226,11 @@ class CatalogExcelService
 
         $result = [
             'sheets' => [
-                self::SHEET_FAMILIES => ['created' => 0, 'updated' => 0, 'errors' => 0],
-                self::SHEET_SUBFAMILIES => ['created' => 0, 'updated' => 0, 'errors' => 0],
-                self::SHEET_PRODUCTS => ['created' => 0, 'updated' => 0, 'errors' => 0],
+                self::SHEET_FAMILIES => ['read' => 0, 'matched' => 0, 'created' => 0, 'updated' => 0, 'unchanged' => 0, 'errors' => 0],
+                self::SHEET_SUBFAMILIES => ['read' => 0, 'matched' => 0, 'created' => 0, 'updated' => 0, 'unchanged' => 0, 'errors' => 0],
+                self::SHEET_PRODUCTS => ['read' => 0, 'matched' => 0, 'created' => 0, 'updated' => 0, 'unchanged' => 0, 'errors' => 0],
             ],
+            'rows' => [],
             'errors' => [],
             'warnings' => [],
             'moved' => 0,
@@ -343,6 +348,7 @@ class CatalogExcelService
             if ($this->rowIsEmpty($row)) {
                 continue;
             }
+            $result['sheets'][$S]['read']++;
             $id = $this->str($row, $t['map'], 'family_id');
             $name = $this->str($row, $t['map'], 'name');
             if ($id !== null && ! Str::isUuid($id)) {
@@ -376,13 +382,23 @@ class CatalogExcelService
             }
 
             if ($family !== null) {
-                $family->trashed() && $family->restore();
+                $result['sheets'][$S]['matched']++;
+                $changes = $this->diff($family, $data);
+                $restored = $family->trashed();
+                $restored && $family->restore();
                 unset($ctx->families[$this->key($family->name)]);
-                $family->update($data);
-                $result['sheets'][$S]['updated']++;
+                if ($changes === [] && ! $restored) {
+                    $result['sheets'][$S]['unchanged']++;
+                    $this->row($result, $S, $line, 'unchanged', ['name' => $name]);
+                } else {
+                    $family->update($data);
+                    $result['sheets'][$S]['updated']++;
+                    $this->row($result, $S, $line, 'updated', ['name' => $name, 'changes' => $changes, 'note' => $restored ? 'Restaurada' : null]);
+                }
             } else {
                 $family = Family::unguarded(fn () => Family::query()->create(array_merge(['id' => $id ?? (string) Str::uuid()], $data)));
                 $result['sheets'][$S]['created']++;
+                $this->row($result, $S, $line, 'created', ['name' => $name]);
             }
             $ctx->families[$this->key($family->name)] = $family->id;
         }
@@ -403,6 +419,7 @@ class CatalogExcelService
             if ($this->rowIsEmpty($row)) {
                 continue;
             }
+            $result['sheets'][$S]['read']++;
             $id = $this->str($row, $t['map'], 'subfamily_id');
             $familyName = $this->str($row, $t['map'], 'family');
             $name = $this->str($row, $t['map'], 'name');
@@ -435,13 +452,23 @@ class CatalogExcelService
             }
 
             if ($sub !== null) {
-                $sub->trashed() && $sub->restore();
+                $result['sheets'][$S]['matched']++;
+                $changes = $this->diff($sub, ['family_id' => $familyId, 'name' => $name]);
+                $restored = $sub->trashed();
+                $restored && $sub->restore();
                 unset($ctx->subfamilies[$sub->family_id.'|'.$this->key($sub->name)]);
-                $sub->update(['family_id' => $familyId, 'name' => $name]);
-                $result['sheets'][$S]['updated']++;
+                if ($changes === [] && ! $restored) {
+                    $result['sheets'][$S]['unchanged']++;
+                    $this->row($result, $S, $line, 'unchanged', ['name' => $name, 'family' => $familyName]);
+                } else {
+                    $sub->update(['family_id' => $familyId, 'name' => $name]);
+                    $result['sheets'][$S]['updated']++;
+                    $this->row($result, $S, $line, 'updated', ['name' => $name, 'family' => $familyName, 'changes' => $changes, 'note' => $restored ? 'Restaurada' : null]);
+                }
             } else {
                 $sub = Subfamily::unguarded(fn () => Subfamily::query()->create(['id' => $id ?? (string) Str::uuid(), 'family_id' => $familyId, 'name' => $name]));
                 $result['sheets'][$S]['created']++;
+                $this->row($result, $S, $line, 'created', ['name' => $name, 'family' => $familyName]);
             }
             $ctx->subfamilies[$familyId.'|'.$this->key($name)] = $sub->id;
         }
@@ -464,6 +491,7 @@ class CatalogExcelService
             if ($this->rowIsEmpty($row)) {
                 continue;
             }
+            $result['sheets'][$S]['read']++;
             $where = "{$S} fila {$line}";
 
             $productId = $this->str($row, $map, 'product_id');
@@ -555,17 +583,33 @@ class CatalogExcelService
                 continue;
             }
 
+            $label = $this->classification($data['subfamily_id'] ?? $product?->subfamily_id);
             if ($product !== null) {
-                $product->trashed() && $product->restore();
-                if (array_key_exists('subfamily_id', $data) && $data['subfamily_id'] !== $product->subfamily_id) {
+                $result['sheets'][$S]['matched']++;
+                $changes = $this->diff($product, $data);
+                $restored = $product->trashed();
+                $restored && $product->restore();
+                $moved = array_key_exists('subfamily_id', $changes);
+                if ($moved) {
                     $result['moved']++;
                     $result['warnings'][] = "{$where}: «{$product->name}» cambia de subfamilia (puede cambiar las promociones que le aplican).";
+                    $changes['subfamily_id'] = [$this->classification($changes['subfamily_id'][0]), $this->classification($changes['subfamily_id'][1])];
                 }
-                $product->update($data);
-                $result['sheets'][$S]['updated']++;
+                if ($changes === [] && ! $restored) {
+                    $result['sheets'][$S]['unchanged']++;
+                    $this->row($result, $S, $line, 'unchanged', ['sku' => $sku, 'name' => $name] + $label);
+                } else {
+                    $product->update($data);
+                    $result['sheets'][$S]['updated']++;
+                    $this->row($result, $S, $line, 'updated', ['sku' => $sku, 'name' => $name, 'changes' => $changes, 'moved' => $moved, 'note' => $restored ? 'Restaurado' : null] + $label);
+                }
             } else {
                 Product::unguarded(fn () => Product::query()->create(array_merge(['id' => $productId ?? (string) Str::uuid()], $data)));
                 $result['sheets'][$S]['created']++;
+                $this->row($result, $S, $line, 'created', ['sku' => $sku, 'name' => $name, 'changes' => array_intersect_key(
+                    ['price' => [null, $data['price'] ?? null], 'cost' => [null, $data['cost'] ?? null]],
+                    ['price' => 1, 'cost' => 1]
+                )] + $label);
             }
         }
     }
@@ -671,6 +715,55 @@ class CatalogExcelService
     /* ------------------------------------------------------------------ *
      * Utilidades
      * ------------------------------------------------------------------ */
+
+    /** @param array<string, mixed> $extra */
+    private function row(array &$result, string $sheet, int $line, string $action, array $extra = []): void
+    {
+        $result['rows'][] = ['sheet' => $sheet, 'line' => $line, 'action' => $action] + $extra;
+    }
+
+    /** @return array{family: ?string, subfamily: ?string} */
+    private function classification(?string $subfamilyId): array
+    {
+        if ($subfamilyId === null) {
+            return ['family' => null, 'subfamily' => null];
+        }
+
+        return $this->labelCache[$subfamilyId] ??= (function () use ($subfamilyId): array {
+            $s = Subfamily::withTrashed()->with('family')->find($subfamilyId);
+
+            return ['family' => $s?->family?->name, 'subfamily' => $s?->name];
+        })();
+    }
+
+    /**
+     * Cambios reales entre el registro y los datos a aplicar (importes comparados a 2 decimales).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, array{0: mixed, 1: mixed}>
+     */
+    private function diff(Model $model, array $data): array
+    {
+        $out = [];
+        foreach ($data as $k => $v) {
+            $old = $model->getAttribute($k);
+            if (in_array($k, ['price', 'cost', 'tax_rate'], true)) {
+                $a = $old === null ? null : round((float) $old, 2);
+                $b = $v === null ? null : round((float) $v, 2);
+            } elseif (in_array($k, ['is_active', 'is_favorite'], true)) {
+                $a = (bool) $old;
+                $b = (bool) $v;
+            } else {
+                $a = $old === null ? null : (string) $old;
+                $b = $v === null ? null : (string) $v;
+            }
+            if ($a !== $b) {
+                $out[$k] = [$a, $b];
+            }
+        }
+
+        return $out;
+    }
 
     private function fail(array &$result, string $sheet, string $message): void
     {

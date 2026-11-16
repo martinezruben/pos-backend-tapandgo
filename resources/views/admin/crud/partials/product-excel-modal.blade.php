@@ -69,6 +69,7 @@
                                 <button type="submit" class="snow-btn-primary !min-h-[2.5rem]" :disabled="!name" :class="!name ? 'opacity-50' : ''">Revisar archivo</button>
                             </div>
                         </form>
+                        <a href="{{ route('admin.products.excel.history') }}" class="mt-3 inline-block text-sm font-medium text-primary-400 hover:underline">Ver historial de cargas e informes</a>
                     </div>
                 </li>
             </ol>

@@ -5,7 +5,7 @@
                 <h1 class="text-sm font-semibold text-slate-900">Roles del panel</h1>
                 <p class="mt-0.5 text-[11px] text-slate-500">Un rol agrupa permisos; a cada usuario administrador se le asignan uno o varios.</p>
             </div>
-            <a href="{{ route('admin.roles.create') }}" class="snow-btn-primary">Nuevo rol</a>
+            <a href="{{ route('admin.roles.create') }}" class="snow-btn-primary !gap-1.5"><svg class="h-4 w-4 shrink-0 opacity-80" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" /></svg>Adicionar rol</a>
         </div>
 
         @if ($errors->any())
