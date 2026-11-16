@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AdminUser;
+use App\Models\CatalogImport;
 use App\Models\Family;
 use App\Models\Product;
 use App\Models\Subfamily;
@@ -330,7 +331,7 @@ class ProductExcelImportExportTest extends TestCase
 
         preg_match('/name="token" value="([^"]+)"/', $response->getContent(), $m);
         $this->post(route('admin.products.excel.apply'), ['token' => $m[1], 'ext' => 'xlsx', 'create_missing' => '1'])
-            ->assertRedirect(route('admin.screens.index', 'products'));
+            ->assertRedirect();
 
         $this->assertDatabaseHas('products', ['sku' => 'P9']);
         $this->assertDatabaseHas('families', ['name' => 'Infusiones']);
@@ -356,5 +357,58 @@ class ProductExcelImportExportTest extends TestCase
         $this->assertCount(1, $result['ignored']);
         $this->assertDatabaseMissing('families', ['name' => 'Nueva familia']);
         $this->assertSame($a->id, Product::where('sku', 'M1')->value('subfamily_id')); // dry run: no cambia
+    }
+
+    public function test_import_records_stats_price_variations_and_downloadable_report(): void
+    {
+        Storage::fake('local');
+        $admin = $this->catalogAdmin();
+        $fam = Family::create(['name' => 'Bebidas']);
+        $sub = Subfamily::create(['family_id' => $fam->id, 'name' => 'Refrescos']);
+        foreach ([['A1', 'Cola', 100], ['A2', 'Agua', 50], ['A3', 'Jugo', 80]] as [$sku, $n, $price]) {
+            Product::create(['sku' => $sku, 'name' => $n, 'subfamily_id' => $sub->id, 'price' => $price, 'tax_rate' => 0, 'is_active' => true, 'is_favorite' => false]);
+        }
+
+        $file = $this->workbook(['Productos' => [
+            ['sku', 'name', 'price', 'family', 'subfamily'],
+            ['A1', 'Cola', 110, 'Bebidas', 'Refrescos'],   // sube 10 %
+            ['A2', 'Agua', 45, 'Bebidas', 'Refrescos'],    // baja 10 %
+            ['A3', 'Jugo', 80, 'Bebidas', 'Refrescos'],    // sin cambios
+            ['A4', 'Té', 30, 'Bebidas', 'Refrescos'],      // nuevo
+            ['A5', 'Malo', 'x', 'Bebidas', 'Refrescos'],   // error
+        ]]);
+
+        $response = $this->actingAs($admin, 'admin')->post(route('admin.products.excel.import'), ['file' => $file]);
+        $import = CatalogImport::firstOrFail();
+        $response->assertRedirect(route('admin.products.excel.show', $import));
+
+        $t = $import->summary['totals'];
+        $this->assertSame(5, $t['read']);
+        $this->assertSame(3, $t['matched']);
+        $this->assertSame(1, $t['created']);
+        $this->assertSame(2, $t['updated']);
+        $this->assertSame(1, $t['unchanged']);
+        $this->assertSame(1, $t['errors']);
+        $p = $import->summary['price'];
+        $this->assertSame(2, $p['changed']);
+        $this->assertSame(1, $p['up']);
+        $this->assertSame(1, $p['down']);
+        $this->assertEquals(0.0, $p['avg_pct']);
+
+        $this->get(route('admin.products.excel.show', $import))->assertOk()->assertSee('Variaciones de precio')->assertSee('Descargar informe detallado');
+        $this->get(route('admin.products.excel.history'))->assertOk()->assertSee('catalogo.xlsx');
+
+        $download = $this->get(route('admin.products.excel.report', $import));
+        $download->assertOk();
+        $tmp = tempnam(sys_get_temp_dir(), 'rep');
+        file_put_contents($tmp, $download->streamedContent());
+        $book = IOFactory::load($tmp);
+        $this->assertSame(['Resumen', 'Productos', 'Variaciones de precio', 'Subfamilias', 'Familias', 'Errores'], $book->getSheetNames());
+        $var = $book->getSheetByName('Variaciones de precio')->toArray();
+        $this->assertCount(3, $var); // cabecera + 2
+        $this->assertSame('A1', $var[1][0]);
+        $this->assertEquals(10, $var[1][5]);
+
+        @unlink($tmp);
     }
 }

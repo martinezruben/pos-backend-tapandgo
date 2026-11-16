@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CatalogImport;
 use App\Models\Product;
 use App\Services\CatalogExcelService;
+use App\Services\CatalogImportReport;
 use App\Support\AdminGridQuery;
 use App\Support\AdminRbac;
 use Illuminate\Http\RedirectResponse;
@@ -51,7 +53,7 @@ class ProductExcelController extends Controller
 
         $result = $this->catalog->import($request->file('file')->getRealPath(), $this->options($request, false));
 
-        return $this->finish($result);
+        return $this->finish($result, $request->file('file')->getClientOriginalName(), $request->boolean('create_missing'));
     }
 
     /** Valida el archivo sin guardar nada y muestra el resumen para confirmar. */
@@ -75,6 +77,7 @@ class ProductExcelController extends Controller
         }
 
         return view('admin.products.import-preview', [
+            'summary' => CatalogImportReport::summarize($result),
             'result' => $result,
             'token' => $token,
             'ext' => $ext,
@@ -90,6 +93,7 @@ class ProductExcelController extends Controller
         $data = $request->validate([
             'token' => ['required', 'uuid'],
             'ext' => ['required', 'in:xlsx,xls,csv'],
+            'file_name' => ['nullable', 'string', 'max:255'],
         ]);
 
         $relative = self::DIR.'/'.$this->storedName($data['token'], $data['ext']);
@@ -103,22 +107,57 @@ class ProductExcelController extends Controller
             Storage::disk('local')->delete($relative);
         }
 
-        return $this->finish($result);
+        return $this->finish($result, $data['file_name'] ?? 'archivo.'.$data['ext'], $request->boolean('create_missing'));
+    }
+
+    /** Resultado de una carga (resumen y descarga del informe). */
+    public function show(CatalogImport $import)
+    {
+        $this->authorizeExcel();
+
+        return view('admin.products.import-result', ['import' => $import]);
+    }
+
+    /** Historial de cargas. */
+    public function history()
+    {
+        $this->authorizeExcel();
+
+        return view('admin.products.import-history', ['imports' => CatalogImport::query()->latest()->limit(50)->get()]);
+    }
+
+    public function report(CatalogImport $import)
+    {
+        $this->authorizeExcel();
+        abort_unless($import->report_path && Storage::disk('local')->exists($import->report_path), 404);
+
+        return Storage::disk('local')->download($import->report_path, 'informe-carga-'.$import->created_at->format('Y-m-d_His').'.xlsx');
     }
 
     /** @param array<string, mixed> $result */
-    private function finish(array $result): RedirectResponse
+    private function finish(array $result, string $fileName, bool $createMissing): RedirectResponse
     {
-        $parts = [];
-        foreach ($result['sheets'] as $sheet => $s) {
-            if ($s['created'] || $s['updated']) {
-                $parts[] = "{$sheet}: {$s['created']} nuevos, {$s['updated']} actualizados";
-            }
-        }
-        $errors = count($result['errors']);
-        $msg = 'Importación: '.($parts === [] ? 'sin cambios' : implode(' · ', $parts)).($errors ? " · {$errors} fila(s) omitida(s)" : '').'.';
+        $user = auth('admin')->user();
+        $summary = CatalogImportReport::summarize($result);
+        $import = CatalogImport::create([
+            'admin_user_id' => $user->getKey(),
+            'admin_name' => $user->name,
+            'file_name' => $fileName,
+            'create_missing' => $createMissing,
+            'summary' => $summary,
+        ]);
 
-        $back = redirect()->route('admin.screens.index', 'products')->with('status', $msg);
+        $path = 'catalog-reports/'.$import->id.'.xlsx';
+        $tmp = tempnam(sys_get_temp_dir(), 'rep');
+        (new Xlsx(CatalogImportReport::workbook($result, $summary, [
+            'file_name' => $fileName, 'admin_name' => $user->name, 'create_missing' => $createMissing, 'at' => $import->created_at,
+        ])))->save($tmp);
+        Storage::disk('local')->put($path, file_get_contents($tmp));
+        @unlink($tmp);
+        $import->update(['report_path' => $path]);
+
+        $t = $summary['totals'];
+        $back = redirect()->route('admin.products.excel.show', $import)->with('status', "Carga aplicada: {$t['created']} creados, {$t['updated']} modificados, {$t['unchanged']} sin cambios, {$t['errors']} con error.");
         $notes = array_merge($result['ignored'], array_slice($result['errors'], 0, 20));
         if ($notes !== []) {
             $back->with('import_errors', $notes);
