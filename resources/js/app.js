@@ -233,6 +233,50 @@ document.addEventListener('alpine:init', () => {
         money,
     }));
 
+    // Buscador de los grids: busca solo al escribir `min` o más letras (con una pequeña espera) y
+    // al vaciar el campo quita la búsqueda. Tras recargar devuelve el foco al campo.
+    Alpine.data('gridSearch', (min = 3) => ({
+        timer: null,
+        hadValue: false,
+        init() {
+            const input = this.$refs.q;
+            this.hadValue = (input?.value ?? '').trim() !== '';
+            try {
+                if (sessionStorage.getItem('gridSearchFocus') === '1' && input) {
+                    sessionStorage.removeItem('gridSearchFocus');
+                    input.focus({ preventScroll: true });
+                    const end = input.value.length;
+                    input.setSelectionRange(end, end);
+                }
+            } catch (e) { /* sin almacenamiento: no se restaura el foco */ }
+        },
+        submit() {
+            try { sessionStorage.setItem('gridSearchFocus', '1'); } catch (e) { /* ignorar */ }
+            // La búsqueda empieza en la primera página
+            const form = this.$refs.q.form;
+            form.querySelectorAll('input[name="page"]').forEach((i) => i.remove());
+            form.requestSubmit();
+        },
+        onInput(event) {
+            clearTimeout(this.timer);
+            const value = event.target.value.trim();
+            if (value.length >= min) {
+                this.timer = setTimeout(() => this.submit(), 450);
+            } else if (value.length === 0 && this.hadValue) {
+                this.timer = setTimeout(() => this.submit(), 150);
+            }
+        },
+        onEnter(event) {
+            const value = event.target.value.trim();
+            if (value.length > 0 && value.length < min) {
+                event.preventDefault();
+                event.target.setCustomValidity(`Escribe al menos ${min} letras para buscar.`);
+                event.target.reportValidity();
+                event.target.setCustomValidity('');
+            }
+        },
+    }));
+
     Alpine.data('locationPairingToken', () => ({
         open: false,
         loading: false,

@@ -34,9 +34,9 @@
 <div x-data="transactionLineItemsDetail(@js(url('/admin/transactions')))">
 @endif
     <div class="snow-card overflow-hidden">
-        <form method="GET" action="{{ route('admin.screens.index', $screen) }}" class="border-b border-slate-100">
+        <form method="GET" action="{{ route('admin.screens.index', $screen) }}" class="border-b border-slate-100" x-data="gridSearch({{ (int) ($cfg['grid']['search_min'] ?? 3) }})">
             <div class="flex flex-col gap-1.5 bg-snow-25 px-2 py-1.5 sm:flex-row sm:items-center sm:justify-between sm:px-3">
-                <div class="flex flex-wrap items-center gap-0.5">
+                <div class="flex shrink-0 flex-wrap items-center gap-1.5">
                     @if(($showTransactionExcelExport ?? false))
                         <div x-data="transactionExcelModal(@js($transactionExportLocations ?? []))" class="inline-flex items-center gap-0.5">
                             <button
@@ -78,7 +78,7 @@
                             <div class="inline-flex">
                                 <button
                                     type="button"
-                                    class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-300 bg-snow-25 px-3 text-xs font-medium text-slate-700 shadow-xs transition hover:bg-snow-50"
+                                    class="inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-300 bg-snow-25 px-3 text-xs font-medium text-slate-700 shadow-xs transition hover:bg-snow-50"
                                     title="Exportar o importar productos con Excel"
                                     @click="$dispatch('open-product-excel')"
                                 >
@@ -89,17 +89,35 @@
                         @endif
                     @endif
                 </div>
-                <div class="relative flex w-full min-w-0 flex-1 sm:max-w-[220px] md:max-w-sm">
-                    <span class="pointer-events-none absolute inset-y-0 left-1.5 flex items-center text-slate-500">
-                        <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
-                    </span>
-                    <input
-                        type="search"
-                        name="q"
-                        value="{{ request('q') }}"
-                        placeholder="Buscar…"
-                        class="hope-grid-search"
-                    >
+                @php
+                    $hasActiveFilters = trim((string) request('q')) !== ''
+                        || collect((array) request('filter'))->filter(fn ($v) => $v !== null && $v !== '')->isNotEmpty();
+                    $searchMin = (int) ($cfg['grid']['search_min'] ?? 3);
+                @endphp
+                <div class="flex w-full min-w-0 flex-1 items-center justify-end gap-3">
+                    @if($hasActiveFilters)
+                        <a href="{{ route('admin.screens.index', $screen) }}" class="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-sm font-medium text-primary-400 hover:underline" title="Quitar la búsqueda y todos los filtros">
+                            <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                            Limpiar filtros
+                        </a>
+                    @endif
+                    <div class="relative flex min-w-[9rem] flex-1 sm:max-w-[20rem]">
+                        <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500">
+                            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                        </span>
+                        <input
+                            type="search"
+                            name="q"
+                            value="{{ request('q') }}"
+                            placeholder="Buscar (mín. {{ $searchMin }} letras)…"
+                            aria-label="Buscar en {{ $cfg['label'] }}"
+                            autocomplete="off"
+                            x-ref="q"
+                            @input="onInput($event)"
+                            @keydown.enter="onEnter($event)"
+                            class="hope-grid-search"
+                        >
+                    </div>
                 </div>
                 <input type="hidden" name="sort" value="{{ request('sort') }}">
                 <input type="hidden" name="dir" value="{{ request('dir') }}">
