@@ -76,4 +76,27 @@ class AdminGridFilterSearchTest extends TestCase
             $this->assertStringContainsString('name="q"', $inside, "{$screen}: el buscador quedó fuera del formulario");
         }
     }
+
+    public function test_every_grid_search_has_min_length_hint_and_clear_link_only_when_active(): void
+    {
+        $role = Role::findOrCreate((string) config('admin.super_admin_roles.0', 'super-admin'), 'admin');
+        $this->actingAs(AdminUser::factory()->create()->assignRole($role), 'admin');
+
+        $checked = 0;
+        foreach (config('admin_screens') as $screen => $cfg) {
+            if (! isset($cfg['model'])) {
+                continue;
+            }
+            $url = route('admin.screens.index', $screen);
+            $plain = $this->get($url);
+            if ($plain->isRedirect()) {
+                continue;
+            }
+            $plain->assertOk()->assertSee('x-data="gridSearch(3)"', false)->assertSee('mín. 3 letras')->assertDontSee('Limpiar filtros');
+            $this->get($url.'?q=abc')->assertOk()->assertSee('Limpiar filtros');
+            $checked++;
+        }
+
+        $this->assertGreaterThan(10, $checked);
+    }
 }
