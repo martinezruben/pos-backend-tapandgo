@@ -75,17 +75,16 @@
                             Adicionar
                         </a>
                         @if($productExcel ?? false)
-                            <div x-data="{ open: false }" class="inline-flex">
+                            <div class="inline-flex">
                                 <button
                                     type="button"
                                     class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-300 bg-snow-25 px-3 text-xs font-medium text-slate-700 shadow-xs transition hover:bg-snow-50"
                                     title="Exportar o importar productos con Excel"
-                                    @click="open = true"
+                                    @click="$dispatch('open-product-excel')"
                                 >
                                     <svg class="h-4 w-4 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" /></svg>
                                     Importar / Exportar
                                 </button>
-                                @include('admin.crud.partials.product-excel-modal')
                             </div>
                         @endif
                     @endif
@@ -133,6 +132,13 @@
                 </div>
             @endif
         </form>
+
+        {{-- Fuera del formulario de filtros: un <form> anidado cortaba el formulario GET y dejaba sin enviar el buscador y los filtros --}}
+        @if($productExcel ?? false)
+            <div x-data="{ open: false }" @open-product-excel.window="open = true">
+                @include('admin.crud.partials.product-excel-modal')
+            </div>
+        @endif
 
         @if(($screen ?? null) === 'locations')
             <script type="application/json" id="admin-locations-map-data">@json($locationsMapPins ?? [])</script>
