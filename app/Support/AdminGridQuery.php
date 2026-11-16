@@ -199,11 +199,27 @@ class AdminGridQuery
                 if (! empty($meta['virtual'])) {
                     continue;
                 }
-                $w->orWhereHas($meta['relation'], function (Builder $rel) use ($meta, $q): void {
-                    $rel->where($meta['attribute'], 'like', '%'.$q.'%');
-                    if (! empty($meta['fallback_attribute'])) {
-                        $rel->orWhere($meta['fallback_attribute'], 'like', '%'.$q.'%');
-                    }
+                $related = (new $cfg['model'])->{$meta['relation']}()->getRelated();
+                $columns = collect([$meta['attribute'] ?? null, $meta['fallback_attribute'] ?? null])
+                    ->filter(fn ($c) => is_string($c) && Schema::hasColumn($related->getTable(), $c))
+                    ->values();
+                // Atributos calculados (p. ej. admin_label «Familia · Subfamilia») no son columnas: se busca por nombre
+                $viaFamily = ($meta['attribute'] ?? null) === 'admin_label' && method_exists($related, 'family');
+                if ($columns->isEmpty() && Schema::hasColumn($related->getTable(), 'name')) {
+                    $columns = collect(['name']);
+                }
+                if ($columns->isEmpty() && ! $viaFamily) {
+                    continue;
+                }
+                $w->orWhereHas($meta['relation'], function (Builder $rel) use ($columns, $viaFamily, $q): void {
+                    $rel->where(function (Builder $inner) use ($columns, $viaFamily, $q): void {
+                        foreach ($columns as $col) {
+                            $inner->orWhere($col, 'like', '%'.$q.'%');
+                        }
+                        if ($viaFamily) {
+                            $inner->orWhereHas('family', fn (Builder $f) => $f->where('name', 'like', '%'.$q.'%'));
+                        }
+                    });
                 });
             }
         });
