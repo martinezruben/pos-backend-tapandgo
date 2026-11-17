@@ -7,6 +7,38 @@
 @layer base {
     html {
         @apply antialiased text-snow-800;
+        /* Controles nativos (selects, calendarios, barras de desplazamiento) en oscuro */
+        color-scheme: dark;
+    }
+
+    /* Barras de desplazamiento con los colores del tema (Firefox y Chromium/Safari) */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: theme('colors.slate.300') transparent;
+    }
+
+    *::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    *::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        background-color: theme('colors.slate.300');
+        border: 2px solid transparent;
+        background-clip: content-box;
+        border-radius: 9999px;
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+        background-color: theme('colors.slate.400');
+    }
+
+    *::-webkit-scrollbar-corner {
+        background: transparent;
     }
 
     a:focus-visible,
